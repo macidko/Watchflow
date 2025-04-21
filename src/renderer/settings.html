@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watchflow - API Anahtarları</title>
+  <style>
+    :root {
+      --primary-color: #7161ef;
+      --bg-color: #121212;
+      --text-color: #ffffff;
+      --border-color: #333333;
+      --input-bg: #1e1e1e;
+      --success-color: #4caf50;
+      --error-color: #ff5252;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background-color: #1a1a1a;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    
+    h1 {
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .intro {
+      margin-bottom: 30px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 5px;
+      border: 1px solid var(--border-color);
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    
+    input[type="text"]:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+    
+    .api-help {
+      font-size: 0.9em;
+      color: #aaaaaa;
+      margin-top: 5px;
+    }
+    
+    .api-link {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .api-link:hover {
+      text-decoration: underline;
+    }
+    
+    .btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+    
+    .btn:hover {
+      background-color: #5c4ee0;
+    }
+    
+    .btn:disabled {
+      background-color: #555555;
+      cursor: not-allowed;
+    }
+    
+    .message {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    
+    .message.success {
+      background-color: rgba(76, 175, 80, 0.2);
+      color: var(--success-color);
+    }
+    
+    .message.error {
+      background-color: rgba(255, 82, 82, 0.2);
+      color: var(--error-color);
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .logo img {
+      width: 120px;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <h1>Watchflow</h1>
+    </div>
+    
+    <div class="intro">
+      <p>Watchflow'u kullanabilmek için TMDB ve OMDB API anahtarlarını girmeniz gerekmektedir. Bu anahtarlar film ve dizi bilgilerini çekmek için kullanılır.</p>
+    </div>
+    
+    <form id="apiForm">
+      <div class="form-group">
+        <label for="tmdbKey">TMDB API Anahtarı</label>
+        <input type="text" id="tmdbKey" placeholder="TMDB API anahtarınızı girin" required>
+        <div class="api-help">
+          TMDB API anahtarı almak için 
+          <a href="https://www.themoviedb.org/settings/api" class="api-link" id="tmdbLink">tıklayın</a>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="omdbKey">OMDB API Anahtarı</label>
+        <input type="text" id="omdbKey" placeholder="OMDB API anahtarınızı girin" required>
+        <div class="api-help">
+          OMDB API anahtarı almak için 
+          <a href="https://www.omdbapi.com/apikey.aspx" class="api-link" id="omdbLink">tıklayın</a>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn" id="saveBtn">Kaydet ve Başlat</button>
+    </form>
+    
+    <div id="message" class="message" style="display: none;"></div>
+  </div>
+  
+  <script src="settings.js"></script>
+</body>
+</html> 

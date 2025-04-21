@@ -1,0 +1,994 @@
+/* Temel stil ayarları */
+:root {
+  --primary-bg: #121212;
+  --secondary-bg: #1e1e1e;
+  --primary-text: #ffffff;
+  --secondary-text: #b3b3b3;
+  --accent-color: #ff4500;
+  /* Kırmızıya çalan turuncu */
+  --hover-color: #ff6a33;
+  --border-color: #2a2a2a;
+  --dropdown-bg: #1a1a1a;
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--primary-bg);
+  color: var(--primary-text);
+  line-height: 1.6;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  margin: 0 auto;
+  background-color: var(--primary-bg);
+  max-width: 100%;
+}
+
+/* Navbar - İlk satır: Logo ve Arama */
+.navbar-top {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: var(--secondary-bg);
+  border-bottom: 1px solid var(--border-color);
+  height: 70px;
+  position: relative;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+#searchInputContainer {
+  width: 100%;
+  display: flex;
+  background-color: var(--secondary-bg);
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.search-container {
+  display: flex;
+  flex: 1;
+  position: relative;
+  justify-content: flex-end;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #2c2c2c;
+  color: var(--primary-text);
+  font-size: 14px;
+  min-width: 200px;
+  transition: box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+/* Arama Dropdown */
+.search-dropdown {
+  position: absolute;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--dropdown-bg);
+  box-shadow: var(--dropdown-shadow);
+  z-index: 99;
+  border-radius: 0 0 8px 8px;
+  transition: opacity 0.2s, transform 0.2s;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-dropdown.hidden {
+  display: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+.dropdown-content {
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+#searchInputCloneContainer {
+  margin-bottom: 15px;
+}
+
+#searchInputCloneContainer .search-input {
+  width: 100%;
+}
+
+.dropdown-type-selection {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-bg);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.dropdown-type-selection .radio-group {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 5px 0;
+}
+
+.dropdown-type-selection .radio-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: #333;
+  border-radius: 4px;
+  padding: 5px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-type-selection .radio-label:has(input:checked) {
+  background-color: var(--accent-color);
+}
+
+.dropdown-type-selection input[type="radio"] {
+  display: none;
+}
+
+/* Modern radio button stili */
+.status-radio {
+  position: relative;
+  margin-right: 6px;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--secondary-text);
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.status-radio:hover {
+  border-color: var(--accent-color);
+}
+
+.status-radio:checked {
+  border-color: var(--accent-color);
+  background-color: transparent;
+}
+
+.status-radio:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+}
+
+/* Seçili olan radio button'un label'ı */
+.status-radio:checked + span {
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+/* Bu seçicileri düzeltiyoruz */
+.radio-label input[type="radio"]:checked {
+  background-color: var(--hover-color);
+}
+
+/* Bu seçiciyi değiştirip, ebeveyn elementin (.radio-label) stilini değiştiren daha basit bir CSS yazıyoruz */
+input[type="radio"]:checked ~ .radio-label {
+  background-color: var(--hover-color);
+}
+
+/* Bu yeni seçici radio button seçildiğinde label'ın arkaplan rengini değiştirecek */
+input[type="radio"]:checked + label {
+  background-color: var(--hover-color);
+}
+
+/* Bu en önemli seçici, doğrudan radio button'un içinde bulunduğu label'ı hedefliyor */
+input[type="radio"]:checked:parent {
+  background-color: var(--hover-color);
+}
+
+/* Bu seçici de çalışacaktır */
+.radio-label:has(input[type="radio"]:checked) {
+  background-color: var(--accent-color);
+}
+
+.dropdown-search-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+/* Overlay when dropdown is open */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+}
+
+.search-button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.search-button:hover {
+  background-color: var(--hover-color);
+}
+
+.no-results {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--secondary-text);
+  background: var(--secondary-bg);
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+/* Loading animasyonu */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 0;
+  text-align: center;
+  color: var(--secondary-text);
+}
+
+.loader {
+  border: 4px solid var(--secondary-bg);
+  border-top: 4px solid var(--accent-color);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin-top: 15px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Hata mesajı stili */
+.error-message {
+  color: #ff6b6b;
+  background-color: rgba(255, 107, 107, 0.1);
+  padding: 15px;
+  border-radius: 5px;
+  border-left: 4px solid #ff6b6b;
+  margin: 20px 0;
+}
+
+/* Navbar - İkinci satır: Navigasyon Menüsü */
+.navbar-bottom {
+  display: flex;
+  justify-content: center;
+  background-color: var(--secondary-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 15px;
+  height: 50px;
+  position: relative;
+  z-index: 50;
+}
+
+.main-nav ul {
+  display: flex;
+  list-style: none;
+  height: 100%;
+}
+
+.main-nav ul li {
+  height: 100%;
+}
+
+.main-nav ul li a {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 15px;
+  color: var(--secondary-text);
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.main-nav ul li a:hover {
+  color: var(--primary-text);
+}
+
+.main-nav ul li a.active {
+  color: var(--accent-color);
+}
+
+.main-nav ul li a.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--accent-color);
+}
+
+/* Ana İçerik Alanı */
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: var(--primary-bg);
+  width: 100%;
+}
+
+/* Arama Tipi Paneli */
+.search-type-panel {
+  background-color: var(--secondary-bg);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.search-type-panel .panel-header {
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.search-type-panel h3 {
+  color: var(--primary-text);
+  font-size: 18px;
+}
+
+.search-type-panel .radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.search-type-panel .search-button {
+  margin-top: 10px;
+  width: 100%;
+}
+
+/* Sayfa İçerikleri */
+.page-section {
+  display: none;
+  padding: 10px 0;
+}
+
+.page-section.active {
+  display: block;
+}
+
+.page-section h2 {
+  color: var(--accent-color);
+  margin-bottom: 15px;
+  font-size: 22px;
+}
+
+.page-section p {
+  color: var(--secondary-text);
+  margin-bottom: 15px;
+}
+
+/* Gizleme Sınıfı */
+.hidden {
+  display: none !important;
+}
+
+/* Footer */
+.app-footer {
+  background-color: var(--secondary-bg);
+  border-top: 1px solid var(--border-color);
+  padding: 10px 15px;
+  font-size: 12px;
+  color: var(--secondary-text);
+  text-align: center;
+  position: relative;
+  z-index: 50;
+}
+
+/* Arama sonuçları stilleri */
+.search-results {
+  width: 100%;
+}
+
+.results-grid {
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+  overflow-y: auto;
+  margin-top: 10px;
+  background-color: var(--secondary-bg);
+  border-radius: 4px;
+}
+
+.result-count {
+  font-size: 1.1rem;
+  color: var(--secondary-text);
+  margin-bottom: 10px;
+  font-weight: 500;
+  padding-bottom: 5px;
+}
+
+.result-card {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #333;
+  background-color: var(--secondary-bg);
+  transition: background-color 0.2s;
+  width: 100%;
+  height: 60px;
+}
+
+.result-card:hover {
+  background-color: #2a2a2a;
+}
+
+.result-image {
+  width: 45px;
+  height: 55px;
+  object-fit: cover;
+  margin-right: 10px;
+  border-radius: 2px;
+}
+
+.result-info {
+  width: 120px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+}
+
+.result-title {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: var(--primary-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.result-year {
+  color: var(--secondary-text);
+  font-size: 0.8rem;
+}
+
+.result-type {
+  display: none;
+}
+
+/* İzleme durumu seçenekleri ve ekle butonu için stiller */
+.result-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  margin-right: 5px;
+}
+
+.watch-status {
+  display: flex;
+  gap: 30px;
+  margin-right: auto;
+}
+
+.status-label {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--secondary-text);
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+}
+
+/* Radio butonlar için stil */
+.status-radio {
+  margin-right: 6px;
+  cursor: pointer;
+}
+
+.add-button {
+  min-width: 60px;
+  padding: 4px 10px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: normal;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.add-button:hover:not(:disabled) {
+  background-color: #555;
+}
+
+.add-button:disabled {
+  background-color: #333;
+  cursor: not-allowed;
+  color: #666;
+}
+
+/* Scrollbar Stilleri */
+.results-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.results-grid::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.results-grid::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 10px;
+}
+
+.results-grid::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Ekle butonunu geri getirmek için */
+.result-card .add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 25px;
+  padding: 0 8px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: normal;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.result-card .add-button:hover:not(:disabled) {
+  background-color: #555;
+}
+
+.result-card .add-button:disabled {
+  background-color: #333;
+  cursor: not-allowed;
+  color: #666;
+}
+
+/* Arama sonuçlarındaki radio butonlar */
+.result-card .watch-status {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-right: 15px;
+  flex: 1;
+}
+
+.result-card .status-label {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  color: var(--secondary-text);
+  font-size: 0.8rem;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Radio buton stilini custom olarak değiştiriyorum */
+.result-card .status-radio {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Seçili olmayan durum */
+.result-card .status-label .status-radio + span {
+  color: var(--secondary-text);
+}
+
+/* Seçili olan durum */
+.result-card .status-label .status-radio:checked + span {
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+/* Artı Buton Stili */
+.add-search-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.add-search-button:hover {
+  background-color: var(--hover-color);
+  transform: rotate(90deg);
+}
+
+.rotate {
+  transform: rotate(45deg);
+}
+
+/* Slider Stilleri */
+.slider-section {
+  margin-bottom: 30px;
+  position: relative;
+  width: 100%;
+}
+
+.slider-section h3 {
+  font-size: 1.1rem;
+  color: var(--accent-color);
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.slider-container {
+  position: relative;
+  width: 100%;
+  overflow-x: hidden; /* scrollbar yerine hidden kullan */
+  padding: 10px 0;
+}
+
+.slider-content {
+  display: flex;
+  gap: 15px;
+  padding-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+/* Scrollbar'ı tamamen gizle */
+.slider-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Slider navigasyon okları */
+.slider-nav {
+  position: absolute;
+  top: calc(50% - 25px);
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0.7;
+  transition: opacity 0.2s, background-color 0.2s;
+  border: none;
+}
+
+.slider-nav:hover {
+  opacity: 1;
+  background-color: var(--accent-color);
+}
+
+.slider-nav-left {
+  left: -5px;
+}
+
+.slider-nav-right {
+  right: -5px;
+}
+
+/* Kart Stili */
+.media-card {
+  min-width: 160px;
+  width: 160px;
+  background-color: var(--secondary-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.media-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+}
+
+.media-card-image {
+  width: 100%;
+  height: 225px;
+  object-fit: cover;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.media-card-content {
+  padding: 10px;
+}
+
+.media-card-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  color: var(--primary-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.media-card-year {
+  color: var(--secondary-text);
+  font-size: 0.8rem;
+}
+
+.media-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 0.75rem;
+}
+
+.media-card-seasons {
+  background: var(--accent-color);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* Popup Stilleri */
+.media-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.media-popup {
+  width: 90%;
+  max-width: 400px;
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  margin: 40px auto;
+}
+
+.media-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #333;
+}
+
+.media-popup-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
+}
+
+.media-popup-close {
+  font-size: 1.5rem;
+  color: #888;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.media-popup-close:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.media-popup-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 8px;
+  background-color: #333;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--accent-color);
+  border-radius: 4px;
+}
+
+.progress-text {
+  color: #aaa;
+  font-size: 0.9rem;
+  min-width: 150px;
+}
+
+.season-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.season-title {
+  font-size: 1.1rem;
+  color: white;
+  font-weight: 500;
+}
+
+.season-progress {
+  color: white;
+  background-color: var(--accent-color);
+  padding: 3px 8px;
+  border-radius: 15px;
+  font-size: 0.9rem;
+}
+
+.episodes-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.episode-button {
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 0;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.episode-button.watched {
+  background-color: var(--accent-color);
+}
+
+.episode-button:hover {
+  background-color: #444;
+}
+
+.episode-button.watched:hover {
+  background-color: var(--hover-color);
+}
+
+.popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.popup-btn {
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.popup-btn-remove {
+  background-color: #333;
+  color: #ccc;
+}
+
+.popup-btn-remove:hover {
+  background-color: #444;
+}
+
+.popup-btn-mark-watched {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.popup-btn-mark-watched:hover {
+  background-color: var(--hover-color);
+}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' https: data:">
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' https: data:">
+  <title>Watchflow</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Navbar - İlk satır: Logo ve Arama -->
+    <div class="navbar-top">
+      <div class="logo">Watchflow</div>
+      <div class="search-container">
+        <button id="searchButton" class="add-search-button">+</button>
+      </div>
+    </div>
+    
+    <!-- Arama Dropdown Alanı (focus olduğunda görünür) -->
+    <div id="searchDropdown" class="search-dropdown hidden">
+      <div class="dropdown-content">
+        <!-- İçine arama inputu yerleştirilecek -->
+        <div id="searchInputContainer">
+          <input type="text" id="searchInput" placeholder="Film, dizi veya anime ara..." class="search-input">
+        </div>
+        <!-- Tür seçimi -->
+        <div class="dropdown-type-selection">
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="searchType" value="movie" checked> Film
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="searchType" value="tv"> Dizi
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="searchType" value="anime"> Anime
+            </label>
+          </div>
+          <button id="searchActionButton" class="search-button">Ara</button>
+        </div>
+        
+        <!-- Arama sonuçları buraya yüklenecek -->
+        <div id="dropdownSearchResults" class="dropdown-search-results"></div>
+      </div>
+    </div>
+    
+    <!-- Navbar - İkinci satır: Navigasyon Menüsü -->
+    <div class="navbar-bottom">
+      <nav class="main-nav">
+        <ul>
+          <li><a href="#" class="active" data-page="home">Anasayfa</a></li>
+          <li><a href="#" data-page="movies">Film</a></li>
+          <li><a href="#" data-page="series">Dizi</a></li>
+          <li><a href="#" data-page="anime">Anime</a></li>
+          <li><a href="#" data-page="settings">Ayarlar</a></li>
+        </ul>
+      </nav>
+    </div>
+    
+    <!-- Ana İçerik Alanı -->
+    <div class="content-area">
+      <!-- Sayfa İçerikleri -->
+      <div id="pageContent">
+        <!-- Anasayfa İçeriği -->
+        <div class="page-section active" id="home-page">
+          <h2>Anasayfa</h2>
+          <p>Son eklenen içerikleri burada görebilirsiniz.</p>
+        </div>
+        
+        <!-- Film İçeriği -->
+        <div class="page-section" id="movies-page">
+          <h2>Filmler</h2>
+
+          <!-- İzleniyor Slider -->
+          <div class="slider-section">
+            <h3>İzleniyor</h3>
+            <div class="slider-container">
+              <div class="slider-content" id="movies-watching"></div>
+            </div>
+          </div>
+
+          <!-- İzlenecek Slider -->
+          <div class="slider-section">
+            <h3>İzlenecek</h3>
+            <div class="slider-container">
+              <div class="slider-content" id="movies-plan"></div>
+            </div>
+          </div>
+
+          <!-- İzlendi Slider -->
+          <div class="slider-section">
+            <h3>İzlendi</h3>
+            <div class="slider-container">
+              <div class="slider-content" id="movies-completed"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Dizi İçeriği -->
+        <div class="page-section" id="series-page">
+          <h2>Diziler</h2>
+          
+          <!-- İzleniyor Slider -->
+          <div class="slider-section">
+            <h3>İzleniyor</h3>
+            <div class="slider-container">
+              <div class="slider-content" id="series-watching"></div>
+            </div>
+          </div>
+
+          <!-- İzlenecek Slider -->
+          <div class="slider-section">
+            <h3>İzlenecek</h3>
+            <div class="slider-container">
+              <div class="slider-content" id="series-plan"></div>
+            </div>
+          </div>
+
+          <!-- İzlendi Slider -->
+          <div class="slider-section">
+            <h3>İzlendi</h3>
+            <div class="slider-container">
+              <div class="slider-content" id="series-completed"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Anime İçeriği -->
+        <div class="page-section" id="anime-page">
+          <h2>Animeler</h2>
+          
+          <!-- İzleniyor Slider -->
+          <div class="slider-section">
+            <h3>İzleniyor</h3>
+            <div class="slider-container">
+              <div class="slider-content" id="anime-watching"></div>
+            </div>
+          </div>
+
+          <!-- İzlenecek Slider -->
+          <div class="slider-section">
+            <h3>İzlenecek</h3>
+            <div class="slider-container">
+              <div class="slider-content" id="anime-plan"></div>
+            </div>
+          </div>
+
+          <!-- İzlendi Slider -->
+          <div class="slider-section">
+            <h3>İzlendi</h3>
+            <div class="slider-container">
+              <div class="slider-content" id="anime-completed"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Ayarlar İçeriği -->
+        <div class="page-section" id="settings-page">
+          <h2>Ayarlar</h2>
+          <p>Uygulama ayarları burada olacak.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer - İsteğe bağlı bilgiler -->
+    <footer class="app-footer">
+      <div class="version-info">
+        <p>Chrome <span id="chrome-version"></span> | Node <span id="node-version"></span> | Electron <span id="electron-version"></span></p>
+      </div>
+    </footer>
+  </div>
+  
+  <script src="renderer.js"></script>
+</body>
+</html> 
