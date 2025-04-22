@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const dotenv = require('dotenv');
 const { jikanApi } = require('../api');
@@ -18,7 +18,11 @@ if (result.error) {
 }
 
 // İzleme listesi dosya yolu
-const watchlistPath = path.join(__dirname, '../../src/data/watchlist.json');
+const isDevelopment = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
+// Geliştirme modunda src/data içinde, üretim modunda userData klasöründe depolama yap
+const watchlistPath = isDevelopment 
+  ? path.join(__dirname, '../../src/data/watchlist.json')
+  : path.join(app.getPath('userData'), 'watchlist.json');
 
 // Pencere referansını global olarak tut, yoksa çöp toplama olabilir
 let mainWindow;
@@ -30,9 +34,8 @@ let tmdbApi = null;
 // API anahtarlarının varlığını kontrol et
 function checkApiKeys() {
   const tmdbKey = store.get('TMDB_API_KEY');
-  const omdbKey = store.get('OMDB_API_KEY');
   
-  if (!tmdbKey || !omdbKey) {
+  if (!tmdbKey) {
     // API anahtarları yoksa, ayarlar penceresini göster
     createSettingsWindow();
     return false;
@@ -40,11 +43,9 @@ function checkApiKeys() {
   
   // API anahtarlarını çevre değişkenlerine ata
   process.env.TMDB_API_KEY = tmdbKey;
-  process.env.OMDB_API_KEY = omdbKey;
   
   console.log('API anahtarları store\'dan yüklendi:');
   console.log('- TMDB_API_KEY:', process.env.TMDB_API_KEY ? 'Tanımlı' : 'Tanımlı değil');
-  console.log('- OMDB_API_KEY:', process.env.OMDB_API_KEY ? 'Tanımlı' : 'Tanımlı değil');
   
   // API anahtarları tanımlı, tmdbApi'yi yükle
   tmdbApi = require('../api').tmdbApi;
@@ -64,6 +65,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 500,
     height: 900,
+    frame: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -97,6 +99,7 @@ function createSettingsWindow() {
     width: 600,
     height: 650,
     resizable: false,
+    frame: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -115,12 +118,21 @@ function createSettingsWindow() {
   // Pencere kapatıldığında gerçekleşecek olay
   settingsWindow.on('closed', function () {
     settingsWindow = null;
+    
+    // Eğer bu sadece API ayarı penceresi idiyse ve API anahtarları ayarlandıysa
+    // Ana pencereyi oluştur (ve eğer ana pencere zaten açık değilse)
+    if (!mainWindow && store.get('TMDB_API_KEY')) {
+      createWindow();
+    }
   });
 }
 
 // Uygulama hazır olduğunda
 app.whenReady().then(() => {
-  createWindow();
+  // Eğer daha önce hiç pencere açılmadıysa, yeni pencere aç
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 
   app.on('activate', function () {
     // macOS için: dock'a tıklandığında pencere yoksa yeni pencere oluştur
@@ -133,16 +145,37 @@ app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
 });
 
+// Pencere kontrolleri için IPC kanalları
+ipcMain.on('minimize-window', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) win.minimize();
+});
+
+ipcMain.on('close-window', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) win.close();
+});
+
+// Dosya kaydetme dialogu
+ipcMain.handle('show-save-dialog', async (event, options) => {
+  try {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    return await dialog.showSaveDialog(win, options);
+  } catch (error) {
+    console.error('Dosya kaydetme dialogu hatası:', error);
+    throw error;
+  }
+});
+
 // API anahtarlarını kaydet
 ipcMain.handle('save-api-keys', async (event, keys) => {
   try {
     // API anahtarlarını kaydet
     store.set('TMDB_API_KEY', keys.TMDB_API_KEY);
-    store.set('OMDB_API_KEY', keys.OMDB_API_KEY);
     
     return { success: true };
   } catch (error) {
-    console.error('API anahtarları kaydedilirken hata:', error);
+    console.error('API anahtarı kaydedilirken hata:', error);
     return { success: false, error: error.message };
   }
 });
@@ -151,19 +184,32 @@ ipcMain.handle('save-api-keys', async (event, keys) => {
 ipcMain.handle('get-api-keys', async () => {
   try {
     return {
-      TMDB_API_KEY: store.get('TMDB_API_KEY', ''),
-      OMDB_API_KEY: store.get('OMDB_API_KEY', '')
+      TMDB_API_KEY: store.get('TMDB_API_KEY', '')
     };
   } catch (error) {
-    console.error('API anahtarları okunurken hata:', error);
+    console.error('API anahtarı okunurken hata:', error);
     return null;
   }
 });
 
 // Uygulamayı yeniden başlat
 ipcMain.on('restart-app', () => {
-  app.relaunch();
-  app.exit(0);
+  // Mevcut tüm pencereleri kapat
+  BrowserWindow.getAllWindows().forEach(win => {
+    win.close();
+  });
+  
+  // Ayarlardan sonra yeniden başlatılan uygulamayı temiz bir şekilde başlat
+  setTimeout(() => {
+    // Pencere referanslarını temizle
+    mainWindow = null;
+    settingsWindow = null;
+    
+    // Uygulama zaten başlatılmış olduğundan, doğrudan createWindow() çağrısı yap
+    app.whenReady().then(() => {
+      createWindow();
+    });
+  }, 500);
 });
 
 // IPC iletişim kanallarını kur
@@ -187,7 +233,7 @@ ipcMain.handle('search-tmdb', async (event, query, type = 'multi') => {
     if (error.message.includes('401')) {
       throw new Error('API anahtarı geçersiz veya eksik. Lütfen API anahtarınızı kontrol edin.');
     } else if (error.message.includes('TMDB API anahtarı tanımlanmamış')) {
-      throw new Error('TMDB API anahtarı ayarlanmamış. Lütfen .env dosyasını kontrol edin.');
+      throw new Error('TMDB API anahtarı ayarlanmamış. Lütfen ayarlarınızı kontrol edin.');
     } else {
       throw new Error('Film/Dizi araması sırasında bir hata oluştu: ' + error.message);
     }
@@ -381,15 +427,16 @@ ipcMain.handle('add-to-watchlist', async (event, item) => {
 // İzleme listesi dosyasının varlığını kontrol et, yoksa oluştur
 async function ensureWatchlistExists() {
   try {
-    // data klasörünün varlığını kontrol et
-    const dataDir = path.join(__dirname, '../../src/data');
+    // watchlistPath'in dizinini al
+    const watchlistDir = path.dirname(watchlistPath);
     
     try {
-      await fs.access(dataDir);
+      // Dizinin varlığını kontrol et
+      await fs.access(watchlistDir);
     } catch (error) {
-      // Klasör yoksa oluştur
-      await fs.mkdir(dataDir, { recursive: true });
-      console.log('Data klasörü oluşturuldu');
+      // Dizin yoksa oluştur
+      await fs.mkdir(watchlistDir, { recursive: true });
+      console.log(`Dizin oluşturuldu: ${watchlistDir}`);
     }
     
     // watchlist.json dosyasının varlığını kontrol et
@@ -403,11 +450,11 @@ async function ensureWatchlistExists() {
         anime: []
       };
       await fs.writeFile(watchlistPath, JSON.stringify(emptyWatchlist, null, 2), 'utf8');
-      console.log('watchlist.json dosyası oluşturuldu');
+      console.log(`watchlist.json dosyası oluşturuldu: ${watchlistPath}`);
     }
   } catch (error) {
     console.error('Klasör veya dosya erişim hatası:', error);
-    throw new Error('İzleme listesi dosyası oluşturulamadı');
+    throw new Error('İzleme listesi dosyası oluşturulamadı: ' + error.message);
   }
 }
 
@@ -480,5 +527,34 @@ ipcMain.handle('update-episode-status', async (event, data) => {
   } catch (error) {
     console.error('Bölüm durumu güncellenirken hata:', error);
     throw new Error('Bölüm durumu güncellenemedi: ' + error.message);
+  }
+});
+
+// İzleme listesini dışa aktar
+ipcMain.handle('export-watchlist', async (event, targetPath) => {
+  try {
+    // Watchlist dosyasının var olduğundan emin ol
+    await ensureWatchlistExists();
+    
+    // Kaynak dosyayı oku
+    const watchlistData = await fs.readFile(watchlistPath, 'utf8');
+    
+    // Hedef dizini kontrol et
+    const targetDir = path.dirname(targetPath);
+    try {
+      await fs.access(targetDir);
+    } catch (error) {
+      // Dizin yoksa oluştur
+      await fs.mkdir(targetDir, { recursive: true });
+    }
+    
+    // Hedef dosyaya kopyala
+    await fs.writeFile(targetPath, watchlistData, 'utf8');
+    
+    console.log(`İzleme listesi dışa aktarıldı: ${targetPath}`);
+    return { success: true, path: targetPath };
+  } catch (error) {
+    console.error('İzleme listesi dışa aktarılırken hata:', error);
+    return { success: false, error: error.message };
   }
 }); 

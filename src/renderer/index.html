@@ -11,9 +11,16 @@
   <div class="app-container">
     <!-- Navbar - İlk satır: Logo ve Arama -->
     <div class="navbar-top">
-      <div class="logo">Watchflow</div>
-      <div class="search-container">
-        <button id="searchButton" class="add-search-button">+</button>
+      <div class="logo">
+        <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 5 L5 20 L10 25 L20 15 L30 25 L35 20 L20 5" fill="#ff4500" stroke="none" />
+          <path d="M20 20 L10 30 L15 35 L20 30 L25 35 L30 30 L20 20" fill="#ff4500" stroke="none" />
+        </svg>
+        <span class="logo-text">Watchflow</span>
+      </div>
+      <div class="window-controls">
+        <button id="minimizeBtn" class="window-control-btn minimize-btn">-</button>
+        <button id="closeBtn" class="window-control-btn close-btn">×</button>
       </div>
     </div>
     
@@ -44,6 +51,9 @@
         <div id="dropdownSearchResults" class="dropdown-search-results"></div>
       </div>
     </div>
+    
+    <!-- Floating Action Button (FAB) - Ekle Butonu -->
+    <button id="searchButton" class="add-search-button">+</button>
     
     <!-- Navbar - İkinci satır: Navigasyon Menüsü -->
     <div class="navbar-bottom">
@@ -158,17 +168,46 @@
         <!-- Ayarlar İçeriği -->
         <div class="page-section" id="settings-page">
           <h2>Ayarlar</h2>
-          <p>Uygulama ayarları burada olacak.</p>
+          
+          <!-- API Ayarları -->
+          <div class="settings-section">
+            <h3>API Ayarları</h3>
+            <div class="settings-form">
+              <div class="form-group">
+                <label for="tmdbApiKey">TMDB API Anahtarı</label>
+                <div class="input-with-button">
+                  <input type="text" id="tmdbApiKey" placeholder="API anahtarınızı girin" class="settings-input">
+                  <button id="showHideTmdbKey" class="show-hide-btn">Göster</button>
+                </div>
+              </div>
+              <button id="saveApiKeys" class="settings-button primary-btn">API Anahtarını Kaydet</button>
+              <div id="apiKeysMessage" class="settings-message"></div>
+            </div>
+          </div>
+          
+          <!-- Veri Yönetimi -->
+          <div class="settings-section">
+            <h3>Veri Yönetimi</h3>
+            <div class="settings-actions">
+              <div class="settings-action-group">
+                <button id="exportWatchlist" class="settings-button">İzleme Listesini Dışa Aktar</button>
+                <p class="settings-help">İzleme listenizi bir JSON dosyasına kopyalayın.</p>
+              </div>
+              <div id="exportMessage" class="settings-message"></div>
+            </div>
+          </div>
+          
+          <!-- Uygulama Bilgileri -->
+          <div class="settings-section">
+            <h3>Uygulama Bilgileri</h3>
+            <div class="app-info">
+              <p><strong>Sürüm:</strong> 0.0.1</p>
+              <p><strong>Geliştirici:</strong> macidko</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    
-    <!-- Footer - İsteğe bağlı bilgiler -->
-    <footer class="app-footer">
-      <div class="version-info">
-        <p>Chrome <span id="chrome-version"></span> | Node <span id="node-version"></span> | Electron <span id="electron-version"></span></p>
-      </div>
-    </footer>
   </div>
   
   <script src="renderer.js"></script>

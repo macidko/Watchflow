@@ -2,11 +2,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const apiForm = document.getElementById('apiForm');
   const tmdbKeyInput = document.getElementById('tmdbKey');
-  const omdbKeyInput = document.getElementById('omdbKey');
   const saveBtn = document.getElementById('saveBtn');
   const messageDiv = document.getElementById('message');
   const tmdbLink = document.getElementById('tmdbLink');
-  const omdbLink = document.getElementById('omdbLink');
+  
+  // Pencere kontrollerini ayarla
+  setupWindowControls();
   
   // Linkleri tarayıcıda aç
   tmdbLink.addEventListener('click', (e) => {
@@ -14,20 +15,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.watchflowAPI.openExternalLink('https://www.themoviedb.org/settings/api');
   });
   
-  omdbLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.watchflowAPI.openExternalLink('https://www.omdbapi.com/apikey.aspx');
-  });
-  
   // Kaydedilmiş anahtarları yükle (varsa)
   try {
     const savedKeys = await window.watchflowAPI.getApiKeys();
     if (savedKeys) {
       tmdbKeyInput.value = savedKeys.TMDB_API_KEY || '';
-      omdbKeyInput.value = savedKeys.OMDB_API_KEY || '';
     }
   } catch (error) {
-    console.error('API anahtarları yüklenirken hata:', error);
+    console.error('API anahtarı yüklenirken hata:', error);
   }
   
   // Form gönderildiğinde
@@ -35,11 +30,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     e.preventDefault();
     
     const tmdbKey = tmdbKeyInput.value.trim();
-    const omdbKey = omdbKeyInput.value.trim();
     
     // Validasyon
-    if (!tmdbKey || !omdbKey) {
-      showMessage('Lütfen tüm API anahtarlarını girin', 'error');
+    if (!tmdbKey) {
+      showMessage('Lütfen TMDB API anahtarını girin', 'error');
       return;
     }
     
@@ -50,12 +44,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       // API anahtarlarını kaydet
       const result = await window.watchflowAPI.saveApiKeys({
-        TMDB_API_KEY: tmdbKey,
-        OMDB_API_KEY: omdbKey
+        TMDB_API_KEY: tmdbKey
       });
       
       if (result.success) {
-        showMessage('API anahtarları başarıyla kaydedildi! Uygulama yeniden başlatılıyor...', 'success');
+        showMessage('API anahtarı başarıyla kaydedildi! Uygulama yeniden başlatılıyor...', 'success');
         
         // Kısa bir süre sonra ana pencereye geçiş yap
         setTimeout(() => {
@@ -65,12 +58,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         throw new Error(result.error || 'Kaydetme sırasında bir hata oluştu');
       }
     } catch (error) {
-      console.error('API anahtarları kaydedilirken hata:', error);
+      console.error('API anahtarı kaydedilirken hata:', error);
       showMessage(`Hata: ${error.message}`, 'error');
       saveBtn.disabled = false;
       saveBtn.textContent = 'Kaydet ve Başlat';
     }
   });
+  
+  // Pencere kontrol butonlarını ayarla
+  function setupWindowControls() {
+    const minimizeBtn = document.getElementById('minimizeBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    
+    if (minimizeBtn) {
+      minimizeBtn.addEventListener('click', () => {
+        window.watchflowAPI.minimizeWindow();
+      });
+    }
+    
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        window.watchflowAPI.closeWindow();
+      });
+    }
+  }
   
   // Mesaj gösterme fonksiyonu
   function showMessage(text, type) {

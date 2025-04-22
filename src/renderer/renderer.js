@@ -27,11 +27,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     // İzleme listesi verilerini yükle ve UI'ı güncelle
     loadWatchlist();
     
+    // Pencere kontrol butonlarını ayarla
+    setupWindowControls();
+    
   } catch (error) {
     console.error('API bağlantı hatası:', error);
     showError('API bağlantısı kurulamadı. ' + error.message);
   }
 });
+
+// Pencere kontrol butonlarını ayarla
+function setupWindowControls() {
+  const minimizeBtn = document.getElementById('minimizeBtn');
+  const closeBtn = document.getElementById('closeBtn');
+  
+  if (minimizeBtn) {
+    minimizeBtn.addEventListener('click', () => {
+      window.watchflowAPI.minimizeWindow();
+    });
+  }
+  
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      window.watchflowAPI.closeWindow();
+    });
+  }
+}
 
 // İzleme listesi verilerini yükle
 async function loadWatchlist() {
@@ -554,6 +575,11 @@ function showPage(pageId) {
   const targetPage = document.getElementById(`${pageId}-page`);
   if (targetPage) {
     targetPage.classList.add('active');
+    
+    // Eğer ayarlar sayfasına geçiliyorsa, ayarları yükle
+    if (pageId === 'settings') {
+      setupSettingsPage();
+    }
   }
 }
 
@@ -575,7 +601,6 @@ async function performSearch() {
   
   // Arama kutusu boşsa işlem yapma
   if (!query) {
-    alert('Lütfen aranacak bir terim girin.');
     return;
   }
   
@@ -711,29 +736,226 @@ function displayResults(results, searchType) {
       };
       
       // İzleme listesine ekle
-      addToWatchlist(watchItem);
+      addToWatchlist(watchItem, addButton);
     });
   });
 }
 
 // İzleme listesine öğe ekle
-async function addToWatchlist(item) {
+async function addToWatchlist(item, button) {
   try {
+    // Butonun önceki metnini sakla ve devre dışı bırak
+    const originalText = button.textContent.trim();
+    button.disabled = true;
+    button.textContent = 'Ekleniyor...';
+
     // Öğeyi izleme listesine eklemek için preload.js aracılığıyla main process'e gönder
     const result = await window.watchflowAPI.addToWatchlist(item);
     
     if (result.success) {
-      alert(`"${item.title}" izleme listenize eklendi!`);
+      // Buton metnini Eklendi olarak değiştir
+      button.textContent = 'Eklendi ✓';
+      button.classList.add('added');
+      
+      // Arama girdisini temizle
+      searchInput.value = '';
+      
+      // Input'a tekrar odaklan
+      searchInput.focus();
       
       // Başarılı eklemeden sonra, izleme listesini yeniden yükle
       loadWatchlist();
     } else {
-      throw new Error(result.error);
+      // Hata durumunda butonun stilini değiştir
+      button.textContent = 'Hata!';
+      button.classList.add('error');
+      console.error('İzleme listesi eklerken hata:', result.error);
+      
+      // 2 saniye sonra butonu orijinal haline getir
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.disabled = false;
+        button.classList.remove('error');
+      }, 2000);
     }
   } catch (error) {
     console.error('İzleme listesine eklerken hata:', error);
-    alert(`İzleme listesine eklenirken bir hata oluştu: ${error.message}`);
+    
+    // Hata durumunda butonu güncelle
+    button.textContent = 'Hata!';
+    button.classList.add('error');
+    
+    // 2 saniye sonra butonu orijinal haline getir
+    setTimeout(() => {
+      button.textContent = 'Ekle';
+      button.disabled = false;
+      button.classList.remove('error');
+    }, 2000);
   }
+}
+
+// Ayarlar sayfası işlevlerini ayarla
+function setupSettingsPage() {
+  // API anahtarları için UI referansları
+  const tmdbApiKeyInput = document.getElementById('tmdbApiKey');
+  const showHideTmdbKeyBtn = document.getElementById('showHideTmdbKey');
+  const saveApiKeysBtn = document.getElementById('saveApiKeys');
+  const apiKeysMessage = document.getElementById('apiKeysMessage');
+  
+  // Watchlist dışa aktarma için UI referansları
+  const exportWatchlistBtn = document.getElementById('exportWatchlist');
+  const exportMessage = document.getElementById('exportMessage');
+  
+  // Mevcut API anahtarlarını yükle
+  loadApiKeys();
+  
+  // API anahtarı göster/gizle tuşlarını ayarla
+  setupPasswordToggle(tmdbApiKeyInput, showHideTmdbKeyBtn);
+  
+  // API anahtarı kaydetme butonuna tıklama olayı
+  saveApiKeysBtn.addEventListener('click', async () => {
+    try {
+      const tmdbKey = tmdbApiKeyInput.value.trim();
+      
+      if (!tmdbKey) {
+        showMessage(apiKeysMessage, 'Lütfen TMDB API anahtarını girin.', 'error');
+        return;
+      }
+      
+      // Başlangıçta her şeyi temizle
+      apiKeysMessage.style.display = 'none';
+      saveApiKeysBtn.disabled = true;
+      saveApiKeysBtn.textContent = 'Kaydediliyor...';
+      
+      const result = await window.watchflowAPI.saveApiKeys({
+        TMDB_API_KEY: tmdbKey
+      });
+      
+      if (result.success) {
+        // Önce buton durumunu normal haline getir
+        saveApiKeysBtn.textContent = 'API Anahtarını Kaydet';
+        
+        // Sonra başarı mesajını göster (gecikme olmadan doğru sıralama)
+        showMessage(apiKeysMessage, 'API anahtarı başarıyla kaydedildi!', 'success');
+        
+        // Mesajı ve butonu normal haline getir
+        setTimeout(() => {
+          saveApiKeysBtn.disabled = false;
+          apiKeysMessage.style.display = 'none';
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'API anahtarı kaydedilemedi.');
+      }
+    } catch (error) {
+      console.error('API anahtarı kaydedilirken hata:', error);
+      showMessage(apiKeysMessage, `Hata: ${error.message}`, 'error');
+      saveApiKeysBtn.disabled = false;
+      saveApiKeysBtn.textContent = 'API Anahtarını Kaydet';
+    }
+  });
+  
+  // Watchlist dışa aktarma butonuna tıklama olayı
+  exportWatchlistBtn.addEventListener('click', async () => {
+    // Electron dosya seçici dialog aç
+    try {
+      const { canceled, filePath } = await window.watchflowAPI.showSaveDialog({
+        title: 'İzleme Listesini Dışa Aktar',
+        defaultPath: 'watchlist.json',
+        filters: [{ name: 'JSON Dosyaları', extensions: ['json'] }],
+        properties: ['createDirectory', 'showOverwriteConfirmation']
+      });
+      
+      if (canceled || !filePath) {
+        return;
+      }
+      
+      exportWatchlistBtn.disabled = true;
+      exportWatchlistBtn.textContent = 'Dışa Aktarılıyor...';
+      
+      const result = await window.watchflowAPI.exportWatchlist(filePath);
+      
+      if (result.success) {
+        showMessage(exportMessage, `İzleme listesi başarıyla dışa aktarıldı: ${result.path}`, 'success');
+        
+        // Mesajı belirli bir süre sonra otomatik olarak gizle
+        setTimeout(() => {
+          exportMessage.style.display = 'none';
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'Dışa aktarma sırasında bir hata oluştu.');
+      }
+    } catch (error) {
+      console.error('İzleme listesi dışa aktarılırken hata:', error);
+      showMessage(exportMessage, `Hata: ${error.message}`, 'error');
+    } finally {
+      exportWatchlistBtn.disabled = false;
+      exportWatchlistBtn.textContent = 'İzleme Listesini Dışa Aktar';
+    }
+  });
+}
+
+// Mevcut API anahtarlarını yükle
+async function loadApiKeys() {
+  try {
+    const tmdbApiKeyInput = document.getElementById('tmdbApiKey');
+    
+    const apiKeys = await window.watchflowAPI.getApiKeys();
+    
+    if (apiKeys) {
+      // Gizli formata çevir
+      if (apiKeys.TMDB_API_KEY) {
+        tmdbApiKeyInput.value = '•'.repeat(apiKeys.TMDB_API_KEY.length);
+        tmdbApiKeyInput.dataset.value = apiKeys.TMDB_API_KEY;
+      }
+    }
+  } catch (error) {
+    console.error('API anahtarları yüklenirken hata:', error);
+  }
+}
+
+// Şifre göster/gizle toggle fonksiyonu
+function setupPasswordToggle(inputElement, buttonElement) {
+  let isShowing = false;
+  
+  buttonElement.addEventListener('click', () => {
+    if (isShowing) {
+      // Gizli formata geri döndür
+      if (inputElement.dataset.value) {
+        inputElement.value = '•'.repeat(inputElement.dataset.value.length);
+      } else {
+        inputElement.value = '';
+      }
+      buttonElement.textContent = 'Göster';
+    } else {
+      // Gerçek değeri göster
+      if (inputElement.dataset.value) {
+        inputElement.value = inputElement.dataset.value;
+      }
+      buttonElement.textContent = 'Gizle';
+    }
+    
+    isShowing = !isShowing;
+  });
+  
+  // Input değeri değiştiğinde
+  inputElement.addEventListener('input', () => {
+    // Eğer gösteriliyorsa dataset değerini güncelle
+    if (isShowing) {
+      inputElement.dataset.value = inputElement.value;
+    } else {
+      // Eğer • karakterleri dışında değişiklik yapıldıysa, dataset değerini güncelle
+      if (!inputElement.value.match(/^•+$/)) {
+        inputElement.dataset.value = inputElement.value;
+      }
+    }
+  });
+}
+
+// Mesaj gösterme yardımcı fonksiyonu
+function showMessage(element, message, type) {
+  element.textContent = message;
+  element.className = `settings-message ${type}`;
+  element.style.display = 'block';
 }
 
 // Tıklama olayı için örnek bir işleyici

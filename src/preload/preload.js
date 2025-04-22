@@ -13,6 +13,15 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
     }
   },
   
+  // Pencere kontrolleri
+  minimizeWindow: () => {
+    ipcRenderer.send('minimize-window');
+  },
+  
+  closeWindow: () => {
+    ipcRenderer.send('close-window');
+  },
+  
   // Film/Dizi araması yap (TMDB API)
   searchMovieTV: async (query, type = 'multi') => {
     try {
@@ -89,6 +98,26 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
       return await ipcRenderer.invoke('save-api-keys', keys);
     } catch (error) {
       console.error('API anahtarları kaydedilirken hata:', error);
+      throw error;
+    }
+  },
+  
+  // Watchlist verilerini dışa aktar
+  exportWatchlist: async (targetPath) => {
+    try {
+      return await ipcRenderer.invoke('export-watchlist', targetPath);
+    } catch (error) {
+      console.error('Watchlist dışa aktarılırken hata:', error);
+      throw error;
+    }
+  },
+  
+  // Dosya kaydetme dialog göster
+  showSaveDialog: async (options) => {
+    try {
+      return await ipcRenderer.invoke('show-save-dialog', options);
+    } catch (error) {
+      console.error('Dosya kaydetme dialog hatası:', error);
       throw error;
     }
   },
