@@ -1,0 +1,67 @@
+/* Puanlama Popup Stilleri */
+.rating-popup {
+  position: absolute;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  z-index: 1000;
+  min-width: 220px;
+  animation: fade-in 0.2s ease-out;
+}
+
+.rating-popup-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.rating-popup-stars {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.rating-popup-stars .star {
+  font-size: 24px;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin: 0 5px;
+  transition: color 0.2s, transform 0.1s;
+}
+
+.rating-popup-stars .star:hover,
+.rating-popup-stars .star.active {
+  color: var(--star-color);
+  transform: scale(1.1);
+}
+
+.rating-popup-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.rating-popup-cancel {
+  padding: 6px 12px;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.rating-popup-cancel:hover {
+  background-color: var(--hover-color);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+} 

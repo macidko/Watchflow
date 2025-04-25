@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const { jikanApi } = require('../api');
 const Store = require('electron-store');
 const fs = require('fs').promises;
+const axios = require('axios');
 
 // Ayarlar store'unu başlat
 const store = new Store({
@@ -311,6 +312,11 @@ ipcMain.handle('add-to-watchlist', async (event, item) => {
       dateAdded: item.dateAdded || new Date().toISOString()
     };
     
+    // Rating bilgisi varsa ekle
+    if (item.rating) {
+      itemToSave.rating = item.rating;
+    }
+    
     // Dizi ve anime için sezon bilgilerini al
     if (item.type === 'tv' || item.type === 'anime') {
       try {
@@ -556,5 +562,447 @@ ipcMain.handle('export-watchlist', async (event, targetPath) => {
   } catch (error) {
     console.error('İzleme listesi dışa aktarılırken hata:', error);
     return { success: false, error: error.message };
+  }
+});
+
+// Film/TV detaylarını getiren handler
+ipcMain.handle('get-movie-tv-details', async (event, {id, type}) => {
+  try {
+    const tmdbApiKey = store.get('TMDB_API_KEY');
+    if (!tmdbApiKey) {
+      throw new Error('TMDB API anahtarı bulunamadı');
+    }
+    
+    const url = `https://api.themoviedb.org/3/${type}/${id}?api_key=${tmdbApiKey}&language=en-US`;
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('TMDB detayları alınamadı:', error);
+    return null;
+  }
+});
+
+// Anime detaylarını getiren handler
+ipcMain.handle('get-anime-details', async (event, {id}) => {
+  try {
+    const url = `https://api.jikan.moe/v4/anime/${id}`;
+    const response = await axios.get(url);
+    return response.data.data;
+  } catch (error) {
+    console.error('Anime detayları alınamadı:', error);
+    return null;
+  }
+});
+
+// İçerik puanını güncelleme handler'ı
+ipcMain.handle('update-content-rating', async (event, data) => {
+  try {
+    const { mediaId, mediaType, rating } = data;
+    
+    // Watchlist dosyasının var olduğundan emin ol
+    await ensureWatchlistExists();
+    
+    // JSON'u oku
+    const watchlistData = await fs.readFile(watchlistPath, 'utf8');
+    const watchlist = JSON.parse(watchlistData);
+    
+    // İlgili öğeyi bul
+    const category = mediaType; // 'movie', 'tv', veya 'anime'
+    
+    // Öğeyi bul
+    const itemIndex = watchlist[category].findIndex(item => item.id === mediaId);
+    
+    if (itemIndex === -1) {
+      throw new Error('Öğe bulunamadı');
+    }
+    
+    // Kullanıcı puanını güncelle
+    watchlist[category][itemIndex].userRating = rating;
+    
+    // JSON'u güncelle
+    await fs.writeFile(watchlistPath, JSON.stringify(watchlist, null, 2));
+    
+    return { 
+      success: true,
+      userRating: rating
+    };
+  } catch (error) {
+    console.error('İçerik puanı güncellenirken hata:', error);
+    throw new Error('İçerik puanı güncellenemedi: ' + error.message);
+  }
+});
+
+// İzleme listesinden içerik kaldırma handler'ı
+ipcMain.handle('remove-from-watchlist', async (event, data) => {
+  try {
+    const { id, mediaType } = data;
+    
+    // İzleme listesi dosyasının var olduğundan emin ol
+    await ensureWatchlistExists();
+    
+    // JSON'u oku
+    const watchlistData = await fs.readFile(watchlistPath, 'utf8');
+    const watchlist = JSON.parse(watchlistData);
+    
+    // İlgili kategoriyi kontrol et
+    const category = mediaType; // 'movie', 'tv', veya 'anime'
+    
+    if (!watchlist[category]) {
+      throw new Error(`Geçersiz medya türü: ${mediaType}`);
+    }
+    
+    // ID'yi sayısal değere dönüştür (tür uyumsuzluğunu önle)
+    const itemId = Number(id);
+    
+    // Öğeyi bul
+    const itemIndex = watchlist[category].findIndex(item => Number(item.id) === itemId);
+    
+    if (itemIndex === -1) {
+      throw new Error('İzleme listesinden kaldırılacak öğe bulunamadı');
+    }
+    
+    // Mevcut içeriğin başlığı ve diğer bilgileri
+    const item = watchlist[category][itemIndex];
+    console.log(`İzleme listesinden kaldırılıyor: "${item.title}" (${category}), ID: ${itemId}`);
+    
+    // Öğeyi listeden kaldır
+    watchlist[category].splice(itemIndex, 1);
+    
+    // JSON'u güncelle
+    await fs.writeFile(watchlistPath, JSON.stringify(watchlist, null, 2));
+    
+    return { 
+      success: true,
+      message: `"${item.title}" izleme listesinden kaldırıldı`
+    };
+  } catch (error) {
+    console.error('İzleme listesinden kaldırma hatası:', error);
+    return { 
+      success: false, 
+      error: error.message 
+    };
+  }
+});
+
+// İçeriği izlendi olarak işaretle handler'ı
+ipcMain.handle('mark-as-watched', async (event, data) => {
+  try {
+    const { id, mediaType } = data;
+    
+    // Watchlist dosyasının var olduğundan emin ol
+    await ensureWatchlistExists();
+    
+    // JSON'u oku
+    const watchlistData = await fs.readFile(watchlistPath, 'utf8');
+    const watchlist = JSON.parse(watchlistData);
+    
+    // İlgili kategoriyi kontrol et
+    const category = mediaType; // 'movie', 'tv', veya 'anime'
+    
+    if (!watchlist[category]) {
+      throw new Error(`Geçersiz medya türü: ${mediaType}`);
+    }
+    
+    // ID'yi sayısal değere dönüştür (tür uyumsuzluğunu önle)
+    const itemId = Number(id);
+    
+    // Öğeyi bul
+    const itemIndex = watchlist[category].findIndex(item => Number(item.id) === itemId);
+    
+    if (itemIndex === -1) {
+      throw new Error('İşaretlenecek öğe bulunamadı');
+    }
+    
+    // Mevcut içeriğin başlığı ve diğer bilgileri
+    const item = watchlist[category][itemIndex];
+    console.log(`İzlendi olarak işaretleniyor: "${item.title}" (${category}), ID: ${itemId}`);
+    
+    // Durum bilgisini güncelle
+    watchlist[category][itemIndex].status = 'izlendi';
+    
+    // Film ise direkt izlendi olarak işaretle, dizi/anime ise tüm bölümleri izlendi olarak işaretle
+    if (mediaType === 'tv' || mediaType === 'anime') {
+      // Eğer seasons bilgisi varsa
+      if (item.seasons && item.seasons.length > 0) {
+        // Tüm bölümleri izlendi olarak işaretle
+        let watchedEpisodes = [];
+        
+        item.seasons.forEach(season => {
+          const seasonNumber = season.seasonNumber;
+          const episodeCount = season.episodeCount;
+          
+          // Her bölüm için izlendi kaydı ekle
+          for (let i = 1; i <= episodeCount; i++) {
+            watchedEpisodes.push(`s${seasonNumber}e${i}`);
+          }
+        });
+        
+        // İzlenen bölümleri güncelle
+        watchlist[category][itemIndex].watchedEpisodes = watchedEpisodes;
+      }
+    }
+    
+    // Güncelleme tarihi ekle
+    watchlist[category][itemIndex].updatedAt = new Date().toISOString();
+    
+    // JSON'u güncelle
+    await fs.writeFile(watchlistPath, JSON.stringify(watchlist, null, 2));
+    
+    return { 
+      success: true,
+      message: `"${item.title}" izlendi olarak işaretlendi`
+    };
+  } catch (error) {
+    console.error('İzlendi olarak işaretleme hatası:', error);
+    return { 
+      success: false, 
+      error: error.message 
+    };
+  }
+});
+
+// Özel slider oluşturma handler'ı
+ipcMain.handle('create-custom-slider', async (event, slider) => {
+  try {
+    // Watchlist dosyasının var olduğundan emin ol
+    await ensureWatchlistExists();
+    
+    // JSON'u oku
+    const watchlistData = await fs.readFile(watchlistPath, 'utf8');
+    const watchlist = JSON.parse(watchlistData);
+    
+    // sliders array'i yoksa oluştur
+    if (!watchlist.sliders) {
+      watchlist.sliders = [];
+    }
+    
+    // ID çakışması var mı kontrol et
+    const existingSlider = watchlist.sliders.find(s => s.id === slider.id);
+    if (existingSlider) {
+      return { success: false, error: 'Bu ID ile bir slider zaten var' };
+    }
+    
+    // Yeni Kategori'ı ekle
+    watchlist.sliders.push(slider);
+    
+    // JSON'u güncelle
+    await fs.writeFile(watchlistPath, JSON.stringify(watchlist, null, 2));
+    
+    return { success: true, slider };
+  } catch (error) {
+    console.error('Slider oluşturma hatası:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Özel slider güncelleme handler'ı
+ipcMain.handle('update-custom-slider', async (event, updatedSlider) => {
+  try {
+    // Watchlist dosyasının var olduğundan emin ol
+    await ensureWatchlistExists();
+    
+    // JSON'u oku
+    const watchlistData = await fs.readFile(watchlistPath, 'utf8');
+    const watchlist = JSON.parse(watchlistData);
+    
+    // sliders array'i yoksa hata döndür
+    if (!watchlist.sliders) {
+      return { success: false, error: 'Sliders dizisi bulunamadı' };
+    }
+    
+    // Slider'ı bul
+    const sliderIndex = watchlist.sliders.findIndex(s => s.id === updatedSlider.id);
+    if (sliderIndex === -1) {
+      return { success: false, error: 'Güncellenecek slider bulunamadı' };
+    }
+    
+    // Slider'ı güncelle
+    watchlist.sliders[sliderIndex] = updatedSlider;
+    
+    // JSON'u güncelle
+    await fs.writeFile(watchlistPath, JSON.stringify(watchlist, null, 2));
+    
+    return { success: true, slider: updatedSlider };
+  } catch (error) {
+    console.error('Slider güncelleme hatası:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Özel slider silme handler'ı
+ipcMain.handle('delete-custom-slider', async (event, sliderId) => {
+  try {
+    // Watchlist dosyasının var olduğundan emin ol
+    await ensureWatchlistExists();
+    
+    // JSON'u oku
+    const watchlistData = await fs.readFile(watchlistPath, 'utf8');
+    const watchlist = JSON.parse(watchlistData);
+    
+    // sliders array'i yoksa hata döndür
+    if (!watchlist.sliders) {
+      return { success: false, error: 'Sliders dizisi bulunamadı' };
+    }
+    
+    // Slider'ı bul
+    const sliderIndex = watchlist.sliders.findIndex(s => s.id === sliderId);
+    if (sliderIndex === -1) {
+      return { success: false, error: 'Silinecek slider bulunamadı' };
+    }
+    
+    // Slider'ı sil
+    watchlist.sliders.splice(sliderIndex, 1);
+    
+    // JSON'u güncelle
+    await fs.writeFile(watchlistPath, JSON.stringify(watchlist, null, 2));
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Slider silme hatası:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Slider'a öğe ekleme handler'ı
+ipcMain.handle('add-item-to-slider', async (event, sliderId, itemId, mediaType) => {
+  try {
+    // Watchlist dosyasının var olduğundan emin ol
+    await ensureWatchlistExists();
+    
+    // JSON'u oku
+    const watchlistData = await fs.readFile(watchlistPath, 'utf8');
+    const watchlist = JSON.parse(watchlistData);
+    
+    // sliders array'i yoksa hata döndür
+    if (!watchlist.sliders) {
+      return { success: false, error: 'Sliders dizisi bulunamadı' };
+    }
+    
+    // Slider'ı bul
+    const sliderIndex = watchlist.sliders.findIndex(s => s.id === sliderId);
+    if (sliderIndex === -1) {
+      return { success: false, error: 'Slider bulunamadı' };
+    }
+    
+    // itemIds nesnesini kontrol et
+    if (!watchlist.sliders[sliderIndex].itemIds) {
+      watchlist.sliders[sliderIndex].itemIds = { movie: [], tv: [], anime: [] };
+    }
+    
+    // İlgili medya türü için array'i kontrol et
+    if (!watchlist.sliders[sliderIndex].itemIds[mediaType]) {
+      watchlist.sliders[sliderIndex].itemIds[mediaType] = [];
+    }
+    
+    // Öğeyi ekleyecek mi kontrol et
+    if (!watchlist.sliders[sliderIndex].itemIds[mediaType].includes(itemId)) {
+      watchlist.sliders[sliderIndex].itemIds[mediaType].push(itemId);
+    }
+    
+    // JSON'u güncelle
+    await fs.writeFile(watchlistPath, JSON.stringify(watchlist, null, 2));
+    
+    return { success: true, slider: watchlist.sliders[sliderIndex] };
+  } catch (error) {
+    console.error('Öğe ekleme hatası:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Slider'dan öğe kaldırma handler'ı
+ipcMain.handle('remove-item-from-slider', async (event, sliderId, itemId, mediaType) => {
+  try {
+    // Watchlist dosyasının var olduğundan emin ol
+    await ensureWatchlistExists();
+    
+    // JSON'u oku
+    const watchlistData = await fs.readFile(watchlistPath, 'utf8');
+    const watchlist = JSON.parse(watchlistData);
+    
+    // sliders array'i yoksa hata döndür
+    if (!watchlist.sliders) {
+      return { success: false, error: 'Sliders dizisi bulunamadı' };
+    }
+    
+    // Slider'ı bul
+    const sliderIndex = watchlist.sliders.findIndex(s => s.id === sliderId);
+    if (sliderIndex === -1) {
+      return { success: false, error: 'Slider bulunamadı' };
+    }
+    
+    // itemIds nesnesini ve medya türünü kontrol et
+    if (!watchlist.sliders[sliderIndex].itemIds || 
+        !watchlist.sliders[sliderIndex].itemIds[mediaType]) {
+      return { success: false, error: 'Bu medya türü için öğe bulunamadı' };
+    }
+    
+    // Öğenin indeksini bul
+    const itemIndex = watchlist.sliders[sliderIndex].itemIds[mediaType].indexOf(itemId);
+    if (itemIndex === -1) {
+      return { success: false, error: 'Öğe bulunamadı' };
+    }
+    
+    // Öğeyi kaldır
+    watchlist.sliders[sliderIndex].itemIds[mediaType].splice(itemIndex, 1);
+    
+    // JSON'u güncelle
+    await fs.writeFile(watchlistPath, JSON.stringify(watchlist, null, 2));
+    
+    return { success: true, slider: watchlist.sliders[sliderIndex] };
+  } catch (error) {
+    console.error('Öğe kaldırma hatası:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Favorilerden kaldırma handler'ı
+ipcMain.handle('remove-from-favorites', async (event, data) => {
+  try {
+    const { id, mediaType } = data;
+    
+    // Favori dosyasının var olduğundan emin ol
+    await ensureFavoritesExists();
+    
+    // JSON'u oku
+    const favoritesData = await fs.readFile(favoritesPath, 'utf8');
+    const favorites = JSON.parse(favoritesData);
+    
+    // İlgili kategoriyi kontrol et
+    const category = mediaType; // 'movie', 'tv', veya 'anime'
+    
+    if (!favorites[category]) {
+      throw new Error(`Geçersiz medya türü: ${mediaType}`);
+    }
+    
+    // ID'yi sayısal değere dönüştür (tür uyumsuzluğunu önle)
+    const itemId = Number(id);
+    
+    // Öğeyi bul
+    const itemIndex = favorites[category].findIndex(item => Number(item.id) === itemId);
+    
+    if (itemIndex === -1) {
+      throw new Error('Favorilerden kaldırılacak öğe bulunamadı');
+    }
+    
+    // Mevcut içeriğin başlığı ve diğer bilgileri
+    const item = favorites[category][itemIndex];
+    console.log(`Favorilerden kaldırılıyor: "${item.title}" (${category}), ID: ${itemId}`);
+    
+    // Öğeyi listeden kaldır
+    favorites[category].splice(itemIndex, 1);
+    
+    // JSON'u güncelle
+    await fs.writeFile(favoritesPath, JSON.stringify(favorites, null, 2));
+    
+    return { 
+      success: true,
+      message: `"${item.title}" favorilerden kaldırıldı`
+    };
+  } catch (error) {
+    console.error('Favorilerden kaldırma hatası:', error);
+    return { 
+      success: false, 
+      error: error.message 
+    };
   }
 }); 

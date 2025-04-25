@@ -22,22 +22,42 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
     ipcRenderer.send('close-window');
   },
   
-  // Film/Dizi araması yap (TMDB API)
-  searchMovieTV: async (query, type = 'multi') => {
+  // TMDB API ile arama yap
+  searchTMDB: async (query, type = 'multi') => {
     try {
       return await ipcRenderer.invoke('search-tmdb', query, type);
     } catch (error) {
-      console.error('Film/Dizi araması sırasında hata:', error);
+      console.error('TMDB araması sırasında hata:', error);
       throw error;
     }
   },
   
-  // Anime araması yap (Jikan API)
-  searchAnime: async (query) => {
+  // Jikan API ile arama yap
+  searchJikan: async (query) => {
     try {
       return await ipcRenderer.invoke('search-jikan', query);
     } catch (error) {
-      console.error('Anime araması sırasında hata:', error);
+      console.error('Jikan araması sırasında hata:', error);
+      throw error;
+    }
+  },
+  
+  // Film/Dizi detayları al (TMDB API)
+  getMovieTVDetails: async (id, type) => {
+    try {
+      return await ipcRenderer.invoke('get-movie-tv-details', {id, type});
+    } catch (error) {
+      console.error('Film/Dizi detayları alınırken hata:', error);
+      throw error;
+    }
+  },
+  
+  // Anime detayları al (Jikan API)
+  getAnimeDetails: async (id) => {
+    try {
+      return await ipcRenderer.invoke('get-anime-details', {id});
+    } catch (error) {
+      console.error('Anime detayları alınırken hata:', error);
       throw error;
     }
   },
@@ -102,6 +122,36 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
     }
   },
   
+  // İçerik puanını güncelle
+  updateContentRating: async (data) => {
+    try {
+      return await ipcRenderer.invoke('update-content-rating', data);
+    } catch (error) {
+      console.error('İçerik puanı güncellenirken hata:', error);
+      throw error;
+    }
+  },
+  
+  // İzleme listesinden içeriği kaldır
+  removeFromWatchlist: async (id, mediaType) => {
+    try {
+      return await ipcRenderer.invoke('remove-from-watchlist', { id, mediaType });
+    } catch (error) {
+      console.error('İzleme listesinden kaldırma hatası:', error);
+      throw error;
+    }
+  },
+  
+  // İçeriği izlendi olarak işaretle
+  markAsWatched: async (id, mediaType) => {
+    try {
+      return await ipcRenderer.invoke('mark-as-watched', { id, mediaType });
+    } catch (error) {
+      console.error('İzlendi olarak işaretleme hatası:', error);
+      throw error;
+    }
+  },
+  
   // Watchlist verilerini dışa aktar
   exportWatchlist: async (targetPath) => {
     try {
@@ -144,6 +194,56 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
   // Dış bağlantıyı tarayıcıda aç
   openExternalLink: (url) => {
     shell.openExternal(url);
+  },
+  
+  // Özel slider oluştur
+  createCustomSlider: async (slider) => {
+    try {
+      return await ipcRenderer.invoke('create-custom-slider', slider);
+    } catch (error) {
+      console.error('Özel slider oluşturulurken hata:', error);
+      throw error;
+    }
+  },
+  
+  // Özel slider güncelle
+  updateCustomSlider: async (slider) => {
+    try {
+      return await ipcRenderer.invoke('update-custom-slider', slider);
+    } catch (error) {
+      console.error('Özel slider güncellenirken hata:', error);
+      throw error;
+    }
+  },
+  
+  // Özel slider sil
+  deleteCustomSlider: async (sliderId) => {
+    try {
+      return await ipcRenderer.invoke('delete-custom-slider', sliderId);
+    } catch (error) {
+      console.error('Özel slider silinirken hata:', error);
+      throw error;
+    }
+  },
+  
+  // Slider'a öğe ekle
+  addItemToSlider: async (sliderId, itemId, mediaType) => {
+    try {
+      return await ipcRenderer.invoke('add-item-to-slider', sliderId, itemId, mediaType);
+    } catch (error) {
+      console.error('Slider öğesi eklenirken hata:', error);
+      throw error;
+    }
+  },
+  
+  // Slider'dan öğe kaldır
+  removeItemFromSlider: async (sliderId, itemId, mediaType) => {
+    try {
+      return await ipcRenderer.invoke('remove-item-from-slider', sliderId, itemId, mediaType);
+    } catch (error) {
+      console.error('Slider öğesi kaldırılırken hata:', error);
+      throw error;
+    }
   }
 });
 

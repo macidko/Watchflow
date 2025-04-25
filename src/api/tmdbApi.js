@@ -40,7 +40,7 @@ const searchMedia = async (searchText, type = 'multi', apiKey = TMDB_API_KEY) =>
     }
     
     const response = await fetch(
-      `${TMDB_API_BASE_URL}${endpoint}?api_key=${apiKey}&query=${encodeURIComponent(searchText)}&language=tr-TR`
+      `${TMDB_API_BASE_URL}${endpoint}?api_key=${apiKey}&query=${encodeURIComponent(searchText)}&language=en-US`
     );
     
     if (!response.ok) {
@@ -87,7 +87,7 @@ const getTvShowSeasons = async (tvId, apiKey = TMDB_API_KEY) => {
     
     // TV şovunun detaylarını al
     const showResponse = await fetch(
-      `${TMDB_API_BASE_URL}/tv/${tvId}?api_key=${apiKey}&language=tr-TR`
+      `${TMDB_API_BASE_URL}/tv/${tvId}?api_key=${apiKey}&language=en-US`
     );
     
     if (!showResponse.ok) {
@@ -107,7 +107,7 @@ const getTvShowSeasons = async (tvId, apiKey = TMDB_API_KEY) => {
       
       // Her sezon için detaylı bölüm bilgilerini alalım
       const seasonResponse = await fetch(
-        `${TMDB_API_BASE_URL}/tv/${tvId}/season/${season.season_number}?api_key=${apiKey}&language=tr-TR`
+        `${TMDB_API_BASE_URL}/tv/${tvId}/season/${season.season_number}?api_key=${apiKey}&language=en-US`
       );
       
       if (!seasonResponse.ok) {

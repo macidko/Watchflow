@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // İzleme listesi verilerini yükle ve UI'ı güncelle
     loadWatchlist();
     
+    // Slider ekleme butonlarını aktifleştir
+    setupSliderButtons();
+    
     // Pencere kontrol butonlarını ayarla
     setupWindowControls();
     
@@ -64,6 +67,11 @@ async function loadWatchlist() {
     renderWatchlistItems('movie', watchlist.movie || []);
     renderWatchlistItems('tv', watchlist.tv || []);
     renderWatchlistItems('anime', watchlist.anime || []);
+    
+    // Özel sliderları render et
+    if (watchlist.sliders && watchlist.sliders.length > 0) {
+      renderCustomSliders(watchlist);
+    }
     
     // İçerikleri detaylar butonu
     document.querySelectorAll('.watchlist-item-details-button').forEach(button => {
@@ -132,22 +140,60 @@ function fillSlider(container, items, mediaType, sliderId) {
     const card = document.createElement('div');
     card.className = 'media-card';
     
+    // Puanlama bilgisi
+    let ratingsHTML = '';
+    
+    if (item.rating || item.userRating) {
+      ratingsHTML = `<div class="media-card-ratings">`;
+      
+      if (item.rating) {
+        ratingsHTML += `<div class="media-card-rating platform">
+          <span class="star-icon">★</span> ${Number(item.rating).toFixed(1)}
+        </div>`;
+      }
+      
+      if (item.userRating) {
+        ratingsHTML += `<div class="media-card-rating user">
+          <span class="star-icon">★</span> ${Number(item.userRating).toFixed(1)}
+        </div>`;
+      }
+      
+      ratingsHTML += `</div>`;
+    }
+    
+    // Puan ekleme butonu
+    let ratingAddHTML = '';
+    if (!item.userRating) {
+      ratingAddHTML = `<div class="media-card-rating-add" data-id="${item.id}" data-type="${mediaType}">
+        <span class="add-rating-icon">+</span>
+      </div>`;
+    }
+    
     // Varsayılan resim
     const placeholderImage = '../assets/no-image.jpg';
     
     // Kart içeriği
     card.innerHTML = `
+      ${ratingsHTML}
+      ${ratingAddHTML}
       <img src="${item.imageUrl || placeholderImage}" class="media-card-image" 
            alt="${item.title}" onerror="this.src='${placeholderImage}'">
       <div class="media-card-content">
         <div class="media-card-title" title="${item.title}">${item.title}</div>
         <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
-        <div class="media-card-meta">
-          ${item.totalSeasons ? 
-            `<span class="media-card-seasons">${item.totalSeasons} Sezon</span>` : ''}
-        </div>
+        ${item.totalSeasons ? 
+          `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
       </div>
     `;
+    
+    // Puan ekleme butonuna tıklama olayı ekle
+    const ratingAddButton = card.querySelector('.media-card-rating-add');
+    if (ratingAddButton) {
+      ratingAddButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Kart tıklamasını engelle
+        showRatingPopup(item, mediaType, ratingAddButton);
+      });
+    }
     
     // Karta tıklama olayı ekle
     card.addEventListener('click', () => {
@@ -218,10 +264,6 @@ function showMediaDetails(item, mediaType) {
     existingPopup.remove();
   }
   
-  // Popup oluştur
-  const popupOverlay = document.createElement('div');
-  popupOverlay.className = 'media-popup-overlay';
-  
   // İzlenen bölümleri al - doğrudan item'dan gelen diziyi kullan
   const watchedEpisodes = item.watchedEpisodes || [];
   
@@ -230,7 +272,10 @@ function showMediaDetails(item, mediaType) {
   const watchedCount = watchedEpisodes.length;
   const progressPercent = totalEpisodes > 0 ? Math.round((watchedCount / totalEpisodes) * 100) : 0;
   
-  // Popup içeriğini oluştur (inline style kullanmadan)
+  // Popup oluştur
+  const popupOverlay = document.createElement('div');
+  popupOverlay.className = 'media-popup-overlay';
+  
   popupOverlay.innerHTML = `
     <div class="media-popup">
       <div class="media-popup-header">
@@ -238,6 +283,15 @@ function showMediaDetails(item, mediaType) {
         <button class="media-popup-close">&times;</button>
       </div>
       <div class="media-popup-body">
+        <div class="rating-container">
+          <div class="user-rating">
+            <span class="rating-label">Senin Puanın:</span>
+            <div class="rating-stars" data-media-id="${item.id}" data-media-type="${mediaType}">
+              ${generateStarRating(item.userRating || 0)}
+            </div>
+          </div>
+        </div>
+        
         <div class="progress-container">
           <div class="progress-bar-container">
             <div class="progress-bar" id="progress-bar"></div>
@@ -265,6 +319,65 @@ function showMediaDetails(item, mediaType) {
   const progressBar = popupOverlay.querySelector('#progress-bar');
   if (progressBar) {
     progressBar.style.width = `${progressPercent}%`;
+  }
+  
+  // Yıldız derecelendirme sistemine olay ekle
+  const ratingStars = popupOverlay.querySelector('.rating-stars');
+  if (ratingStars) {
+    const stars = ratingStars.querySelectorAll('.star');
+    stars.forEach((star, index) => {
+      // Yıldızın üzerine gelindiğinde
+      star.addEventListener('mouseover', () => {
+        // Mevcut yıldıza kadar olanları doldur
+        for (let i = 0; i <= index; i++) {
+          stars[i].textContent = '★'; // Dolu yıldız
+          stars[i].classList.add('hover');
+        }
+        // Sonraki yıldızları boşalt
+        for (let i = index + 1; i < stars.length; i++) {
+          stars[i].textContent = '☆'; // Boş yıldız
+          stars[i].classList.remove('hover');
+        }
+      });
+      
+      // Yıldızdan çıkıldığında
+      star.addEventListener('mouseout', () => {
+        stars.forEach(s => s.classList.remove('hover'));
+        // Mevcut puanı yansıt
+        updateStarDisplay(stars, parseInt(ratingStars.getAttribute('data-rating') || 0));
+      });
+      
+      // Yıldıza tıklandığında
+      star.addEventListener('click', async () => {
+        const rating = index + 1; // 1-5 arası puan
+        const mediaId = ratingStars.getAttribute('data-media-id');
+        const mediaType = ratingStars.getAttribute('data-media-type');
+        
+        // Puanı kaydet
+        try {
+          const result = await window.watchflowAPI.updateContentRating({
+            mediaId: parseInt(mediaId),
+            mediaType: mediaType,
+            rating: rating
+          });
+          
+          if (result.success) {
+            // Yıldız görünümünü güncelle
+            ratingStars.setAttribute('data-rating', rating.toString());
+            updateStarDisplay(stars, rating);
+            
+            // Ana nesnedeki değeri güncelle
+            item.userRating = rating;
+            
+            // Arka plandaki sliderları güncelle
+            loadWatchlist();
+          }
+        } catch (error) {
+          console.error('Puan güncellenirken hata:', error);
+          alert('Puan güncellenirken bir hata oluştu: ' + error.message);
+        }
+      });
+    });
   }
   
   // Kapatma butonuna tıklama olayı ekle
@@ -438,34 +551,56 @@ function updateProgressBar(popupElement, item) {
 // İzleme listesinden kaldır
 async function removeFromWatchlist(id, mediaType) {
   try {
-    // API çağrısı burada yapılmalı
+    // API çağrısı yapılıyor
     console.log(`İzleme listesinden kaldırılıyor: ID ${id}, Tür: ${mediaType}`);
     
-    // Şimdilik basit bir onay mesajı ve yeniden yükleme
-    alert('İçerik izleme listenizden kaldırıldı!');
-    
-    // Listeyi yeniden yükle
-    loadWatchlist();
+    // Onay penceresi göster
+    if (confirm("Bu içeriği izleme listenizden kaldırmak istediğinize emin misiniz?")) {
+      const result = await window.watchflowAPI.removeFromWatchlist(id, mediaType);
+      
+      if (result.success) {
+        // Başarı durumunda bildirim göster (isteğe bağlı)
+        // alert(result.message);
+        
+        // Listeyi yeniden yükle
+        loadWatchlist();
+      } else {
+        throw new Error(result.error || 'Bilinmeyen bir hata oluştu');
+      }
+    }
   } catch (error) {
     console.error('İzleme listesinden kaldırma hatası:', error);
-    alert('İçerik kaldırılırken bir hata oluştu.');
+    alert('İçerik kaldırılırken bir hata oluştu: ' + error.message);
   }
 }
 
 // İzlendi olarak işaretle
 async function markAsWatched(id, mediaType) {
   try {
-    // API çağrısı burada yapılmalı
+    // API çağrısı yapılıyor
     console.log(`İzlendi olarak işaretleniyor: ID ${id}, Tür: ${mediaType}`);
     
-    // Şimdilik basit bir onay mesajı ve yeniden yükleme
-    alert('İçerik izlendi olarak işaretlendi!');
+    // Onay penceresi göster
+    const confirmMessage = mediaType === 'movie' 
+      ? "Bu filmi izlendi olarak işaretlemek istediğinize emin misiniz?" 
+      : "Bu içeriği ve TÜM bölümlerini izlendi olarak işaretlemek istediğinize emin misiniz?";
     
-    // Listeyi yeniden yükle
-    loadWatchlist();
+    if (confirm(confirmMessage)) {
+      const result = await window.watchflowAPI.markAsWatched(id, mediaType);
+      
+      if (result.success) {
+        // Başarı durumunda bildirim göster (isteğe bağlı)
+        // alert(result.message);
+        
+        // Listeyi yeniden yükle
+        loadWatchlist();
+      } else {
+        throw new Error(result.error || 'Bilinmeyen bir hata oluştu');
+      }
+    }
   } catch (error) {
     console.error('İzlendi olarak işaretleme hatası:', error);
-    alert('İçerik işaretlenirken bir hata oluştu.');
+    alert('İçerik işaretlenirken bir hata oluştu: ' + error.message);
   }
 }
 
@@ -615,11 +750,11 @@ async function performSearch() {
     
     // Seçilen arama türüne göre API çağır
     if (searchType === 'movie') {
-      results = await window.watchflowAPI.searchMovieTV(query, 'movie');
+      results = await window.watchflowAPI.searchTMDB(query, 'movie');
     } else if (searchType === 'tv') {
-      results = await window.watchflowAPI.searchMovieTV(query, 'tv');
+      results = await window.watchflowAPI.searchTMDB(query, 'tv');
     } else if (searchType === 'anime') {
-      results = await window.watchflowAPI.searchAnime(query);
+      results = await window.watchflowAPI.searchJikan(query);
     }
     
     // Sonuçları görüntüle
@@ -748,6 +883,25 @@ async function addToWatchlist(item, button) {
     const originalText = button.textContent.trim();
     button.disabled = true;
     button.textContent = 'Ekleniyor...';
+
+    // Puan bilgisini API'den al
+    if (!item.rating && item.id) {
+      try {
+        let ratingData;
+        if (item.type === 'movie' || item.type === 'tv') {
+          ratingData = await window.watchflowAPI.getMovieTVDetails(item.id, item.type);
+        } else if (item.type === 'anime') {
+          ratingData = await window.watchflowAPI.getAnimeDetails(item.id);
+        }
+        
+        if (ratingData) {
+          // TMDB için vote_average, Jikan için score kullanılır
+          item.rating = ratingData.vote_average || ratingData.score || null;
+        }
+      } catch (error) {
+        console.warn('Puan bilgisi alınamadı:', error);
+      }
+    }
 
     // Öğeyi izleme listesine eklemek için preload.js aracılığıyla main process'e gönder
     const result = await window.watchflowAPI.addToWatchlist(item);
@@ -956,6 +1110,815 @@ function showMessage(element, message, type) {
   element.textContent = message;
   element.className = `settings-message ${type}`;
   element.style.display = 'block';
+}
+
+// Yıldız puanlama sistemi oluştur (1-5 arası)
+function generateStarRating(currentRating) {
+  let starsHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const starChar = i <= currentRating ? '★' : '☆'; // Dolu veya boş yıldız
+    starsHTML += `<span class="star" data-value="${i}">${starChar}</span>`;
+  }
+  return starsHTML;
+}
+
+// Yıldız görünümünü güncelle
+function updateStarDisplay(stars, rating) {
+  stars.forEach((star, index) => {
+    if (index < rating) {
+      star.textContent = '★'; // Dolu yıldız
+    } else {
+      star.textContent = '☆'; // Boş yıldız
+    }
+  });
+}
+
+// Puanlama popup'ını göster
+function showRatingPopup(item, mediaType, button) {
+  // Eğer mevcut bir popup varsa kaldır
+  const existingPopup = document.querySelector('.rating-popup');
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+  
+  // Popup'ı oluştur
+  const popup = document.createElement('div');
+  popup.className = 'rating-popup';
+  
+  // Popupı pozisyonla (mümkünse butonun yakınına)
+  const buttonRect = button.getBoundingClientRect();
+  
+  // Popup içeriği
+  popup.innerHTML = `
+    <div class="rating-popup-title">Puanla: ${item.title}</div>
+    <div class="rating-popup-stars" data-media-id="${item.id}" data-media-type="${mediaType}">
+      ${generateStarRating(item.userRating || 0)}
+    </div>
+    <div class="rating-popup-actions">
+      <button class="rating-popup-cancel">İptal</button>
+    </div>
+  `;
+  
+  // Popup'ı sayfaya ekle ve konumlandır
+  document.body.appendChild(popup);
+  
+  // Popup'ı butonun yakınına konumlandır
+  const popupRect = popup.getBoundingClientRect();
+  
+  // Ekranın sağına taşıyorsa sola konumlandır
+  let left = buttonRect.left;
+  if (left + popupRect.width > window.innerWidth) {
+    left = window.innerWidth - popupRect.width - 10;
+  }
+  
+  // Ekranın altına taşıyorsa yukarı konumlandır
+  let top = buttonRect.bottom + 5;
+  if (top + popupRect.height > window.innerHeight) {
+    top = buttonRect.top - popupRect.height - 5;
+  }
+  
+  popup.style.left = `${left}px`;
+  popup.style.top = `${top}px`;
+  
+  // Yıldız derecelendirme sistemine olay ekle
+  const ratingStars = popup.querySelector('.rating-popup-stars');
+  const stars = ratingStars.querySelectorAll('.star');
+  
+  stars.forEach((star, index) => {
+    // Yıldızın üzerine gelindiğinde
+    star.addEventListener('mouseover', () => {
+      // Mevcut yıldıza kadar olanları doldur
+      for (let i = 0; i <= index; i++) {
+        stars[i].textContent = '★'; // Dolu yıldız
+        stars[i].classList.add('hover');
+      }
+      // Sonraki yıldızları boşalt
+      for (let i = index + 1; i < stars.length; i++) {
+        stars[i].textContent = '☆'; // Boş yıldız
+        stars[i].classList.remove('hover');
+      }
+    });
+    
+    // Yıldızdan çıkıldığında
+    star.addEventListener('mouseout', () => {
+      stars.forEach(s => s.classList.remove('hover'));
+      // Mevcut puanı yansıt
+      updateStarDisplay(stars, parseInt(ratingStars.getAttribute('data-rating') || 0));
+    });
+    
+    // Yıldıza tıklandığında
+    star.addEventListener('click', async () => {
+      const rating = index + 1; // 1-5 arası puan
+      const mediaId = parseInt(ratingStars.getAttribute('data-media-id'));
+      const mediaType = ratingStars.getAttribute('data-media-type');
+      
+      // Puanı kaydet
+      try {
+        const result = await window.watchflowAPI.updateContentRating({
+          mediaId: mediaId,
+          mediaType: mediaType,
+          rating: rating
+        });
+        
+        if (result.success) {
+          // Popup'ı kapat
+          popup.remove();
+          
+          // Kart üzerindeki puanı hemen güncelle
+          const card = button.closest('.media-card');
+          if (card) {
+            // Mevcut puan eklemesini veya göstergesini kaldır
+            const existingRating = card.querySelector('.media-card-rating-add');
+            if (existingRating) {
+              existingRating.remove();
+            }
+            
+            // Yeni kullanıcı puanını ekle
+            const userRatingDiv = document.createElement('div');
+            userRatingDiv.className = 'media-card-rating user';
+            userRatingDiv.innerHTML = `
+              <span class="star-icon">★</span> ${Number(rating).toFixed(1)}
+            `;
+            
+            // Eğer platform puanı varsa ondan sonra ekleyelim
+            const platformRating = card.querySelector('.media-card-rating.platform');
+            if (platformRating) {
+              platformRating.after(userRatingDiv);
+            } else {
+              // Yoksa kartın başına ekleyelim
+              card.prepend(userRatingDiv);
+            }
+          }
+          
+          // İtem nesnesini de güncelle (detaylar için erişim sağlamak üzere)
+          item.userRating = rating;
+          
+          // İzleme listesini yeniden yükle
+          loadWatchlist();
+        }
+      } catch (error) {
+        console.error('Puan güncellenirken hata:', error);
+        alert('Puan güncellenirken bir hata oluştu: ' + error.message);
+      }
+    });
+  });
+  
+  // İptal butonuna tıklama olayı
+  const cancelButton = popup.querySelector('.rating-popup-cancel');
+  cancelButton.addEventListener('click', () => {
+    popup.remove();
+  });
+  
+  // Popup dışına tıklandığında kapat
+  document.addEventListener('click', function closePopup(e) {
+    if (!popup.contains(e.target) && e.target !== button) {
+      popup.remove();
+      document.removeEventListener('click', closePopup);
+    }
+  });
+}
+
+// Özel sliderları render et
+function renderCustomSliders(watchlist) {
+  // Özel sliderlar için container alacağımız sayfaları seçelim
+  const pages = ['home-page', 'movies-page', 'series-page', 'anime-page'];
+  
+  // Her sayfa için
+  pages.forEach(pageId => {
+    const pageContainer = document.getElementById(pageId);
+    if (!pageContainer) return;
+    
+    // Önce eski özel sliderları temizle (statik sliderları koruyarak)
+    const existingCustomSliders = pageContainer.querySelectorAll('.slider-section.custom-slider');
+    existingCustomSliders.forEach(slider => slider.remove());
+    
+    // Her özel slider için
+    watchlist.sliders.forEach(slider => {
+      // Özel slider section oluştur
+      const sliderSection = document.createElement('div');
+      sliderSection.className = 'slider-section custom-slider';
+      sliderSection.setAttribute('data-slider-id', slider.id);
+      
+      // Slider başlığını ve düzenleme butonunu ekle
+      sliderSection.innerHTML = `
+        <div class="slider-header">
+          <h3>${slider.name}</h3>
+          <div class="slider-actions">
+            <button class="slider-edit-btn" data-slider-id="${slider.id}">Düzenle</button>
+            <button class="slider-delete-btn" data-slider-id="${slider.id}">Sil</button>
+          </div>
+        </div>
+        <div class="slider-container">
+          <div class="slider-content" id="${slider.id}"></div>
+        </div>
+      `;
+      
+      // Slider'ı sayfaya ekle
+      pageContainer.appendChild(sliderSection);
+      
+      // Slider içeriğini doldur
+      fillCustomSlider(slider, watchlist);
+      
+      // Slider düzenleme butonunu aktifleştir
+      const editButton = sliderSection.querySelector('.slider-edit-btn');
+      if (editButton) {
+        editButton.addEventListener('click', () => {
+          showSliderEditPopup(slider);
+        });
+      }
+      
+      // Slider silme butonunu aktifleştir
+      const deleteButton = sliderSection.querySelector('.slider-delete-btn');
+      if (deleteButton) {
+        deleteButton.addEventListener('click', () => {
+          if (confirm(`"${slider.name}" slider'ını silmek istediğinize emin misiniz?`)) {
+            deleteCustomSlider(slider.id);
+          }
+        });
+      }
+    });
+  });
+}
+
+// Özel slider içeriğini doldur
+function fillCustomSlider(slider, watchlist) {
+  const sliderContainer = document.getElementById(slider.id);
+  if (!sliderContainer) return;
+  
+  // Container'ı temizle
+  sliderContainer.innerHTML = '';
+  
+  // Her medya türü için (film, dizi, anime)
+  const mediaTypes = ['movie', 'tv', 'anime'];
+  let items = [];
+  
+  // Tüm medya türlerindeki öğeleri topla
+  mediaTypes.forEach(mediaType => {
+    if (slider.itemIds[mediaType] && slider.itemIds[mediaType].length > 0) {
+      // Bu türdeki tüm öğeleri bul
+      const mediaItems = watchlist[mediaType].filter(item => 
+        slider.itemIds[mediaType].includes(item.id)
+      );
+      
+      // Her öğeye medya türünü ekle ve listeye ekle
+      mediaItems.forEach(item => {
+        items.push({...item, mediaType});
+      });
+    }
+  });
+  
+  // Öğe yoksa mesaj göster
+  if (items.length === 0) {
+    sliderContainer.innerHTML = '<div class="empty-slider-message">Bu slider için öğe bulunamadı.</div>';
+    return;
+  }
+  
+  // Her öğe için bir kart oluştur
+  items.forEach(item => {
+    // Kart elementi oluştur
+    const card = document.createElement('div');
+    card.className = 'media-card';
+    
+    // Puanlama bilgisi
+    let ratingsHTML = '';
+    
+    if (item.rating || item.userRating) {
+      ratingsHTML = `<div class="media-card-ratings">`;
+      
+      if (item.rating) {
+        ratingsHTML += `<div class="media-card-rating platform">
+          <span class="star-icon">★</span> ${Number(item.rating).toFixed(1)}
+        </div>`;
+      }
+      
+      if (item.userRating) {
+        ratingsHTML += `<div class="media-card-rating user">
+          <span class="star-icon">★</span> ${Number(item.userRating).toFixed(1)}
+        </div>`;
+      }
+      
+      ratingsHTML += `</div>`;
+    }
+    
+    // Puan ekleme butonu
+    let ratingAddHTML = '';
+    if (!item.userRating) {
+      ratingAddHTML = `<div class="media-card-rating-add" data-id="${item.id}" data-type="${item.mediaType}">
+        <span class="add-rating-icon">+</span>
+      </div>`;
+    }
+    
+    // Varsayılan resim
+    const placeholderImage = '../assets/no-image.jpg';
+    
+    // Kart içeriği
+    card.innerHTML = `
+      ${ratingsHTML}
+      ${ratingAddHTML}
+      <img src="${item.imageUrl || placeholderImage}" class="media-card-image" 
+           alt="${item.title}" onerror="this.src='${placeholderImage}'">
+      <div class="media-card-content">
+        <div class="media-card-title" title="${item.title}">${item.title}</div>
+        <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
+        ${item.totalSeasons ? 
+          `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
+      </div>
+    `;
+    
+    // Puan ekleme butonuna tıklama olayı ekle
+    const ratingAddButton = card.querySelector('.media-card-rating-add');
+    if (ratingAddButton) {
+      ratingAddButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Kart tıklamasını engelle
+        showRatingPopup(item, item.mediaType, ratingAddButton);
+      });
+    }
+    
+    // Karta tıklama olayı ekle
+    card.addEventListener('click', () => {
+      showMediaDetails(item, item.mediaType);
+    });
+    
+    // Kartı container'a ekle
+    sliderContainer.appendChild(card);
+  });
+  
+  // Slider'a navigasyon butonları ekle
+  const parentContainer = sliderContainer.parentElement;
+  
+  // Eğer butonlar zaten eklenmişse, ekleme
+  if (!parentContainer.querySelector('.slider-nav')) {
+    // Sol ok butonu
+    const leftNav = document.createElement('button');
+    leftNav.className = 'slider-nav slider-nav-left';
+    leftNav.innerHTML = '&#10094;'; // Sol ok karakteri
+    leftNav.setAttribute('data-slider', slider.id);
+    leftNav.addEventListener('click', () => slideContent(slider.id, 'left'));
+    
+    // Sağ ok butonu
+    const rightNav = document.createElement('button');
+    rightNav.className = 'slider-nav slider-nav-right';
+    rightNav.innerHTML = '&#10095;'; // Sağ ok karakteri
+    rightNav.setAttribute('data-slider', slider.id);
+    rightNav.addEventListener('click', () => slideContent(slider.id, 'right'));
+    
+    // Butonları ekle
+    parentContainer.appendChild(leftNav);
+    parentContainer.appendChild(rightNav);
+  }
+}
+
+// Özel slider düzenleme popup'ını göster
+function showSliderEditPopup(slider) {
+  // Eğer önceki bir popup varsa kaldır
+  const existingPopup = document.querySelector('.slider-edit-popup-overlay');
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+  
+  // Popup oluştur
+  const popupOverlay = document.createElement('div');
+  popupOverlay.className = 'slider-edit-popup-overlay';
+  
+  popupOverlay.innerHTML = `
+    <div class="slider-edit-popup">
+      <div class="slider-edit-popup-header">
+        <div class="slider-edit-popup-title">${slider ? 'Kategori Düzenle' : 'Yeni Kategori Ekle'}</div>
+        <button class="slider-edit-popup-close">&times;</button>
+      </div>
+      <div class="slider-edit-popup-body">
+        <div class="form-group">
+          <label for="slider-name">Slider Adı</label>
+          <input type="text" id="slider-name" class="slider-edit-input" value="${slider ? slider.name : ''}" placeholder="Slider adı girin">
+        </div>
+        
+        <div class="form-group">
+          <div class="slider-items-header">
+            <h4>Slider İçerikleri</h4>
+            <button id="add-slider-item" class="add-slider-item-btn">+ İçerik Ekle</button>
+          </div>
+          <div id="slider-items-container">
+            <!-- İçerikler burada listelenecek -->
+          </div>
+        </div>
+        
+        <div class="slider-edit-popup-actions">
+          <button id="save-slider" class="slider-edit-save-btn">${slider ? 'Güncelle' : 'Oluştur'}</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Popup'ı sayfaya ekle
+  document.body.appendChild(popupOverlay);
+  
+  // İçerikleri listele (eğer düzenleme moduysa)
+  if (slider) {
+    displaySliderItems(slider);
+  }
+  
+  // İçerik ekle butonuna tıklama olayını ekle
+  document.getElementById('add-slider-item').addEventListener('click', () => {
+    showContentSearchPopup(slider ? slider.id : null);
+  });
+  
+  // Kaydet butonuna tıklama olayını ekle
+  document.getElementById('save-slider').addEventListener('click', async () => {
+    const name = document.getElementById('slider-name').value.trim();
+    
+    if (!name) {
+      alert('Lütfen slider için bir ad girin!');
+      return;
+    }
+    
+    if (slider) {
+      // Mevcut slider'ı güncelle
+      await updateCustomSlider({
+        ...slider,
+        name
+      });
+    } else {
+      // Yeni kategori oluştur
+      await createCustomSlider({
+        id: 'custom-' + Date.now(),
+        name,
+        type: 'custom',
+        itemIds: {
+          movie: [],
+          tv: [],
+          anime: []
+        }
+      });
+    }
+    
+    // Popup'ı kapat
+    popupOverlay.remove();
+  });
+  
+  // Kapatma butonuna tıklama olayı ekle
+  const closeButton = popupOverlay.querySelector('.slider-edit-popup-close');
+  closeButton.addEventListener('click', () => {
+    popupOverlay.remove();
+  });
+  
+  // Popup dışına tıklanınca kapatma
+  popupOverlay.addEventListener('click', (e) => {
+    if (e.target === popupOverlay) {
+      popupOverlay.remove();
+    }
+  });
+}
+
+// Slider içeriklerini görüntüle
+function displaySliderItems(slider) {
+  const container = document.getElementById('slider-items-container');
+  if (!container) return;
+  
+  // Container'ı temizle
+  container.innerHTML = '';
+  
+  // Her medya türü için öğeleri listele
+  const mediaTypes = ['movie', 'tv', 'anime'];
+  let hasItems = false;
+  
+  mediaTypes.forEach(async (mediaType) => {
+    if (slider.itemIds[mediaType] && slider.itemIds[mediaType].length > 0) {
+      hasItems = true;
+      
+      try {
+        // Watchlist'ten öğeleri al
+        const watchlist = await window.watchflowAPI.getWatchlist();
+        
+        // Bu türdeki tüm öğeleri bul
+        const mediaItems = watchlist[mediaType].filter(item => 
+          slider.itemIds[mediaType].includes(item.id)
+        );
+        
+        // Öğeleri listele
+        mediaItems.forEach(item => {
+          const itemElement = document.createElement('div');
+          itemElement.className = 'slider-item';
+          itemElement.setAttribute('data-id', item.id);
+          itemElement.setAttribute('data-type', mediaType);
+          
+          // Öğe içeriği
+          itemElement.innerHTML = `
+            <div class="slider-item-image">
+              <img src="${item.imageUrl || '../assets/no-image.jpg'}" alt="${item.title}">
+            </div>
+            <div class="slider-item-info">
+              <div class="slider-item-title">${item.title}</div>
+              <div class="slider-item-year">${item.year || 'Bilinmeyen'}</div>
+            </div>
+            <button class="slider-item-remove-btn" data-id="${item.id}" data-type="${mediaType}">
+              <span>&times;</span>
+            </button>
+          `;
+          
+          // Kaldırma butonuna tıklama olayı ekle
+          const removeButton = itemElement.querySelector('.slider-item-remove-btn');
+          removeButton.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            
+            // Öğeyi slider'dan kaldır
+            await removeItemFromSlider(slider.id, item.id, mediaType);
+            
+            // Öğeyi listeden kaldır
+            itemElement.remove();
+          });
+          
+          // Öğeyi container'a ekle
+          container.appendChild(itemElement);
+        });
+      } catch (error) {
+        console.error('Slider öğeleri yüklenirken hata:', error);
+      }
+    }
+  });
+  
+  // Eğer öğe yoksa mesaj göster
+  if (!hasItems) {
+    container.innerHTML = '<div class="empty-items-message">Bu sliderda henüz içerik bulunmuyor.</div>';
+  }
+}
+
+// İçerik arama popup'ını göster
+function showContentSearchPopup(sliderId) {
+  // Eğer önceki bir popup varsa kaldır
+  const existingPopup = document.querySelector('.content-search-popup-overlay');
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+  
+  // Popup oluştur
+  const popupOverlay = document.createElement('div');
+  popupOverlay.className = 'content-search-popup-overlay';
+  
+  popupOverlay.innerHTML = `
+    <div class="content-search-popup">
+      <div class="content-search-popup-header">
+        <div class="content-search-popup-title">İçerik Ara</div>
+        <button class="content-search-popup-close">&times;</button>
+      </div>
+      <div class="content-search-popup-body">
+        <div class="search-form">
+          <input type="text" id="content-search-input" class="content-search-input" placeholder="Film, dizi veya anime ara...">
+          
+          <div class="search-type-selection">
+            <label class="radio-label">
+              <input type="radio" name="contentSearchType" value="movie" checked> Film
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="contentSearchType" value="tv"> Dizi
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="contentSearchType" value="anime"> Anime
+            </label>
+          </div>
+          
+          <button id="content-search-button" class="content-search-button">Ara</button>
+        </div>
+        
+        <div id="content-search-results" class="content-search-results">
+          <!-- Arama sonuçları burada listelenecek -->
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Popup'ı sayfaya ekle
+  document.body.appendChild(popupOverlay);
+  
+  // Arama butonuna tıklama olayını ekle
+  document.getElementById('content-search-button').addEventListener('click', () => {
+    performContentSearch(sliderId);
+  });
+  
+  // Enter tuşu ile arama
+  document.getElementById('content-search-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      performContentSearch(sliderId);
+    }
+  });
+  
+  // Kapatma butonuna tıklama olayı ekle
+  const closeButton = popupOverlay.querySelector('.content-search-popup-close');
+  closeButton.addEventListener('click', () => {
+    popupOverlay.remove();
+  });
+  
+  // Popup dışına tıklanınca kapatma
+  popupOverlay.addEventListener('click', (e) => {
+    if (e.target === popupOverlay) {
+      popupOverlay.remove();
+    }
+  });
+}
+
+// İçerik arama işlemini gerçekleştir
+async function performContentSearch(sliderId) {
+  const searchInput = document.getElementById('content-search-input');
+  const query = searchInput.value.trim();
+  
+  if (!query) {
+    alert('Lütfen arama sorgusu girin!');
+    return;
+  }
+  
+  // Arama türünü al
+  const searchType = document.querySelector('input[name="contentSearchType"]:checked').value;
+  
+  // Arama sonuçları container'ı
+  const resultsContainer = document.getElementById('content-search-results');
+  resultsContainer.innerHTML = '<div class="loading-indicator">Aranıyor...</div>';
+  
+  try {
+    // API ile arama yap
+    let results;
+    
+    if (searchType === 'anime') {
+      results = await window.watchflowAPI.searchJikan(query);
+    } else {
+      results = await window.watchflowAPI.searchTMDB(query, searchType);
+    }
+    
+    // Sonuçları görüntüle
+    displayContentSearchResults(results, searchType, sliderId);
+  } catch (error) {
+    console.error('Arama hatası:', error);
+    resultsContainer.innerHTML = `<div class="error-message">Arama sırasında bir hata oluştu: ${error.message}</div>`;
+  }
+}
+
+// İçerik arama sonuçlarını görüntüle
+function displayContentSearchResults(results, searchType, sliderId) {
+  const resultsContainer = document.getElementById('content-search-results');
+  
+  // Container'ı temizle
+  resultsContainer.innerHTML = '';
+  
+  // Sonuç yoksa mesaj göster
+  if (!results || results.length === 0) {
+    resultsContainer.innerHTML = '<div class="no-results-message">Sonuç bulunamadı.</div>';
+    return;
+  }
+  
+  // Her sonuç için bir öğe oluştur
+  results.forEach(item => {
+    const resultItem = document.createElement('div');
+    resultItem.className = 'content-search-item';
+    
+    // Medya türüne göre yıl ve görsel bilgisini ayarla
+    let imageUrl, year;
+    
+    if (searchType === 'movie') {
+      imageUrl = item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : '../assets/no-image.jpg';
+      year = item.release_date ? new Date(item.release_date).getFullYear() : 'Bilinmeyen';
+    } else if (searchType === 'tv') {
+      imageUrl = item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : '../assets/no-image.jpg';
+      year = item.first_air_date ? new Date(item.first_air_date).getFullYear() : 'Bilinmeyen';
+    } else if (searchType === 'anime') {
+      imageUrl = item.images?.jpg?.image_url || '../assets/no-image.jpg';
+      year = item.aired?.from ? new Date(item.aired.from).getFullYear() : 'Bilinmeyen';
+    }
+    
+    // Öğe içeriği
+    resultItem.innerHTML = `
+      <div class="content-search-item-image">
+        <img src="${imageUrl}" alt="${item.title || item.name}" onerror="this.src='../assets/no-image.jpg'">
+      </div>
+      <div class="content-search-item-info">
+        <div class="content-search-item-title">${item.title || item.name}</div>
+        <div class="content-search-item-year">${year}</div>
+      </div>
+      <button class="content-search-item-add-btn" data-id="${item.id}" data-type="${searchType}">
+        <span>+</span>
+      </button>
+    `;
+    
+    // Ekleme butonuna tıklama olayı ekle
+    const addButton = resultItem.querySelector('.content-search-item-add-btn');
+    addButton.addEventListener('click', async () => {
+      await addItemToSlider(sliderId, item.id, searchType);
+      addButton.disabled = true;
+      addButton.textContent = 'Eklendi';
+    });
+    
+    // Öğeyi container'a ekle
+    resultsContainer.appendChild(resultItem);
+  });
+}
+
+// Özel slider oluştur
+async function createCustomSlider(slider) {
+  try {
+    const result = await window.watchflowAPI.createCustomSlider(slider);
+    
+    if (result.success) {
+      // İzleme listesini yeniden yükle ve sliderları göster
+      loadWatchlist();
+    } else {
+      alert('Slider oluşturulurken bir hata oluştu: ' + result.error);
+    }
+  } catch (error) {
+    console.error('Slider oluşturma hatası:', error);
+    alert('Slider oluşturulurken bir hata oluştu.');
+  }
+}
+
+// Özel slider güncelle
+async function updateCustomSlider(slider) {
+  try {
+    const result = await window.watchflowAPI.updateCustomSlider(slider);
+    
+    if (result.success) {
+      // İzleme listesini yeniden yükle ve sliderları göster
+      loadWatchlist();
+    } else {
+      alert('Slider güncellenirken bir hata oluştu: ' + result.error);
+    }
+  } catch (error) {
+    console.error('Slider güncelleme hatası:', error);
+    alert('Slider güncellenirken bir hata oluştu.');
+  }
+}
+
+// Özel slider sil
+async function deleteCustomSlider(sliderId) {
+  try {
+    const result = await window.watchflowAPI.deleteCustomSlider(sliderId);
+    
+    if (result.success) {
+      // İzleme listesini yeniden yükle
+      loadWatchlist();
+    } else {
+      alert('Slider silinirken bir hata oluştu: ' + result.error);
+    }
+  } catch (error) {
+    console.error('Slider silme hatası:', error);
+    alert('Slider silinirken bir hata oluştu.');
+  }
+}
+
+// Slider'a öğe ekle
+async function addItemToSlider(sliderId, itemId, mediaType) {
+  try {
+    const result = await window.watchflowAPI.addItemToSlider(sliderId, itemId, mediaType);
+    
+    if (result.success) {
+      // Slider düzenleme popup'ını yeniden yükle
+      const slider = result.slider;
+      if (slider) {
+        displaySliderItems(slider);
+      }
+    } else {
+      alert('Öğe eklenirken bir hata oluştu: ' + result.error);
+    }
+  } catch (error) {
+    console.error('Öğe ekleme hatası:', error);
+    alert('Öğe eklenirken bir hata oluştu.');
+  }
+}
+
+// Slider'dan öğe kaldır
+async function removeItemFromSlider(sliderId, itemId, mediaType) {
+  try {
+    const result = await window.watchflowAPI.removeItemFromSlider(sliderId, itemId, mediaType);
+    
+    if (!result.success) {
+      alert('Öğe kaldırılırken bir hata oluştu: ' + result.error);
+    }
+  } catch (error) {
+    console.error('Öğe kaldırma hatası:', error);
+    alert('Öğe kaldırılırken bir hata oluştu.');
+  }
+}
+
+// Slider ekleme butonlarını aktifleştir
+function setupSliderButtons() {
+  // Film sayfası slider butonu
+  const addMovieSliderBtn = document.getElementById('add-movie-slider');
+  if (addMovieSliderBtn) {
+    addMovieSliderBtn.addEventListener('click', () => {
+      showSliderEditPopup(null); // Null -> yeni kategori
+    });
+  }
+  
+  // Dizi sayfası slider butonu
+  const addSeriesSliderBtn = document.getElementById('add-series-slider');
+  if (addSeriesSliderBtn) {
+    addSeriesSliderBtn.addEventListener('click', () => {
+      showSliderEditPopup(null); // Null -> yeni kategori
+    });
+  }
+  
+  // Anime sayfası slider butonu
+  const addAnimeSliderBtn = document.getElementById('add-anime-slider');
+  if (addAnimeSliderBtn) {
+    addAnimeSliderBtn.addEventListener('click', () => {
+      showSliderEditPopup(null); // Null -> yeni kategori
+    });
+  }
 }
 
 // Tıklama olayı için örnek bir işleyici

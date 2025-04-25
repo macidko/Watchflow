@@ -180,7 +180,8 @@ body {
 .search-dropdown {
   position: absolute;
   top: 70px;
-  left: 0;
+  left: 50%;
+  transform: translate(-50%, 0%);
   width: 100%;
   max-width: 600px;
   background-color: var(--dropdown-bg);
@@ -1035,12 +1036,24 @@ input[type="radio"]:checked:parent {
 }
 
 .media-card-seasons {
-  background: var(--accent-color);
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
   color: white;
-  padding: 3px 8px;
+  font-size: 0.75rem;
+  padding: 2px 6px;
   border-radius: 4px;
-  font-weight: 500;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  backdrop-filter: blur(2px);
+}
+
+.seasons-icon {
+  font-size: 0.8rem;
+  color: #aaccff;
+  font-style: normal;
 }
 
 /* Popup Stilleri */
@@ -1134,7 +1147,6 @@ input[type="radio"]:checked:parent {
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-bottom: 10px;
   background: rgba(0, 0, 0, 0.2);
   padding: 15px;
   border-radius: 10px;
@@ -1169,7 +1181,6 @@ input[type="radio"]:checked:parent {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -1221,7 +1232,6 @@ input[type="radio"]:checked:parent {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 8px;
-  margin-bottom: 15px;
 }
 
 .episode-button {
@@ -1256,7 +1266,6 @@ input[type="radio"]:checked:parent {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 15px;
   flex-shrink: 0;
 }
 
@@ -1470,4 +1479,458 @@ input[type="radio"]:checked:parent {
 .close-btn:hover {
   background-color: #e81123;
   color: white;
+}
+
+/* Platform ve Kullanıcı Derecelendirme Stilleri */
+.media-card-ratings {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 3;
+}
+
+.media-card-rating {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.media-card-rating.platform {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.media-card-rating.user {
+  background-color: rgba(255, 69, 0, 0.6);
+}
+
+.media-card:hover .media-card-rating {
+  opacity: 1;
+}
+
+.media-card-rating .star-icon {
+  color: #ffc107;
+  font-size: 0.8rem;
+  margin-right: 3px;
+}
+
+/* Puan Ekleme Butonu */
+.media-card-rating-add {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  z-index: 3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.media-card-rating-add:hover {
+  background: rgba(255, 69, 0, 0.8);
+  transform: scale(1.1);
+}
+
+.add-rating-icon {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* Sezon bilgisi stilleri */
+.media-card-seasons {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  backdrop-filter: blur(2px);
+}
+
+.seasons-icon {
+  font-size: 0.8rem;
+  color: #aaccff;
+  font-style: normal;
+}
+
+/* Rating Container Stilleri */
+.rating-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.user-rating {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rating-label {
+  font-size: 0.9rem;
+  color: #ddd;
+  font-weight: 500;
+}
+
+.rating-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffc107;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 10px;
+  border-radius: 4px;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 5px;
+}
+
+.star {
+  font-size: 1.5rem;
+  color: #ffc107;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+  user-select: none;
+}
+
+.star:hover {
+  transform: scale(1.2);
+}
+
+.star.hover {
+  color: #ffdd00;
+  transform: scale(1.2);
+}
+
+/* Hızlı Puanlama Popup Stilleri */
+.rating-popup {
+  position: absolute;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  padding: 15px;
+  width: 240px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: popIn 0.3s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rating-popup-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rating-popup-stars {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.rating-popup-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.rating-popup-cancel {
+  padding: 6px 15px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ddd;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.rating-popup-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Yeni Kategori Butonları ve Özel Kategoriler */
+.section-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 0 10px;
+}
+
+.add-slider-btn {
+  background-color: var(--secondary-bg);
+  color: var(--primary-text);
+  border: 1px solid var(--accent-color);
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-slider-btn:hover {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+/* Özel slider stilleri */
+.slider-section.custom-slider {
+  position: relative;
+  border: 1px dashed var(--border-color);
+  background-color: rgba(255, 69, 0, 0.05);
+}
+
+/* İçerik arama popup */
+.content-search-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2100;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease;
+}
+
+.content-search-popup {
+  background-color: var(--secondary-bg);
+  width: 90%;
+  max-width: 700px;
+  height: 80vh;
+  max-height: 700px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  animation: popIn 0.3s ease;
+}
+
+.content-search-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: var(--primary-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.content-search-popup-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.content-search-popup-close {
+  background: none;
+  border: none;
+  color: var(--secondary-text);
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.content-search-popup-close:hover {
+  color: var(--accent-color);
+}
+
+.content-search-popup-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  background-color: var(--primary-bg);
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.content-search-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--secondary-bg);
+  color: var(--primary-text);
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.content-search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.search-type-selection {
+  display: flex;
+  gap: 15px;
+  margin: 10px 0;
+}
+
+.content-search-button {
+  align-self: flex-end;
+  background-color: var(--accent-color);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.content-search-button:hover {
+  background-color: var(--hover-color);
+}
+
+.content-search-results {
+  margin-top: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 15px;
+}
+
+.loading-indicator {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: var(--secondary-text);
+  font-size: 18px;
+}
+
+.error-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: 8px;
+}
+
+.no-results-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: var(--secondary-text);
+  font-style: italic;
+}
+
+.content-search-item {
+  position: relative;
+  background-color: var(--primary-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-search-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.content-search-item-image {
+  height: 220px;
+  overflow: hidden;
+}
+
+.content-search-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.content-search-item-info {
+  padding: 10px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-search-item-title {
+  font-weight: 500;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content-search-item-year {
+  font-size: 12px;
+  color: var(--secondary-text);
+}
+
+.content-search-item-add-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: var(--accent-color);
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.content-search-item-add-btn:hover {
+  background-color: var(--hover-color);
+}
+
+.content-search-item-add-btn:disabled {
+  background-color: var(--secondary-text);
+  cursor: not-allowed;
+}
+
+/* Boş slider mesajı */
+.empty-slider-message {
+  padding: 20px;
+  text-align: center;
+  color: var(--secondary-text);
+  font-style: italic;
 }
