@@ -12,7 +12,11 @@
     "build:mac": "npm run clean && electron-builder --mac",
     "build:linux": "npm run clean && electron-builder --linux",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "release": "standard-version",
+    "release:patch": "standard-version --release-as patch",
+    "release:minor": "standard-version --release-as minor",
+    "release:major": "standard-version --release-as major"
   },
   "keywords": [
     "electron",
@@ -30,7 +34,8 @@
     "dotenv": "^9.0.2",
     "electron": "^29.0.0",
     "electron-builder": "^24.9.0",
-    "rimraf": "^5.0.5"
+    "rimraf": "^5.0.5",
+    "standard-version": "^9.5.0"
   },
   "dependencies": {
     "axios": "^1.6.1",

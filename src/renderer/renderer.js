@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const status = await window.watchflowAPI.checkServerStatus();
     console.log('API durumu:', status);
     
+    // Uygulama sürümünü göster
+    loadAppVersion();
+    
     // Arama inputu için fokus/blur olaylarını ekle
     setupSearchInput();
     
@@ -38,6 +41,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     showError('API bağlantısı kurulamadı. ' + error.message);
   }
 });
+
+// Uygulama sürümünü package.json'dan oku ve göster
+async function loadAppVersion() {
+  try {
+    const appVersion = await window.watchflowAPI.getAppVersion();
+    const versionElement = document.getElementById('app-version');
+    if (versionElement) {
+      versionElement.textContent = appVersion;
+    }
+  } catch (error) {
+    console.error('Uygulama sürümü yüklenemedi:', error);
+  }
+}
 
 // Pencere kontrol butonlarını ayarla
 function setupWindowControls() {
@@ -284,7 +300,7 @@ async function showMediaDetails(item, mediaType) {
       if (mediaType === 'tv') {
         console.log(`TV sezon bilgileri alınıyor: ${item.id}`);
         seasonsData = await window.watchflowAPI.getTvShowSeasons(item.id);
-      } else {
+      } else if (mediaType === 'anime') {
         console.log(`Anime sezon bilgileri alınıyor: ${item.id}`);
         seasonsData = await window.watchflowAPI.getAnimeSeasons(item.id);
       }
@@ -306,11 +322,20 @@ async function showMediaDetails(item, mediaType) {
         }
         
         console.log(`Sezon bilgileri alındı ve güncellendi: ${item.totalSeasons} sezon`);
+        
         // Watchlist'e kaydet - güncellenmiş sezon bilgisi ile
         await window.watchflowAPI.addToWatchlist({
           ...item,
           type: mediaType
         });
+        
+        // Global watchlistData'yı da güncelle ki sayfa yenilenmeden değişiklikler görünsün
+        if (watchlistData && watchlistData[mediaType]) {
+          const itemIndex = watchlistData[mediaType].findIndex(i => i.id === item.id);
+          if (itemIndex !== -1) {
+            watchlistData[mediaType][itemIndex] = item;
+          }
+        }
       }
     } catch (error) {
       console.error('Sezon bilgileri alınırken hata:', error);
