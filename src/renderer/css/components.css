@@ -1,0 +1,214 @@
+/* UI Bileşenleri */
+
+/* Buton stilleri */
+.btn {
+  padding: 8px 16px;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-standard);
+  text-align: center;
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--hover-color);
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--primary-text);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn:disabled {
+  background-color: #333;
+  cursor: not-allowed;
+  color: #666;
+}
+
+/* Form elemanları */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.form-input {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--input-bg);
+  color: var(--primary-text);
+  font-size: 14px;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+/* Radio ve Checkbox stilleri */
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radio-input + span {
+  color: var(--secondary-text);
+  transition: var(--transition-standard);
+}
+
+.radio-input:checked + span {
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+/* Yıldız puanlama */
+.star {
+  font-size: var(--star-size);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--popup-animation-time), transform 0.1s;
+}
+
+.star:hover,
+.star.hover,
+.star.active {
+  color: var(--star-color);
+  transform: scale(1.1);
+}
+
+/* Puanlama popup */
+.rating-popup {
+  position: absolute;
+  background-color: var(--card-bg);
+  border-radius: var(--popup-radius);
+  box-shadow: var(--popup-shadow);
+  padding: var(--popup-padding);
+  z-index: 1000;
+  min-width: 220px;
+  animation: fade-in var(--popup-animation-time) ease-out;
+}
+
+.rating-popup-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.rating-popup-stars {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.rating-popup-stars .star {
+  margin: 0 5px;
+}
+
+.rating-popup-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.rating-popup-cancel {
+  padding: 6px 12px;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--primary-text);
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color var(--popup-animation-time);
+}
+
+.rating-popup-cancel:hover {
+  background-color: var(--hover-color);
+}
+
+/* Yükleme göstergesi */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 0;
+  text-align: center;
+  color: var(--secondary-text);
+}
+
+.loader {
+  border: 4px solid var(--secondary-bg);
+  border-top: 4px solid var(--accent-color);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin-top: 15px;
+}
+
+/* Overlay stili */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+}
+
+/* Hata mesajı stili */
+.error-message {
+  color: #ff6b6b;
+  background-color: rgba(255, 107, 107, 0.1);
+  padding: 15px;
+  border-radius: var(--border-radius-sm);
+  border-left: 4px solid #ff6b6b;
+  margin: 20px 0;
+}
+
+/* Başarı mesajı stili */
+.success-message {
+  color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.1);
+  padding: 15px;
+  border-radius: var(--border-radius-sm);
+  border-left: 4px solid #4caf50;
+  margin: 20px 0;
+} 

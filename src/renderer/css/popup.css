@@ -1,0 +1,509 @@
+/* Popup ve Modal Stilleri */
+
+/* Medya Popup Stilleri */
+.media-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+  animation: fadeIn 0.3s ease;
+}
+
+.media-popup {
+  width: 90%;
+  max-width: 400px;
+  max-height: 85vh;
+  background-color: #1a1a1a;
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  margin: 0 auto;
+  animation: popIn 0.4s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.media-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #1f1f1f;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.media-popup-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: white;
+  letter-spacing: 0.3px;
+}
+
+.media-popup-close {
+  font-size: 1.5rem;
+  color: #888;
+  background: rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.media-popup-close:hover {
+  color: white;
+  background-color: rgba(255, 69, 0, 0.5);
+  transform: rotate(90deg);
+}
+
+.media-popup-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  max-height: calc(85vh - 80px); /* 80px için header'ın yüksekliği */
+}
+
+/* İlerleme çubuğu stilleri */
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--accent-color), #ff6a33);
+  border-radius: 10px;
+  transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.progress-text {
+  color: #ddd;
+  font-size: 0.95rem;
+  font-weight: 500;
+  min-width: 100px;
+}
+
+/* Sezon Container Stilleri */
+.season-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.season-title {
+  font-size: 1.1rem;
+  color: white;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.season-progress {
+  color: white;
+  background: linear-gradient(to right, var(--accent-color), #ff6a33);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 3px 6px rgba(255, 69, 0, 0.3);
+}
+
+.episodes-container {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  padding-right: 5px;
+}
+
+/* Özel scrollbar stilleri */
+.episodes-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.episodes-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.episodes-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.episodes-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.episodes-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.episode-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.episode-button.watched {
+  background: linear-gradient(to bottom right, var(--accent-color), #ff6a33);
+  box-shadow: 0 3px 6px rgba(255, 69, 0, 0.3);
+}
+
+.episode-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.episode-button.watched:hover {
+  background: linear-gradient(to bottom right, #ff5500, #ff7e33);
+  transform: translateY(-2px);
+}
+
+.popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.popup-btn {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.popup-btn-remove {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ddd;
+}
+
+.popup-btn-remove:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.popup-btn-mark-watched {
+  background: linear-gradient(to right, var(--accent-color), #ff6a33);
+  color: white;
+  box-shadow: 0 4px 10px rgba(255, 69, 0, 0.3);
+}
+
+.popup-btn-mark-watched:hover {
+  background: linear-gradient(to right, #ff5500, #ff7e33);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 69, 0, 0.4);
+}
+
+/* İçerik arama popup stilleri */
+.content-search-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2100;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease;
+}
+
+.content-search-popup {
+  background-color: var(--secondary-bg);
+  width: 90%;
+  max-width: 700px;
+  height: 80vh;
+  max-height: 700px;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  animation: popIn 0.3s ease;
+}
+
+.content-search-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: var(--primary-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.content-search-popup-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.content-search-popup-close {
+  background: none;
+  border: none;
+  color: var(--secondary-text);
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.content-search-popup-close:hover {
+  color: var(--accent-color);
+}
+
+.content-search-popup-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Arama Formu */
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  background-color: var(--primary-bg);
+  padding: 15px;
+  border-radius: var(--border-radius-md);
+}
+
+.content-search-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--secondary-bg);
+  color: var(--primary-text);
+  border-radius: var(--border-radius-sm);
+  font-size: 16px;
+}
+
+.content-search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.search-type-selection {
+  display: flex;
+  gap: 15px;
+  margin: 10px 0;
+}
+
+.content-search-button {
+  align-self: flex-end;
+  background-color: var(--accent-color);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.content-search-button:hover {
+  background-color: var(--hover-color);
+}
+
+.content-search-results {
+  margin-top: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 15px;
+}
+
+.loading-indicator {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: var(--secondary-text);
+  font-size: 18px;
+}
+
+.no-results-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: var(--secondary-text);
+  font-style: italic;
+}
+
+.content-search-item {
+  position: relative;
+  background-color: var(--primary-bg);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-search-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.content-search-item-image {
+  height: 220px;
+  overflow: hidden;
+}
+
+.content-search-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.content-search-item-info {
+  padding: 10px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-search-item-title {
+  font-weight: 500;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content-search-item-year {
+  font-size: 12px;
+  color: var(--secondary-text);
+}
+
+.content-search-item-add-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: var(--accent-color);
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.content-search-item-add-btn:hover {
+  background-color: var(--hover-color);
+}
+
+.content-search-item-add-btn:disabled {
+  background-color: var(--secondary-text);
+  cursor: not-allowed;
+}
+
+/* İçerik arama popup'ındaki radio butonlar */
+.search-type-selection .radio-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: #333;
+  border-radius: var(--border-radius-sm);
+  padding: 5px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-type-selection .radio-label:has(input:checked),
+.search-type-selection input[type="radio"]:checked + .radio-label,
+.search-type-selection .radio-label:has(input[type="radio"]:checked) {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.search-type-selection input[type="radio"] {
+  display: none;
+}
+
+/* Rating Container Stilleri */
+.rating-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: var(--border-radius-md);
+}
+
+.user-rating {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rating-label {
+  font-size: 0.9rem;
+  color: #ddd;
+  font-weight: 500;
+}
+
+.rating-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--star-color);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 10px;
+  border-radius: var(--border-radius-sm);
+}
+
+.rating-stars {
+  display: flex;
+  gap: 5px;
+} 

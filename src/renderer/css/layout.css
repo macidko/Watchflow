@@ -1,0 +1,208 @@
+/* Navbar ve Sayfa Düzeni */
+
+/* Navbar - İlk satır: Logo ve Arama */
+.navbar-top {
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  background-color: var(--secondary-bg);
+  border-bottom: 1px solid var(--border-color);
+  height: 70px;
+  position: relative;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.logo svg {
+  height: 30px;
+  width: auto;
+  transition: transform 0.3s ease;
+}
+
+.logo:hover svg {
+  transform: scale(1.1);
+}
+
+.logo-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f5f5f5;
+  transition: color 0.3s ease;
+}
+
+.logo:hover .logo-text {
+  color: var(--accent-color);
+}
+
+/* Navbar - İkinci satır: Navigasyon Menüsü */
+.navbar-bottom {
+  display: flex;
+  justify-content: center;
+  background-color: var(--secondary-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 15px;
+  height: 50px;
+  position: relative;
+  z-index: 50;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.main-nav ul {
+  display: flex;
+  list-style: none;
+  height: 100%;
+  gap: 5px;
+}
+
+.main-nav ul li {
+  height: 100%;
+}
+
+.main-nav ul li a {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 20px;
+  color: var(--secondary-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  letter-spacing: 0.5px;
+  border-radius: 4px 4px 0 0;
+}
+
+.main-nav ul li a:hover {
+  color: var(--primary-text);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.main-nav ul li a.active {
+  color: var(--accent-color);
+  background-color: rgba(255, 69, 0, 0.1);
+}
+
+.main-nav ul li a.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--accent-color);
+  box-shadow: 0 0 8px rgba(255, 69, 0, 0.6);
+}
+
+/* Ana İçerik Alanı */
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--content-padding);
+  background-color: var(--primary-bg);
+  width: 100%;
+}
+
+/* Sayfa İçerikleri */
+.page-section {
+  display: none;
+  padding: var(--content-padding) 0;
+  animation: fadeIn 0.3s ease;
+}
+
+.page-section.active {
+  display: block;
+}
+
+.page-section h2 {
+  color: #FFF;
+  margin-bottom: 25px;
+  font-size: 28px;
+  font-weight: 600;
+  position: relative;
+  padding-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.page-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background-color: var(--accent-color);
+  border-radius: 2px;
+}
+
+.page-section p {
+  color: var(--secondary-text);
+  margin-bottom: 15px;
+}
+
+/* Bölüm başlıkları */
+.section-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 0 10px;
+}
+
+/* Footer */
+.app-footer {
+  background-color: var(--secondary-bg);
+  border-top: 1px solid var(--border-color);
+  padding: 10px 15px;
+  font-size: 12px;
+  color: var(--secondary-text);
+  text-align: center;
+  position: relative;
+  z-index: 50;
+}
+
+/* Pencere Kontrol Butonları */
+.window-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.window-control-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--secondary-text);
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: color 0.2s, background-color 0.2s;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  -webkit-app-region: no-drag;
+}
+
+.window-control-btn:hover {
+  color: var(--primary-text);
+}
+
+.minimize-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.close-btn:hover {
+  background-color: #e81123;
+  color: white;
+} 

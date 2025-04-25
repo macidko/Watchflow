@@ -1,0 +1,37 @@
+/* CSS modüllerinin merkezi içe aktarma dosyası */
+
+/* Değişkenler ve temel stiller */
+@import 'variables.css';
+@import 'base.css';
+
+/* Düzen bileşenleri */
+@import 'layout.css';
+
+/* UI bileşenleri */
+@import 'components.css';
+@import 'cards.css';
+@import 'popup.css';
+
+/* Sayfa özellikleri */
+@import 'search.css';
+@import 'settings.css';
+
+/* Medya sorguları (responsive) */
+@media (pointer: coarse) {
+  .slider-container {
+    cursor: grab;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 20px;
+  }
+  
+  .slider-content {
+    scroll-snap-type: x mandatory;
+  }
+  
+  .media-card {
+    scroll-snap-align: start;
+  }
+}

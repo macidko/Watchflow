@@ -1,0 +1,140 @@
+/* Ayarlar Sayfası Stilleri */
+.settings-section {
+  background-color: var(--secondary-bg);
+  border-radius: var(--border-radius-md);
+  padding: var(--content-padding);
+  margin-bottom: 25px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.settings-section h3 {
+  color: var(--accent-color);
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-input {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--input-bg);
+  color: var(--primary-text);
+  font-size: 14px;
+  width: 100%;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.input-with-button {
+  display: flex;
+  gap: 10px;
+}
+
+.input-with-button .settings-input {
+  flex: 1;
+}
+
+.show-hide-btn {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  color: var(--secondary-text);
+  padding: 0 15px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.show-hide-btn:hover {
+  background-color: #333;
+}
+
+.settings-button {
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  width: auto;
+  align-self: flex-start;
+}
+
+.settings-button:hover {
+  background-color: #555;
+}
+
+.settings-button.primary-btn {
+  background-color: var(--accent-color);
+}
+
+.settings-button.primary-btn:hover {
+  background-color: var(--hover-color);
+}
+
+.settings-message {
+  padding: 10px;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  display: none;
+}
+
+.settings-message.success {
+  background-color: rgba(76, 175, 80, 0.1);
+  border: 1px solid #4caf50;
+  color: #4caf50;
+  display: block;
+}
+
+.settings-message.error {
+  background-color: rgba(244, 67, 54, 0.1);
+  border: 1px solid #f44336;
+  color: #f44336;
+  display: block;
+}
+
+.settings-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.settings-action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-help {
+  font-size: 0.9rem;
+  color: var(--secondary-text);
+}
+
+.app-info {
+  color: var(--secondary-text);
+  line-height: 1.6;
+}
+
+.app-info p {
+  margin-bottom: 8px;
+} 

@@ -1,0 +1,40 @@
+/* Temel stil değişkenleri */
+:root {
+  /* Ana renkler */
+  --primary-bg: #121212;
+  --secondary-bg: #1e1e1e;
+  --primary-text: #ffffff;
+  --secondary-text: #b3b3b3;
+  --accent-color: #ff4500;
+  --hover-color: #ff6a33;
+  --border-color: #2a2a2a;
+  
+  /* UI Bileşenleri */
+  --input-bg: #2c2c2c;
+  --dropdown-bg: #1a1a1a;
+  --card-bg: #1e1e1e;
+  
+  /* Gölgeler */
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  
+  /* Animasyonlar */
+  --popup-animation-time: 0.2s;
+  --transition-standard: all 0.2s ease;
+  
+  /* Yuvarlak köşeler */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 16px;
+  --popup-radius: 8px;
+  
+  /* İçerik boşlukları */
+  --popup-padding: 15px;
+  --content-padding: 20px;
+  
+  /* Yıldız derecelendirme */
+  --star-color: #ffb400;
+  --star-size: 24px;
+  --text-muted: #8a8a8a;
+} 

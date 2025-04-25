@@ -1,0 +1,406 @@
+/* Arama ve Sonuçları Stilleri */
+
+/* Arama Buton ve Formları */
+.search-container {
+  display: none; /* Eski search-container'ı gizle */
+}
+
+#searchInputContainer {
+  width: 100%;
+  display: flex;
+  background-color: var(--secondary-bg);
+  padding: 8px;
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 10px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background-color: var(--input-bg);
+  color: var(--primary-text);
+  font-size: 14px;
+  min-width: 200px;
+  transition: box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+/* Floating Action Button (FAB) - Ekle Butonu */
+.add-search-button {
+  -webkit-app-region: no-drag;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.3s;
+  box-shadow: 0 4px 12px rgba(255, 69, 0, 0.4);
+  z-index: 1000;
+  animation: pulse 2s infinite;
+}
+
+.add-search-button:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(255, 69, 0, 0.5);
+}
+
+.rotate {
+  transform: rotate(45deg) !important;
+}
+
+/* Arama Açılır Menüsü */
+.search-dropdown {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--dropdown-bg);
+  box-shadow: var(--dropdown-shadow);
+  z-index: 99;
+  border-radius: 0 0 8px 8px;
+  transition: opacity 0.2s, transform 0.2s;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-dropdown.hidden {
+  display: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+.dropdown-content {
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+#searchInputCloneContainer {
+  margin-bottom: 15px;
+}
+
+#searchInputCloneContainer .search-input {
+  width: 100%;
+}
+
+.dropdown-type-selection {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-bg);
+  padding: 10px;
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 10px;
+}
+
+.dropdown-type-selection .radio-group {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 5px 0;
+}
+
+.dropdown-search-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.search-button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.search-button:hover {
+  background-color: var(--hover-color);
+}
+
+.no-results {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--secondary-text);
+  background: var(--secondary-bg);
+  border-radius: var(--border-radius-md);
+  margin-top: 20px;
+}
+
+/* Arama Sonuçları */
+.search-results {
+  width: 100%;
+}
+
+.results-grid {
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+  overflow-y: auto;
+  margin-top: 10px;
+  background-color: var(--secondary-bg);
+  border-radius: var(--border-radius-sm);
+}
+
+.result-count {
+  font-size: 1.1rem;
+  color: var(--secondary-text);
+  margin-bottom: 10px;
+  font-weight: 500;
+  padding-bottom: 5px;
+}
+
+.result-card {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #333;
+  background-color: var(--secondary-bg);
+  transition: background-color 0.2s;
+  width: 100%;
+  height: 60px;
+}
+
+.result-card:hover {
+  background-color: #2a2a2a;
+}
+
+.result-image {
+  width: 45px;
+  height: 55px;
+  object-fit: cover;
+  margin-right: 10px;
+  border-radius: 2px;
+}
+
+.result-info {
+  width: 120px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+}
+
+.result-title {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: var(--primary-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.result-year {
+  color: var(--secondary-text);
+  font-size: 0.8rem;
+}
+
+.result-type {
+  display: none;
+}
+
+/* İzleme durumu seçenekleri ve ekle butonu için stiller */
+.result-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  margin-right: 5px;
+}
+
+.watch-status {
+  display: flex;
+  gap: 30px;
+  margin-right: auto;
+}
+
+.status-label {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--secondary-text);
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+}
+
+/* Arama sonuçlarındaki radio butonlar */
+.result-card .watch-status {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-right: 15px;
+  flex: 1;
+}
+
+.result-card .status-label {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  color: var(--secondary-text);
+  font-size: 0.8rem;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Radio buton stilini custom olarak değiştiriyorum */
+.result-card .status-radio {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Seçili olmayan durum */
+.result-card .status-label .status-radio + span {
+  color: var(--secondary-text);
+}
+
+/* Seçili olan durum */
+.result-card .status-label .status-radio:checked + span {
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+/* Ekle butonu */
+.add-button {
+  min-width: 60px;
+  padding: 4px 10px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: normal;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.add-button:hover:not(:disabled) {
+  background-color: #555;
+}
+
+.add-button:disabled {
+  background-color: #333;
+  cursor: not-allowed;
+  color: #666;
+}
+
+/* Eklendi butonu stili */
+.add-button.added {
+  background-color: #4caf50;
+  color: white;
+  cursor: default;
+}
+
+/* Hata butonu stili */
+.add-button.error {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Ekleniyor animasyonu */
+@keyframes loading-dot {
+  0%, 20% { content: ""; }
+  40% { content: "."; }
+  60% { content: ".."; }
+  80%, 100% { content: "..."; }
+}
+
+.add-button[disabled]:not(.added):not(.error)::after {
+  content: "";
+  animation: loading-dot 1.5s infinite;
+  display: inline-block;
+  width: 12px;
+  text-align: left;
+}
+
+/* Scrollbar stilleri */
+.results-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.results-grid::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.results-grid::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 10px;
+}
+
+.results-grid::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Ekle butonunu */
+.result-card .add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 25px;
+  padding: 0 8px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: normal;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+/* Dropdown içindeki radio butonların stilleri */
+.dropdown-type-selection .radio-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: #333;
+  border-radius: var(--border-radius-sm);
+  padding: 5px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-type-selection .radio-label:has(input:checked),
+.dropdown-type-selection input[type="radio"]:checked + .radio-label,
+.dropdown-type-selection .radio-label:has(input[type="radio"]:checked) {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.dropdown-type-selection input[type="radio"] {
+  display: none;
+} 
