@@ -58,10 +58,20 @@ function setupWindowControls() {
 }
 
 // İzleme listesi verilerini yükle
+let watchlistData = null; // global değişken olarak tanımla
+
 async function loadWatchlist() {
   try {
     // İzleme listesini API üzerinden al
     const watchlist = await window.watchflowAPI.getWatchlist();
+    
+    // Global değişkene kaydet
+    watchlistData = watchlist;
+    
+    // Önce tüm slider içeriklerini temizle
+    document.querySelectorAll('.slider-content').forEach(slider => {
+      slider.innerHTML = '';
+    });
     
     // Farklı kategorileri ilgili divlere doldur
     renderWatchlistItems('movie', watchlist.movie || []);
@@ -89,9 +99,12 @@ async function loadWatchlist() {
         }
       });
     });
+    
+    return watchlist; // Veriyi döndür (böylece işlevler sonucu kullanabilir)
   } catch (error) {
     console.error('İzleme listesi yüklenirken hata oluştu:', error);
     showError('İzleme listesi yüklenemedi. Lütfen daha sonra tekrar deneyiniz.');
+    return null;
   }
 }
 
@@ -257,11 +270,51 @@ function slideContent(sliderId, direction) {
 }
 
 // Medya detaylarını göster
-function showMediaDetails(item, mediaType) {
+async function showMediaDetails(item, mediaType) {
   // Eğer önceki bir popup varsa kaldır
   const existingPopup = document.querySelector('.media-popup-overlay');
   if (existingPopup) {
     existingPopup.remove();
+  }
+  
+  // Dizi veya anime ise ve sezon bilgisi yoksa API'den al
+  if ((mediaType === 'tv' || mediaType === 'anime') && (!item.seasons || item.seasons.length === 0)) {
+    try {
+      let seasonsData;
+      if (mediaType === 'tv') {
+        console.log(`TV sezon bilgileri alınıyor: ${item.id}`);
+        seasonsData = await window.watchflowAPI.getTvShowSeasons(item.id);
+      } else {
+        console.log(`Anime sezon bilgileri alınıyor: ${item.id}`);
+        seasonsData = await window.watchflowAPI.getAnimeSeasons(item.id);
+      }
+      
+      if (seasonsData) {
+        // Sezon bilgileri farklı yapılarda gelebilir, kontrol edelim
+        if (Array.isArray(seasonsData)) {
+          // Direkt dizi olarak geldiyse
+          item.seasons = seasonsData;
+          item.totalSeasons = seasonsData.length;
+        } else if (Array.isArray(seasonsData.seasons)) {
+          // Obje içinde seasons dizisi olarak geldiyse
+          item.seasons = seasonsData.seasons;
+          item.totalSeasons = seasonsData.totalSeasons || seasonsData.seasons.length;
+        } else {
+          // Tek sezon olarak geldiyse
+          item.seasons = [seasonsData];
+          item.totalSeasons = 1;
+        }
+        
+        console.log(`Sezon bilgileri alındı ve güncellendi: ${item.totalSeasons} sezon`);
+        // Watchlist'e kaydet - güncellenmiş sezon bilgisi ile
+        await window.watchflowAPI.addToWatchlist({
+          ...item,
+          type: mediaType
+        });
+      }
+    } catch (error) {
+      console.error('Sezon bilgileri alınırken hata:', error);
+    }
   }
   
   // İzlenen bölümleri al - doğrudan item'dan gelen diziyi kullan
@@ -353,7 +406,6 @@ function showMediaDetails(item, mediaType) {
         const mediaId = ratingStars.getAttribute('data-media-id');
         const mediaType = ratingStars.getAttribute('data-media-type');
         
-        // Puanı kaydet
         try {
           const result = await window.watchflowAPI.updateContentRating({
             mediaId: parseInt(mediaId),
@@ -362,15 +414,18 @@ function showMediaDetails(item, mediaType) {
           });
           
           if (result.success) {
-            // Yıldız görünümünü güncelle
+            // Data attribute'ü güncelle
             ratingStars.setAttribute('data-rating', rating.toString());
-            updateStarDisplay(stars, rating);
+            
+            // Tüm yıldızları yeniden doğru şekilde ayarla
+            const allStars = ratingStars.querySelectorAll('.star');
+            updateStarDisplay(allStars, rating);
             
             // Ana nesnedeki değeri güncelle
             item.userRating = rating;
             
-            // Arka plandaki sliderları güncelle
-            loadWatchlist();
+            // Tüm izleme listesini yenile
+            await loadWatchlist();
           }
         } catch (error) {
           console.error('Puan güncellenirken hata:', error);
@@ -396,14 +451,47 @@ function showMediaDetails(item, mediaType) {
   // Kaldır butonuna tıklama olayı
   const removeButton = popupOverlay.querySelector('.popup-btn-remove');
   removeButton.addEventListener('click', () => {
-    removeFromWatchlist(item.id, mediaType);
+    // Doğru mediaType değerini kullandığımızdan emin olalım
+    const buttonMediaType = removeButton.getAttribute('data-type');
+    if (!buttonMediaType) {
+      console.error('Button data-type özelliği bulunamadı, varsayılan olarak popup mediaType kullanılıyor');
+    }
+    // Buttondan alınan type değerini veya popup'tan gelen değeri kullan
+    const finalMediaType = buttonMediaType || mediaType;
+    console.log(`İzleme listesinden kaldırma başlatılıyor: ID ${item.id}, Tür: ${finalMediaType}`);
+    
+    // Eksik mediaType olmadığından emin ol
+    if (!finalMediaType) {
+      alert('Medya türü belirlenemedi. Lütfen tekrar deneyin.');
+      return;
+    }
+    
+    removeFromWatchlist(item.id, finalMediaType);
     popupOverlay.remove();
   });
   
   // İzlendi olarak işaretle butonuna tıklama olayı
   const markWatchedButton = popupOverlay.querySelector('.popup-btn-mark-watched');
   markWatchedButton.addEventListener('click', () => {
-    markAsWatched(item.id, mediaType);
+    // Doğru mediaType değerini kullandığımızdan emin olalım
+    const buttonMediaType = markWatchedButton.getAttribute('data-type');
+    if (!buttonMediaType) {
+      console.error('Button data-type özelliği bulunamadı, varsayılan olarak popup mediaType kullanılıyor');
+    }
+    // Buttondan alınan type değerini veya popup'tan gelen değeri kullan
+    const finalMediaType = buttonMediaType || mediaType;
+    console.log(`İzlendi olarak işaretleme başlatılıyor: ID ${item.id}, Tür: ${finalMediaType}`);
+    
+    // Eksik mediaType olmadığından emin ol
+    if (!finalMediaType) {
+      alert('Medya türü belirlenemedi. Lütfen tekrar deneyin.');
+      return;
+    }
+    
+    // item.type değeri API'den veri alırken ve içerik eklerken kullanılır
+    // mediaType değeri markup içinde ve düğme özniteliklerinde kullanılır
+    // İki değeri de gönderiyoruz, mediaType boş olursa type kullanılacak
+    markAsWatched(item.id, finalMediaType, item.type);
     popupOverlay.remove();
   });
   
@@ -551,12 +639,22 @@ function updateProgressBar(popupElement, item) {
 // İzleme listesinden kaldır
 async function removeFromWatchlist(id, mediaType) {
   try {
+    // mediaType kontrolü
+    if (!mediaType) {
+      throw new Error('Medya türü belirtilmedi (mediaType: undefined)');
+    }
+    
+    // ID kontrolü
+    if (!id) {
+      throw new Error('İçerik ID bilgisi eksik');
+    }
+    
     // API çağrısı yapılıyor
     console.log(`İzleme listesinden kaldırılıyor: ID ${id}, Tür: ${mediaType}`);
     
     // Onay penceresi göster
     if (confirm("Bu içeriği izleme listenizden kaldırmak istediğinize emin misiniz?")) {
-      const result = await window.watchflowAPI.removeFromWatchlist(id, mediaType);
+      const result = await window.watchflowAPI.removeFromWatchlist(parseInt(id), mediaType);
       
       if (result.success) {
         // Başarı durumunda bildirim göster (isteğe bağlı)
@@ -575,8 +673,19 @@ async function removeFromWatchlist(id, mediaType) {
 }
 
 // İzlendi olarak işaretle
-async function markAsWatched(id, mediaType) {
+async function markAsWatched(id, mediaType, originalType) {
   try {
+    // mediaType kontrolü
+    if (!mediaType) {
+      // Eğer mediaType yoksa, orijinal içerik tipini kullan
+      if (originalType) {
+        console.warn(`mediaType tanımsız, bunun yerine originalType kullanılıyor: ${originalType}`);
+        mediaType = originalType;
+      } else {
+        throw new Error('Medya türü belirtilmedi (mediaType: undefined)');
+      }
+    }
+    
     // API çağrısı yapılıyor
     console.log(`İzlendi olarak işaretleniyor: ID ${id}, Tür: ${mediaType}`);
     
@@ -586,14 +695,44 @@ async function markAsWatched(id, mediaType) {
       : "Bu içeriği ve TÜM bölümlerini izlendi olarak işaretlemek istediğinize emin misiniz?";
     
     if (confirm(confirmMessage)) {
-      const result = await window.watchflowAPI.markAsWatched(id, mediaType);
+      // ID doğrulaması
+      if (!id) {
+        throw new Error('İçerik ID bilgisi eksik');
+      }
+      
+      // Önce mevcut verileri alalım
+      const watchlistBefore = await window.watchflowAPI.getWatchlist();
+      
+      // Hangi kategoride olduğunu bulalım - mediaType keyinin varlığını kontrol et
+      if (!watchlistBefore[mediaType]) {
+        throw new Error(`Geçersiz medya türü: ${mediaType}. Mevcut kategoriler: ${Object.keys(watchlistBefore).join(', ')}`);
+      }
+      
+      const originalCategory = watchlistBefore[mediaType].find(item => item.id.toString() === id.toString());
+      if (!originalCategory) {
+        throw new Error(`${mediaType} kategorisinde ${id} ID'li içerik bulunamadı`);
+      }
+      
+      const originalStatus = originalCategory ? originalCategory.status : null;
+      
+      // Tüm gerekli alanları eksiksiz gönder
+      console.log(`Sunucuya gönderilecek veriler: ID=${id}, MediaType=${mediaType}`);
+      const result = await window.watchflowAPI.markAsWatched({
+        id: parseInt(id),
+        mediaType: mediaType,
+        type: mediaType // type alanını da ekle, bazı eski kod bu alanı kullanabilir
+      });
       
       if (result.success) {
-        // Başarı durumunda bildirim göster (isteğe bağlı)
-        // alert(result.message);
+        // Watchlist verilerini tamamen yeniden yükleyelim
+        await loadWatchlist();
         
-        // Listeyi yeniden yükle
-        loadWatchlist();
+        // Eğer durum değiştiyse sayfayı yeniden yükle
+        if (originalStatus && originalStatus !== 'izlendi') {
+          // Aktif sayfayı al ve yeniden yükle
+          const activeTabId = document.querySelector('.main-nav a.active').getAttribute('data-page');
+          showPage(activeTabId);
+        }
       } else {
         throw new Error(result.error || 'Bilinmeyen bir hata oluştu');
       }
@@ -903,6 +1042,40 @@ async function addToWatchlist(item, button) {
       }
     }
 
+    // Dizi veya anime ise, hemen sezon bilgilerini al
+    if ((item.type === 'tv' || item.type === 'anime') && (!item.seasons || !item.totalSeasons)) {
+      try {
+        console.log(`${item.type === 'tv' ? 'Dizi' : 'Anime'} sezon bilgileri alınıyor: ${item.id}`);
+        let seasonsData;
+        
+        if (item.type === 'tv') {
+          seasonsData = await window.watchflowAPI.getTvShowSeasons(item.id);
+        } else {
+          seasonsData = await window.watchflowAPI.getAnimeSeasons(item.id);
+        }
+
+        if (seasonsData) {
+          // Sezon bilgileri farklı yapılarda gelebilir, kontrol edelim
+          if (Array.isArray(seasonsData)) {
+            // Direkt dizi olarak geldiyse
+            item.seasons = seasonsData;
+            item.totalSeasons = seasonsData.length;
+          } else if (Array.isArray(seasonsData.seasons)) {
+            // Obje içinde seasons dizisi olarak geldiyse
+            item.seasons = seasonsData.seasons;
+            item.totalSeasons = seasonsData.totalSeasons || seasonsData.seasons.length;
+          } else {
+            // Tek sezon olarak geldiyse
+            item.seasons = [seasonsData];
+            item.totalSeasons = 1;
+          }
+          console.log(`Sezon bilgileri alındı: ${item.totalSeasons} sezon`);
+        }
+      } catch (error) {
+        console.error('Sezon bilgileri alınırken hata:', error);
+      }
+    }
+
     // Öğeyi izleme listesine eklemek için preload.js aracılığıyla main process'e gönder
     const result = await window.watchflowAPI.addToWatchlist(item);
     
@@ -1209,52 +1382,29 @@ function showRatingPopup(item, mediaType, button) {
     // Yıldıza tıklandığında
     star.addEventListener('click', async () => {
       const rating = index + 1; // 1-5 arası puan
-      const mediaId = parseInt(ratingStars.getAttribute('data-media-id'));
+      const mediaId = ratingStars.getAttribute('data-media-id');
       const mediaType = ratingStars.getAttribute('data-media-type');
       
-      // Puanı kaydet
       try {
         const result = await window.watchflowAPI.updateContentRating({
-          mediaId: mediaId,
+          mediaId: parseInt(mediaId),
           mediaType: mediaType,
           rating: rating
         });
         
         if (result.success) {
-          // Popup'ı kapat
-          popup.remove();
+          // Data attribute'ü güncelle
+          ratingStars.setAttribute('data-rating', rating.toString());
           
-          // Kart üzerindeki puanı hemen güncelle
-          const card = button.closest('.media-card');
-          if (card) {
-            // Mevcut puan eklemesini veya göstergesini kaldır
-            const existingRating = card.querySelector('.media-card-rating-add');
-            if (existingRating) {
-              existingRating.remove();
-            }
-            
-            // Yeni kullanıcı puanını ekle
-            const userRatingDiv = document.createElement('div');
-            userRatingDiv.className = 'media-card-rating user';
-            userRatingDiv.innerHTML = `
-              <span class="star-icon">★</span> ${Number(rating).toFixed(1)}
-            `;
-            
-            // Eğer platform puanı varsa ondan sonra ekleyelim
-            const platformRating = card.querySelector('.media-card-rating.platform');
-            if (platformRating) {
-              platformRating.after(userRatingDiv);
-            } else {
-              // Yoksa kartın başına ekleyelim
-              card.prepend(userRatingDiv);
-            }
-          }
+          // Tüm yıldızları yeniden doğru şekilde ayarla
+          const allStars = ratingStars.querySelectorAll('.star');
+          updateStarDisplay(allStars, rating);
           
-          // İtem nesnesini de güncelle (detaylar için erişim sağlamak üzere)
+          // Ana nesnedeki değeri güncelle
           item.userRating = rating;
           
-          // İzleme listesini yeniden yükle
-          loadWatchlist();
+          // Tüm izleme listesini yenile
+          await loadWatchlist();
         }
       } catch (error) {
         console.error('Puan güncellenirken hata:', error);

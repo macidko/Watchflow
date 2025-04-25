@@ -143,9 +143,26 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
   },
   
   // İçeriği izlendi olarak işaretle
-  markAsWatched: async (id, mediaType) => {
+  markAsWatched: async (data) => {
     try {
-      return await ipcRenderer.invoke('mark-as-watched', { id, mediaType });
+      // Data kontrolü
+      if (!data) {
+        console.error('markAsWatched: data parametresi tanımsız veya null');
+        throw new Error('Eksik veya hatalı veri');
+      }
+
+      if (data.id === undefined || data.id === null) {
+        console.error('markAsWatched: data.id tanımsız veya null');
+        throw new Error('Öğe ID bilgisi eksik'); 
+      }
+
+      if (!data.mediaType) {
+        console.error('markAsWatched: data.mediaType tanımsız veya boş');
+        throw new Error('Medya türü bilgisi eksik');
+      }
+      
+      console.log('markAsWatched çağrısı yapılıyor:', data);
+      return await ipcRenderer.invoke('mark-as-watched', data);
     } catch (error) {
       console.error('İzlendi olarak işaretleme hatası:', error);
       throw error;
