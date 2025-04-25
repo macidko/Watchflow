@@ -1,0 +1,17 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### 0.0.4 (2025-04-25)
+
+
+### Bug Fixes
+
+* **anime:** fixed automatic loading of season information ([91302ec](https://github.com/macidko/Watchflow/commit/91302ec4366f875c271eb84cf46a1e93fcf6542f))
+* card, slider ([667fa78](https://github.com/macidko/Watchflow/commit/667fa7831f291f4be38c69bafb59fea0c7613f4e))
+* **core:** refactor main.js into modular services with robust error handling ([eb2267b](https://github.com/macidko/Watchflow/commit/eb2267b58a4ca2c003798410db098d2fe0cb9bc1))
+
+
+### Code Refactoring
+
+* CSS modularization. Split CSS code into logical modules, centralized variables, and cleaned up duplicate code. ([dd01d2b](https://github.com/macidko/Watchflow/commit/dd01d2b614093413ad147952b71ba0088abcfcc1))
