@@ -1,55 +1,54 @@
 # Watchflow 🎬
 
-Film, dizi ve anime takip uygulaması.
+A tracking application for movies, TV shows, and anime.
 
-## Ne İşe Yarar?
+## Features
 
-Watchflow, şunları yapmanızı sağlar:
-- Film/dizi/anime araması
-- İzleme listesi oluşturma
-- Bölüm takibi yapma
-- İlerleme durumunu görme
+Watchflow lets you:
+- Search for movies, TV shows, and anime
+- Create and manage watchlists
+- Track episodes and progress
+- Visualize your watching progress
 
-## Başlangıç
+## Getting Started
 
 ```bash
-# Kurulum
+# Installation
 npm install
 
-# Çalıştırma
+# Run the application
 npm start
 ```
 
-## Derleme
+## Build
 
 ```bash
-# Windows exe
+# Windows executable
 npm run build:win
 ```
 
-## API Anahtarları
+## API Keys
 
-İlk açılışta şu API'ler için anahtar girmeniz gerekiyor:
-- TMDB API: [themoviedb.org](https://www.themoviedb.org/settings/api)  
-- OMDB API: [omdbapi.com](https://www.omdbapi.com/apikey.aspx) -kaldırılacak
+On first launch, you'll need to enter API keys for:
+- TMDB API: [themoviedb.org](https://www.themoviedb.org/settings/api)
 
-## Yapı
+## Project Structure
 
 ```
 src/
-  ├── main/     # Ana süreç
-  ├── renderer/ # Arayüz
-  ├── preload/  # Köprü
-  ├── api/      # Veri
-  └── data/     # Depolama
+  ├── main/     # Main process
+  ├── renderer/ # UI components
+  ├── preload/  # Preload bridge
+  ├── api/      # Data services
+  └── data/     # Local storage
 ```
 
-## Teknolojiler
+## Technologies
 
 - Electron
 - Node.js
-- TMDB & Jikan API
+- TMDB & Jikan APIs
 
-## Lisans
+## License
 
 MIT 
