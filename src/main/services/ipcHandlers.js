@@ -197,20 +197,33 @@ const setupIpcHandlers = (ipcMain) => {
   // İzleme listesine ekle
   ipcMain.handle('add-to-watchlist', async (event, item) => {
     try {
-      return await watchlistManager.addToWatchlist(item);
+      const result = await watchlistManager.addToWatchlist(item);
+      return result;
     } catch (error) {
-      console.error('İzleme listesi kayıt hatası:', error);
-      return { success: false, error: error.message };
+      console.error('Watchlist\'e eklenirken hata:', error);
+      return { error: error.message };
     }
   });
   
   // İzleme listesini al
   ipcMain.handle('get-watchlist', async () => {
     try {
-      return await watchlistManager.getWatchlist();
+      const watchlist = await watchlistManager.getWatchlist();
+      return watchlist;
     } catch (error) {
-      console.error('İzleme listesi okunurken hata:', error);
-      throw new Error('İzleme listesi okunamadı: ' + error.message);
+      console.error('Watchlist alınırken hata:', error);
+      return { error: error.message };
+    }
+  });
+  
+  // Watchlist'i güncelle
+  ipcMain.handle('update-watchlist', async (event, watchlist) => {
+    try {
+      const result = await watchlistManager.updateWatchlist(watchlist);
+      return result;
+    } catch (error) {
+      console.error('Watchlist güncellenirken hata:', error);
+      return { error: error.message };
     }
   });
   

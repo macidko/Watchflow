@@ -444,6 +444,18 @@ const exportWatchlist = async (targetPath) => {
   }
 };
 
+// İzleme listesini güncelle
+const updateWatchlist = async (watchlist) => {
+  try {
+    // JSON'u güncelle
+    await fs.writeFile(getWatchlistPath(), JSON.stringify(watchlist, null, 2));
+    return { success: true };
+  } catch (error) {
+    console.error('İzleme listesi güncelleme hatası:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Modülü dışa aktar
 module.exports = {
   getWatchlistPath,
@@ -454,5 +466,6 @@ module.exports = {
   updateContentRating,
   removeFromWatchlist,
   markAsWatched,
-  exportWatchlist
+  exportWatchlist,
+  updateWatchlist
 }; 

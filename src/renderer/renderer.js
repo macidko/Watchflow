@@ -95,7 +95,10 @@ async function loadWatchlist() {
     renderWatchlistItems('anime', watchlist.anime || []);
     
     // Özel sliderları render et
-    if (watchlist.sliders && watchlist.sliders.length > 0) {
+    // ESKİ YAPI: if (watchlist.sliders && watchlist.sliders.length > 0) {
+    // YENİ YAPI: Kategori bazlı slider kontrolü
+    if (watchlist.sliders && 
+        (watchlist.sliders.movie || watchlist.sliders.tv || watchlist.sliders.anime)) {
       renderCustomSliders(watchlist);
     }
     
@@ -1455,11 +1458,15 @@ function showRatingPopup(item, mediaType, button) {
 
 // Özel sliderları render et
 function renderCustomSliders(watchlist) {
-  // Özel sliderlar için container alacağımız sayfaları seçelim
-  const pages = ['home-page', 'movies-page', 'series-page', 'anime-page'];
+  // Özel sliderlar için container alacağımız sayfaları ve kategorileri eşleştirelim
+  const pageCategories = {
+    'movies-page': 'movie',
+    'series-page': 'tv',
+    'anime-page': 'anime'
+  };
   
   // Her sayfa için
-  pages.forEach(pageId => {
+  Object.entries(pageCategories).forEach(([pageId, category]) => {
     const pageContainer = document.getElementById(pageId);
     if (!pageContainer) return;
     
@@ -1467,52 +1474,115 @@ function renderCustomSliders(watchlist) {
     const existingCustomSliders = pageContainer.querySelectorAll('.slider-section.custom-slider');
     existingCustomSliders.forEach(slider => slider.remove());
     
-    // Her özel slider için
-    watchlist.sliders.forEach(slider => {
-      // Özel slider section oluştur
-      const sliderSection = document.createElement('div');
-      sliderSection.className = 'slider-section custom-slider';
-      sliderSection.setAttribute('data-slider-id', slider.id);
+    // Eğer o kategoride sliderlar varsa
+    if (watchlist.sliders && watchlist.sliders[category]) {
+      // Sliderları index'e göre sırala
+      const categorySliders = [...watchlist.sliders[category]].sort((a, b) => a.index - b.index);
       
-      // Slider başlığını ve düzenleme butonunu ekle
-      sliderSection.innerHTML = `
-        <div class="slider-header">
-          <h3>${slider.name}</h3>
-          <div class="slider-actions">
-            <button class="slider-edit-btn" data-slider-id="${slider.id}">Düzenle</button>
-            <button class="slider-delete-btn" data-slider-id="${slider.id}">Sil</button>
+      // Her slider için
+      categorySliders.forEach(slider => {
+        // Özel slider section oluştur
+        const sliderSection = document.createElement('div');
+        sliderSection.className = 'slider-section custom-slider';
+        sliderSection.setAttribute('data-slider-id', slider.id);
+        
+        // Slider başlığını ve düzenleme butonunu ekle
+        sliderSection.innerHTML = `
+          <div class="slider-header">
+            <h3>${slider.name}</h3>
+            <div class="slider-actions">
+              <button class="slider-edit-btn" data-slider-id="${slider.id}">Düzenle</button>
+              <button class="slider-delete-btn" data-slider-id="${slider.id}">Sil</button>
+            </div>
           </div>
-        </div>
-        <div class="slider-container">
-          <div class="slider-content" id="${slider.id}"></div>
-        </div>
-      `;
-      
-      // Slider'ı sayfaya ekle
-      pageContainer.appendChild(sliderSection);
-      
-      // Slider içeriğini doldur
-      fillCustomSlider(slider, watchlist);
-      
-      // Slider düzenleme butonunu aktifleştir
-      const editButton = sliderSection.querySelector('.slider-edit-btn');
-      if (editButton) {
-        editButton.addEventListener('click', () => {
-          showSliderEditPopup(slider);
-        });
-      }
-      
-      // Slider silme butonunu aktifleştir
-      const deleteButton = sliderSection.querySelector('.slider-delete-btn');
-      if (deleteButton) {
-        deleteButton.addEventListener('click', () => {
-          if (confirm(`"${slider.name}" slider'ını silmek istediğinize emin misiniz?`)) {
-            deleteCustomSlider(slider.id);
-          }
-        });
+          <div class="slider-container">
+            <div class="slider-content" id="${slider.id}"></div>
+          </div>
+        `;
+        
+        // Slider'ı sayfaya ekle
+        pageContainer.appendChild(sliderSection);
+        
+        // Slider için içerik oluşturma (burada kategori tipi ve slider ID'sine göre medya öğelerini filtrele)
+        fillSliderContent(slider.id, category, watchlist);
+        
+        // Slider düzenleme ve silme butonlarını aktifleştir
+        setupSliderButtons(sliderSection, slider);
+      });
+    }
+  });
+  
+  // Home sayfası için tüm kategorilerden slider ekle (opsiyonel)
+  const homePage = document.getElementById('home-page');
+  if (homePage) {
+    // Mevcut özel sliderları temizle
+    const existingHomeSliders = homePage.querySelectorAll('.slider-section.custom-slider');
+    existingHomeSliders.forEach(slider => slider.remove());
+    
+    // Her kategori için seçilen sliderları göster
+    // Burada tüm kategorilerdeki sliderları gösterebilirsiniz veya belirli kriterlere göre filtreleyebilirsiniz
+  }
+}
+
+// Slider içeriğini doldur (kategori tipine göre)
+function fillSliderContent(sliderId, category, watchlist) {
+  const container = document.getElementById(sliderId);
+  if (!container) return;
+  
+  // Burada slider için içerik oluşturma mantığını uygula
+  const items = watchlist[category] || [];
+  
+  // Slider'ı ID'sine göre bul
+  const slider = watchlist.sliders[category].find(s => s.id === sliderId);
+  if (!slider) return;
+  
+  // Slider adına göre filtreleme - slider adı içerik durumunu belirtir (İzleniyor, İzlenecek, İzlendi)
+  // Türkçe karakterleri normalize edip küçük harfe çevirerek karşılaştırma yapıyoruz
+  const sliderNameLower = slider.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  
+  // İzleme durumuna göre filtreleme yap
+  let filteredItems = [];
+  
+  if (sliderNameLower.includes("izleniyor")) {
+    filteredItems = items.filter(item => item.status === "izleniyor");
+  } else if (sliderNameLower.includes("izlenecek")) {
+    filteredItems = items.filter(item => item.status === "izlenecek");
+  } else if (sliderNameLower.includes("izlendi")) {
+    filteredItems = items.filter(item => item.status === "izlendi");
+  } else {
+    // Eğer duruma göre bir filtreleme yoksa, tüm içerikleri göster
+    filteredItems = items;
+  }
+  
+  // Eğer filtrelenmiş içerikler boşsa, bir mesaj göster
+  if (filteredItems.length === 0) {
+    container.innerHTML = '<div class="empty-slider-message">Bu kategoride henüz içerik bulunmuyor</div>';
+    return;
+  }
+  
+  // Slider içeriğini doldur
+  fillSlider(container, filteredItems, category, sliderId);
+}
+
+// Slider butonlarını ayarla
+function setupSliderButtons(sliderSection, slider) {
+  // Düzenleme butonu
+  const editButton = sliderSection.querySelector('.slider-edit-btn');
+  if (editButton) {
+    editButton.addEventListener('click', () => {
+      showSliderEditPopup(slider);
+    });
+  }
+  
+  // Silme butonu
+  const deleteButton = sliderSection.querySelector('.slider-delete-btn');
+  if (deleteButton) {
+    deleteButton.addEventListener('click', () => {
+      if (confirm(`"${slider.name}" slider'ını silmek istediğinize emin misiniz?`)) {
+        deleteCustomSlider(slider.id);
       }
     });
-  });
+  }
 }
 
 // Özel slider içeriğini doldur
@@ -2021,14 +2091,51 @@ async function updateCustomSlider(slider) {
 // Özel slider sil
 async function deleteCustomSlider(sliderId) {
   try {
-    const result = await window.watchflowAPI.deleteCustomSlider(sliderId);
+    // Watchlist'i al
+    const watchlist = await window.watchflowAPI.getWatchlist();
     
-    if (result.success) {
-      // İzleme listesini yeniden yükle
-      loadWatchlist();
-    } else {
-      alert('Slider silinirken bir hata oluştu: ' + result.error);
+    // Sliders yapısı kontrolü
+    if (!watchlist.sliders) {
+      return alert('Slider yapısı bulunamadı!');
     }
+    
+    // Hangi kategoride olduğunu bul
+    let foundCategory = null;
+    let sliderIndex = -1;
+    
+    for (const category in watchlist.sliders) {
+      const index = watchlist.sliders[category].findIndex(s => s.id === sliderId);
+      if (index !== -1) {
+        foundCategory = category;
+        sliderIndex = index;
+        break;
+      }
+    }
+    
+    if (!foundCategory || sliderIndex === -1) {
+      return alert('Silinecek slider bulunamadı!');
+    }
+    
+    // Slider'ı sil
+    watchlist.sliders[foundCategory].splice(sliderIndex, 1);
+    
+    // Kalan sliderların index numaralarını düzenle
+    watchlist.sliders[foundCategory].forEach((slider, index) => {
+      slider.index = index;
+    });
+    
+    // JSON verisini güncelle
+    await window.watchflowAPI.updateWatchlist(watchlist);
+    
+    // Yeniden yükle
+    loadWatchlist();
+    
+    // Eğer slider yönetim sayfası açıksa listeyi güncelle
+    const currentSection = getCurrentSectionId();
+    if (currentSection) {
+      loadSliderList(currentSection);
+    }
+    
   } catch (error) {
     console.error('Slider silme hatası:', error);
     alert('Slider silinirken bir hata oluştu.');
@@ -2139,25 +2246,91 @@ function setupSettingsIcons() {
 }
 
 // Kategori listesini yükle
-function loadSliderList(sectionId) {
+async function loadSliderList(sectionId) {
   const sliderList = document.getElementById('sliderList');
+  if (!sliderList) return;
   
-  // Şu an için dummy data kullanıyoruz - Gerçek veri için API eklenecek
-  // Burada ilgili sekmenin kategorilerini göstereceğiz
+  // Önce listeyi temizle
+  sliderList.innerHTML = '';
   
-  // Silme butonlarına tıklama olayı ekle
-  const deleteButtons = document.querySelectorAll('.slider-action-btn.delete-btn');
-  deleteButtons.forEach(button => {
-    button.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const listItem = this.closest('.slider-list-item');
-      const sliderName = listItem.querySelector('.slider-item-name').textContent;
+  try {
+    // Watchlist'i al
+    const watchlist = await window.watchflowAPI.getWatchlist();
+    
+    // Bölüme göre kategoriyi belirle
+    let category = '';
+    switch(sectionId) {
+      case 'movies-page':
+        category = 'movie';
+        break;
+      case 'series-page':
+        category = 'tv';
+        break;
+      case 'anime-page':
+        category = 'anime';
+        break;
+      default:
+        return; // Geçersiz sayfa
+    }
+    
+    // Eğer o kategoride sliderlar varsa
+    if (watchlist.sliders && watchlist.sliders[category]) {
+      // Sliderları index'e göre sırala
+      const categorySliders = [...watchlist.sliders[category]].sort((a, b) => a.index - b.index);
       
-      if (confirm(`"${sliderName}" kategorisini silmek istediğinizden emin misiniz?`)) {
-        deleteSlider(listItem);
-      }
-    });
-  });
+      // Her slider için listeye öğe ekle
+      categorySliders.forEach(slider => {
+        const newItem = document.createElement('li');
+        newItem.className = 'slider-list-item';
+        newItem.setAttribute('data-slider-id', slider.id);
+        newItem.setAttribute('data-index', slider.index);
+        
+        newItem.innerHTML = `
+          <div class="slider-item-content">
+            <span class="slider-item-name">${slider.name}</span>
+            <div class="slider-item-actions">
+              <button class="slider-action-btn delete-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+              <button class="slider-action-btn drag-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+        
+        // Listeye ekle
+        sliderList.appendChild(newItem);
+        
+        // Silme butonuna tıklama olayı ekle
+        const deleteBtn = newItem.querySelector('.delete-btn');
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (confirm(`"${slider.name}" slider'ını silmek istediğinize emin misiniz?`)) {
+              deleteCustomSlider(slider.id);
+            }
+          });
+        }
+      });
+    }
+    
+    // Sıralama için sürükle-bırak işlevselliğini ayarla
+    setupDragAndDrop(category);
+    
+  } catch (error) {
+    console.error('Slider listesi yüklenirken hata:', error);
+  }
 }
 
 // Yeni kategori ekle
@@ -2218,50 +2391,324 @@ function deleteSlider(sliderElement) {
   sliderElement.remove();
 }
 
-// Sürükle-bırak işlevselliği
-function setupDragAndDrop() {
+// Slider listesi için sürükle-bırak özelliğini ayarla
+function setupDragAndDrop(category) {
   const sliderList = document.getElementById('sliderList');
+  if (!sliderList) return;
+  
+  // Listedeki tüm öğeler
   const items = sliderList.querySelectorAll('.slider-list-item');
   
+  // Sürükleme değişkenleri
+  let draggedItem = null;
+  
+  // Her liste öğesine sürükleme olaylarını ekle
   items.forEach(item => {
-    // Sürükleme özelliğini etkinleştir
-    item.setAttribute('draggable', true);
+    // Sürüklenebilir yap
+    item.setAttribute('draggable', 'true');
     
     // Sürükleme başladığında
-    item.addEventListener('dragstart', () => {
-      setTimeout(() => item.classList.add('dragging'), 0);
+    item.addEventListener('dragstart', function(e) {
+      draggedItem = this;
+      setTimeout(() => {
+        this.classList.add('dragging');
+      }, 0);
     });
     
     // Sürükleme bittiğinde
-    item.addEventListener('dragend', () => {
-      item.classList.remove('dragging');
-    });
-  });
-  
-  // Listeye bırakma işlemi için olay ekle
-  sliderList.addEventListener('dragover', e => {
-    e.preventDefault();
-    const draggingItem = document.querySelector('.dragging');
-    const siblings = [...sliderList.querySelectorAll('.slider-list-item:not(.dragging)')];
-    
-    // Fare konumuna göre en yakın kardeş öğeyi bul
-    const nextSibling = siblings.find(sibling => {
-      const box = sibling.getBoundingClientRect();
-      const offset = e.clientY - box.top - box.height / 2;
-      return offset < 0;
+    item.addEventListener('dragend', function() {
+      this.classList.remove('dragging');
+      // Tüm öğelerin sırasını güncelle
+      updateSliderOrder(category);
     });
     
-    // Yeni konuma taşı
-    if (nextSibling) {
-      sliderList.insertBefore(draggingItem, nextSibling);
-    } else {
-      sliderList.appendChild(draggingItem);
-    }
+    // Sürükleme üzerine geldiğinde
+    item.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      if (draggedItem === this) return;
+      
+      // Sürüklenen öğenin pozisyonunu ve hedef öğenin pozisyonunu belirle
+      const draggedRect = draggedItem.getBoundingClientRect();
+      const targetRect = this.getBoundingClientRect();
+      
+      // Eğer sürüklenen öğe hedef öğenin üst yarısındaysa, üstüne ekle
+      // Aksi halde, altına ekle
+      if (e.clientY < targetRect.top + (targetRect.height / 2)) {
+        sliderList.insertBefore(draggedItem, this);
+      } else {
+        sliderList.insertBefore(draggedItem, this.nextSibling);
+      }
+    });
   });
+}
+
+// Slider sıralamasını güncelle
+async function updateSliderOrder(category) {
+  try {
+    // Watchlist'i al
+    const watchlist = await window.watchflowAPI.getWatchlist();
+    if (!watchlist.sliders || !watchlist.sliders[category]) return;
+    
+    // Listedeki tüm slider öğelerini al
+    const items = document.querySelectorAll('#sliderList .slider-list-item');
+    
+    // Her öğe için index'i güncelle
+    items.forEach((item, index) => {
+      const sliderId = item.getAttribute('data-slider-id');
+      
+      // JSON'daki slider'ı bul ve index'i güncelle
+      const sliderIndex = watchlist.sliders[category].findIndex(s => s.id === sliderId);
+      if (sliderIndex !== -1) {
+        watchlist.sliders[category][sliderIndex].index = index;
+      }
+      
+      // Görsel olarak da index'i güncelle
+      item.setAttribute('data-index', index);
+    });
+    
+    // JSON verisini güncelle
+    await window.watchflowAPI.updateWatchlist(watchlist);
+    
+    // Sayfadaki sliderları yeniden yükle
+    loadWatchlist();
+    
+  } catch (error) {
+    console.error('Slider sıralaması güncellenirken hata:', error);
+    alert('Slider sıralaması güncellenirken bir hata oluştu.');
+  }
 }
 
 // Aktif sekmeyi bul
 function getCurrentSectionId() {
   const activeSection = document.querySelector('.page-section.active');
   return activeSection ? activeSection.id : null;
+}
+
+// Yeni slider ekle
+async function addNewSlider(sectionId) {
+  const sliderName = prompt('Yeni slider adını girin:');
+  
+  if (!sliderName || sliderName.trim() === '') return;
+  
+  // Bölüme göre kategoriyi belirle
+  let category = '';
+  switch(sectionId) {
+    case 'movies-page':
+      category = 'movie';
+      break;
+    case 'series-page':
+      category = 'tv';
+      break;
+    case 'anime-page':
+      category = 'anime';
+      break;
+    default:
+      alert('Geçersiz sayfa kategorisi!');
+      return;
+  }
+  
+  try {
+    // Watchlist'i al
+    const watchlist = await window.watchflowAPI.getWatchlist();
+    
+    // Kategori için sliders yoksa oluştur
+    if (!watchlist.sliders) {
+      watchlist.sliders = {};
+    }
+    
+    if (!watchlist.sliders[category]) {
+      watchlist.sliders[category] = [];
+    }
+    
+    // O kategorideki en yüksek index'i bul
+    let maxIndex = -1;
+    if (watchlist.sliders[category].length > 0) {
+      maxIndex = Math.max(...watchlist.sliders[category].map(s => s.index));
+    }
+    
+    // Yeni slider oluştur
+    const newSlider = {
+      id: `${category}-slider-${Date.now()}`,
+      name: sliderName.trim(),
+      index: maxIndex + 1
+    };
+    
+    // Slider'ı ekle
+    watchlist.sliders[category].push(newSlider);
+    
+    // JSON verisini güncelle
+    await window.watchflowAPI.updateWatchlist(watchlist);
+    
+    // Slider listesini güncelle
+    loadSliderList(sectionId);
+    
+    // İçerik sayfalarını yeniden yükle
+    loadWatchlist();
+    
+  } catch (error) {
+    console.error('Yeni slider eklenirken hata:', error);
+    alert('Slider eklenirken bir hata oluştu.');
+  }
+}
+
+// Yeni slider ekle butonuna tıklandığında gösterilecek modal
+function showAddSliderModal(sectionId) {
+  // Mevcut bir modal varsa kaldır
+  const existingModal = document.querySelector('.add-slider-modal-overlay');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // Modal overlay oluştur
+  const modalOverlay = document.createElement('div');
+  modalOverlay.className = 'add-slider-modal-overlay';
+  
+  // Modal içeriği
+  modalOverlay.innerHTML = `
+    <div class="add-slider-modal">
+      <div class="add-slider-modal-header">
+        <h3>Yeni Slider Ekle</h3>
+        <button class="add-slider-modal-close">&times;</button>
+      </div>
+      <div class="add-slider-modal-body">
+        <div class="form-group">
+          <label for="new-slider-name">Slider Adı</label>
+          <input type="text" id="new-slider-name" class="slider-edit-input" placeholder="Slider adı girin">
+        </div>
+        <div class="add-slider-modal-actions">
+          <button id="cancel-add-slider" class="slider-edit-cancel-btn">İptal</button>
+          <button id="confirm-add-slider" class="slider-edit-save-btn">Ekle</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Modal'ı sayfaya ekle
+  document.body.appendChild(modalOverlay);
+  
+  // İptal butonuna tıklama olayı
+  const cancelButton = modalOverlay.querySelector('#cancel-add-slider');
+  cancelButton.addEventListener('click', () => {
+    modalOverlay.remove();
+  });
+  
+  // Kapatma butonuna tıklama olayı
+  const closeButton = modalOverlay.querySelector('.add-slider-modal-close');
+  closeButton.addEventListener('click', () => {
+    modalOverlay.remove();
+  });
+  
+  // Modal dışına tıklanınca kapat
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+      modalOverlay.remove();
+    }
+  });
+  
+  // Ekle butonuna tıklama olayı
+  const confirmButton = modalOverlay.querySelector('#confirm-add-slider');
+  confirmButton.addEventListener('click', async () => {
+    const sliderName = document.getElementById('new-slider-name').value.trim();
+    
+    if (!sliderName) {
+      alert('Lütfen bir slider adı girin!');
+      return;
+    }
+    
+    // Slider'ı ekle
+    await createNewSlider(sectionId, sliderName);
+    
+    // Modal'ı kapat
+    modalOverlay.remove();
+  });
+  
+  // Input'a otomatik odaklan
+  const nameInput = document.getElementById('new-slider-name');
+  nameInput.focus();
+  
+  // Enter tuşuna basıldığında da ekle
+  nameInput.addEventListener('keypress', async (e) => {
+    if (e.key === 'Enter') {
+      const sliderName = nameInput.value.trim();
+      
+      if (!sliderName) {
+        alert('Lütfen bir slider adı girin!');
+        return;
+      }
+      
+      // Slider'ı ekle
+      await createNewSlider(sectionId, sliderName);
+      
+      // Modal'ı kapat
+      modalOverlay.remove();
+    }
+  });
+}
+
+// Yeni slider ekle
+async function createNewSlider(sectionId, sliderName) {
+  // Bölüme göre kategoriyi belirle
+  let category = '';
+  switch(sectionId) {
+    case 'movies-page':
+      category = 'movie';
+      break;
+    case 'series-page':
+      category = 'tv';
+      break;
+    case 'anime-page':
+      category = 'anime';
+      break;
+    default:
+      alert('Geçersiz sayfa kategorisi!');
+      return;
+  }
+  
+  try {
+    // Watchlist'i al
+    const watchlist = await window.watchflowAPI.getWatchlist();
+    
+    // Kategori için sliders yoksa oluştur
+    if (!watchlist.sliders) {
+      watchlist.sliders = {};
+    }
+    
+    if (!watchlist.sliders[category]) {
+      watchlist.sliders[category] = [];
+    }
+    
+    // O kategorideki en yüksek index'i bul
+    let maxIndex = -1;
+    if (watchlist.sliders[category].length > 0) {
+      maxIndex = Math.max(...watchlist.sliders[category].map(s => s.index));
+    }
+    
+    // Yeni slider oluştur
+    const newSlider = {
+      id: `${category}-slider-${Date.now()}`,
+      name: sliderName.trim(),
+      index: maxIndex + 1
+    };
+    
+    // Slider'ı ekle
+    watchlist.sliders[category].push(newSlider);
+    
+    // JSON verisini güncelle
+    await window.watchflowAPI.updateWatchlist(watchlist);
+    
+    // Slider listesini güncelle
+    loadSliderList(sectionId);
+    
+    // İçerik sayfalarını yeniden yükle
+    loadWatchlist();
+    
+  } catch (error) {
+    console.error('Yeni slider eklenirken hata:', error);
+    alert('Slider eklenirken bir hata oluştu.');
+  }
+}
+
+// Yeni slider ekle butonuna tıklama olayı
+function addNewSlider(sectionId) {
+  showAddSliderModal(sectionId);
 }

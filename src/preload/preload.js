@@ -112,6 +112,16 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
     }
   },
   
+  // İzleme listesini güncelle
+  updateWatchlist: async (watchlist) => {
+    try {
+      return await ipcRenderer.invoke('update-watchlist', watchlist);
+    } catch (error) {
+      console.error('İzleme listesini güncelleme hatası:', error);
+      throw error;
+    }
+  },
+  
   // Bölüm izleme durumunu güncelle
   updateEpisodeStatus: async (data) => {
     try {
