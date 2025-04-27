@@ -34,13 +34,281 @@ const ensureWatchlistExists = async () => {
     // watchlist.json dosyasının varlığını kontrol et
     try {
       await fs.access(watchlistPath);
+      
+      // Dosya varsa, içeriğini oku ve yapıyı kontrol et
+      const watchlistData = await fs.readFile(watchlistPath, 'utf8');
+      let watchlist;
+      
+      try {
+        watchlist = JSON.parse(watchlistData);
+        let isModified = false;
+        
+        // Ana kategori alanlarını kontrol et
+        const requiredCategories = ['movie', 'tv', 'anime'];
+        requiredCategories.forEach(category => {
+          if (!watchlist[category]) {
+            watchlist[category] = [];
+            isModified = true;
+            console.log(`${category} kategorisi eksikti, oluşturuldu`);
+          }
+        });
+        
+        // Sliders yapısını kontrol et
+        if (!watchlist.sliders) {
+          watchlist.sliders = {
+            movie: [
+              {
+                id: `movie-slider-${Date.now()}-1`,
+                name: "İzleniyor",
+                index: 0
+              },
+              {
+                id: `movie-slider-${Date.now()}-2`,
+                name: "İzlenecek",
+                index: 1
+              },
+              {
+                id: `movie-slider-${Date.now()}-3`,
+                name: "İzlendi",
+                index: 2
+              }
+            ],
+            tv: [
+              {
+                id: `tv-slider-${Date.now()}-1`,
+                name: "İzleniyor",
+                index: 0
+              },
+              {
+                id: `tv-slider-${Date.now()}-2`,
+                name: "İzlenecek",
+                index: 1
+              },
+              {
+                id: `tv-slider-${Date.now()}-3`,
+                name: "İzlendi",
+                index: 2
+              }
+            ],
+            anime: [
+              {
+                id: `anime-slider-${Date.now()}-1`,
+                name: "İzleniyor",
+                index: 0
+              },
+              {
+                id: `anime-slider-${Date.now()}-2`,
+                name: "İzlenecek",
+                index: 1
+              },
+              {
+                id: `anime-slider-${Date.now()}-3`,
+                name: "İzlendi",
+                index: 2
+              }
+            ]
+          };
+          isModified = true;
+          console.log('sliders yapısı eksikti, varsayılan sliderlarla oluşturuldu');
+        } 
+        else if (Array.isArray(watchlist.sliders)) {
+          // Eski yapıyı yeni yapıya dönüştür
+          watchlist.sliders = {
+            movie: [
+              {
+                id: `movie-slider-${Date.now()}-1`,
+                name: "İzleniyor",
+                index: 0
+              },
+              {
+                id: `movie-slider-${Date.now()}-2`,
+                name: "İzlenecek",
+                index: 1
+              },
+              {
+                id: `movie-slider-${Date.now()}-3`,
+                name: "İzlendi",
+                index: 2
+              }
+            ],
+            tv: [
+              {
+                id: `tv-slider-${Date.now()}-1`,
+                name: "İzleniyor",
+                index: 0
+              },
+              {
+                id: `tv-slider-${Date.now()}-2`,
+                name: "İzlenecek",
+                index: 1
+              },
+              {
+                id: `tv-slider-${Date.now()}-3`,
+                name: "İzlendi",
+                index: 2
+              }
+            ],
+            anime: [
+              {
+                id: `anime-slider-${Date.now()}-1`,
+                name: "İzleniyor",
+                index: 0
+              },
+              {
+                id: `anime-slider-${Date.now()}-2`,
+                name: "İzlenecek",
+                index: 1
+              },
+              {
+                id: `anime-slider-${Date.now()}-3`,
+                name: "İzlendi",
+                index: 2
+              }
+            ]
+          };
+          isModified = true;
+          console.log('sliders yapısı eski formattaydı, varsayılan sliderlarla yeni formata dönüştürüldü');
+        }
+        else {
+          // Sliders içindeki kategori alanlarını kontrol et
+          requiredCategories.forEach(category => {
+            if (!watchlist.sliders[category]) {
+              watchlist.sliders[category] = [];
+              isModified = true;
+              console.log(`sliders.${category} kategorisi eksikti, oluşturuldu`);
+            }
+          });
+        }
+        
+        // Eğer değişiklik yapıldıysa dosyayı güncelle
+        if (isModified) {
+          await fs.writeFile(watchlistPath, JSON.stringify(watchlist, null, 2), 'utf8');
+          console.log('watchlist.json yapısı güncellendi');
+        }
+      } catch (error) {
+        console.error('JSON ayrıştırma hatası, dosya yeniden oluşturuluyor:', error);
+        // JSON ayrıştırılamadıysa, yeni bir dosya oluştur
+        const emptyWatchlist = {
+          movie: [],
+          tv: [],
+          anime: [],
+          sliders: {
+            movie: [
+              {
+                id: `movie-slider-${Date.now()}-1`,
+                name: "İzleniyor",
+                index: 0
+              },
+              {
+                id: `movie-slider-${Date.now()}-2`,
+                name: "İzlenecek",
+                index: 1
+              },
+              {
+                id: `movie-slider-${Date.now()}-3`,
+                name: "İzlendi",
+                index: 2
+              }
+            ],
+            tv: [
+              {
+                id: `tv-slider-${Date.now()}-1`,
+                name: "İzleniyor",
+                index: 0
+              },
+              {
+                id: `tv-slider-${Date.now()}-2`,
+                name: "İzlenecek",
+                index: 1
+              },
+              {
+                id: `tv-slider-${Date.now()}-3`,
+                name: "İzlendi",
+                index: 2
+              }
+            ],
+            anime: [
+              {
+                id: `anime-slider-${Date.now()}-1`,
+                name: "İzleniyor",
+                index: 0
+              },
+              {
+                id: `anime-slider-${Date.now()}-2`,
+                name: "İzlenecek",
+                index: 1
+              },
+              {
+                id: `anime-slider-${Date.now()}-3`,
+                name: "İzlendi",
+                index: 2
+              }
+            ]
+          }
+        };
+        await fs.writeFile(watchlistPath, JSON.stringify(emptyWatchlist, null, 2), 'utf8');
+        console.log(`watchlist.json dosyası yeniden oluşturuldu: ${watchlistPath}`);
+      }
+      
     } catch (error) {
       // Dosya yoksa oluştur - boş kategori yapısıyla
       const emptyWatchlist = {
         movie: [],
         tv: [],
         anime: [],
-        sliders: []
+        sliders: {
+          movie: [
+            {
+              id: `movie-slider-${Date.now()}-1`,
+              name: "İzleniyor",
+              index: 0
+            },
+            {
+              id: `movie-slider-${Date.now()}-2`,
+              name: "İzlenecek",
+              index: 1
+            },
+            {
+              id: `movie-slider-${Date.now()}-3`,
+              name: "İzlendi",
+              index: 2
+            }
+          ],
+          tv: [
+            {
+              id: `tv-slider-${Date.now()}-1`,
+              name: "İzleniyor",
+              index: 0
+            },
+            {
+              id: `tv-slider-${Date.now()}-2`,
+              name: "İzlenecek",
+              index: 1
+            },
+            {
+              id: `tv-slider-${Date.now()}-3`,
+              name: "İzlendi",
+              index: 2
+            }
+          ],
+          anime: [
+            {
+              id: `anime-slider-${Date.now()}-1`,
+              name: "İzleniyor",
+              index: 0
+            },
+            {
+              id: `anime-slider-${Date.now()}-2`,
+              name: "İzlenecek",
+              index: 1
+            },
+            {
+              id: `anime-slider-${Date.now()}-3`,
+              name: "İzlendi",
+              index: 2
+            }
+          ]
+        }
       };
       await fs.writeFile(watchlistPath, JSON.stringify(emptyWatchlist, null, 2), 'utf8');
       console.log(`watchlist.json dosyası oluşturuldu: ${watchlistPath}`);
@@ -61,7 +329,24 @@ const getWatchlist = async () => {
     
     // JSON'u oku ve döndür
     const watchlistData = await fs.readFile(getWatchlistPath(), 'utf8');
-    return JSON.parse(watchlistData);
+    let watchlist = JSON.parse(watchlistData);
+    
+    // Sliders yapısını kontrol et
+    if (watchlist.sliders && Array.isArray(watchlist.sliders)) {
+      console.log('Eski slider yapısı tespit edildi, yeni yapıya dönüştürülüyor...');
+      // Eski yapıyı yeni yapıya dönüştür
+      watchlist.sliders = {
+        movie: [],
+        tv: [],
+        anime: []
+      };
+      
+      // Değişikliği kaydet
+      await fs.writeFile(getWatchlistPath(), JSON.stringify(watchlist, null, 2), 'utf8');
+      console.log('Slider yapısı güncellendi');
+    }
+    
+    return watchlist;
   } catch (error) {
     console.error('İzleme listesi okunurken hata:', error);
     throw new Error('İzleme listesi okunamadı: ' + error.message);
@@ -305,114 +590,11 @@ const removeFromWatchlist = async (data) => {
   }
 };
 
-// İçeriği izlendi olarak işaretle
+// İzlendi olarak işaretle (artık renderer.js tarafından doğrudan yapılıyor)
 const markAsWatched = async (data) => {
-  try {
-    // Veri kontrolü
-    if (!data) {
-      throw new Error('Veri bulunamadı (data: undefined)');
-    }
-    
-    console.log('markAsWatched called with data:', JSON.stringify(data));
-    
-    // ID ve mediaType parametrelerini destekle
-    let id, mediaType;
-    
-    // Eğer data bir obje ise (yeni format)
-    if (typeof data === 'object' && data !== null) {
-      id = data.id;
-      // Önce mediaType, yoksa type parametresini kullan (geriye dönük uyumluluk için)
-      mediaType = data.mediaType || data.type;
-    } 
-    // Eski format - iki ayrı parametre 
-    else if (arguments.length === 2) {
-      id = arguments[0];
-      mediaType = arguments[1];
-    } else {
-      throw new Error('Geçersiz parametreler');
-    }
-    
-    // Değerlerin varlığını kontrol et
-    if (id === undefined || id === null) {
-      throw new Error('İçerik ID bilgisi eksik');
-    }
-    
-    if (!mediaType) {
-      throw new Error('Medya türü belirtilmedi (mediaType ve type: undefined)');
-    }
-
-    // Sayı değerine dönüştür
-    id = Number(id);
-    
-    console.log(`Processing mark as watched: ID=${id}, MediaType=${mediaType}`);
-    
-    // İzleme listesi dosyasının var olduğundan emin ol
-    await ensureWatchlistExists();
-    
-    // JSON'u oku
-    const watchlist = await getWatchlist();
-    
-    // watchlist içeriğini kontrol et
-    console.log('Available categories in watchlist:', Object.keys(watchlist));
-    
-    // İlgili kategoriyi kontrol et
-    if (!watchlist[mediaType]) {
-      throw new Error(`Geçersiz medya türü: ${mediaType}. Mevcut kategoriler: ${Object.keys(watchlist).join(', ')}`);
-    }
-    
-    // Öğeyi bul
-    const itemIndex = watchlist[mediaType].findIndex(item => Number(item.id) === id);
-    
-    if (itemIndex === -1) {
-      throw new Error(`İşaretlenecek öğe bulunamadı (ID: ${id}, MediaType: ${mediaType})`);
-    }
-    
-    // Mevcut içeriğin başlığı ve diğer bilgileri
-    const item = watchlist[mediaType][itemIndex];
-    console.log(`İzlendi olarak işaretleniyor: "${item.title}" (${mediaType}), ID: ${id}`);
-    
-    // Durum bilgisini güncelle
-    watchlist[mediaType][itemIndex].status = 'izlendi';
-    
-    // Film ise direkt izlendi olarak işaretle, dizi/anime ise tüm bölümleri izlendi olarak işaretle
-    if (mediaType === 'tv' || mediaType === 'anime') {
-      // Eğer seasons bilgisi varsa
-      if (item.seasons && item.seasons.length > 0) {
-        // Tüm bölümleri izlendi olarak işaretle
-        let watchedEpisodes = [];
-        
-        item.seasons.forEach(season => {
-          const seasonNumber = season.seasonNumber;
-          const episodeCount = season.episodeCount;
-          
-          // Her bölüm için izlendi kaydı ekle
-          for (let i = 1; i <= episodeCount; i++) {
-            watchedEpisodes.push(`s${seasonNumber}e${i}`);
-          }
-        });
-        
-        // İzlenen bölümleri güncelle
-        watchlist[mediaType][itemIndex].watchedEpisodes = watchedEpisodes;
-      }
-    }
-    
-    // Güncelleme tarihi ekle
-    watchlist[mediaType][itemIndex].updatedAt = new Date().toISOString();
-    
-    // JSON'u güncelle
-    await fs.writeFile(getWatchlistPath(), JSON.stringify(watchlist, null, 2));
-    
-    return { 
-      success: true,
-      message: `"${item.title}" izlendi olarak işaretlendi`
-    };
-  } catch (error) {
-    console.error('İzlendi olarak işaretleme hatası:', error);
-    return { 
-      success: false, 
-      error: error.message 
-    };
-  }
+  // Bu fonksiyon artık kullanılmıyor, renderer.js'te direkt watchlist güncellemesi yapılıyor
+  console.warn('markAsWatched fonksiyonu artık kullanımda değil. Renderer tarafında güncellemeler yapılıyor.');
+  return { success: true };
 };
 
 // İzleme listesini dışa aktar

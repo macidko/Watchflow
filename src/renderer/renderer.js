@@ -74,56 +74,36 @@ function setupWindowControls() {
 }
 
 // İzleme listesi verilerini yükle
-let watchlistData = null; // global değişken olarak tanımla
-
 async function loadWatchlist() {
   try {
-    // İzleme listesini API üzerinden al
+    // İzleme listesini al
     const watchlist = await window.watchflowAPI.getWatchlist();
     
-    // Global değişkene kaydet
-    watchlistData = watchlist;
-    
-    // Önce tüm slider içeriklerini temizle
-    document.querySelectorAll('.slider-content').forEach(slider => {
-      slider.innerHTML = '';
-    });
-    
-    // Farklı kategorileri ilgili divlere doldur
-    renderWatchlistItems('movie', watchlist.movie || []);
-    renderWatchlistItems('tv', watchlist.tv || []);
-    renderWatchlistItems('anime', watchlist.anime || []);
+    // Global değişkene kaydet (diğer fonksiyonlar tarafından kullanılmak üzere)
+    window.currentWatchlist = watchlist;
     
     // Özel sliderları render et
-    // ESKİ YAPI: if (watchlist.sliders && watchlist.sliders.length > 0) {
-    // YENİ YAPI: Kategori bazlı slider kontrolü
-    if (watchlist.sliders && 
-        (watchlist.sliders.movie || watchlist.sliders.tv || watchlist.sliders.anime)) {
-      renderCustomSliders(watchlist);
+    renderCustomSliders(watchlist);
+    
+    // Film listesini render et
+    if (watchlist.movie && watchlist.movie.length > 0) {
+      renderWatchlistItems('movie', watchlist.movie);
     }
     
-    // İçerikleri detaylar butonu
-    document.querySelectorAll('.watchlist-item-details-button').forEach(button => {
-      button.addEventListener('click', event => {
-        event.stopPropagation();
-        
-        const itemElement = button.closest('.watchlist-item');
-        const itemId = itemElement.getAttribute('data-id');
-        const mediaType = itemElement.getAttribute('data-type');
-        
-        // İlgili listedeki öğeyi bul
-        const item = watchlist[mediaType].find(i => i.id.toString() === itemId.toString());
-        if (item) {
-          showMediaDetails(item, mediaType);
-        }
-      });
-    });
+    // Dizi listesini render et
+    if (watchlist.tv && watchlist.tv.length > 0) {
+      renderWatchlistItems('tv', watchlist.tv);
+    }
     
-    return watchlist; // Veriyi döndür (böylece işlevler sonucu kullanabilir)
+    // Anime listesini render et
+    if (watchlist.anime && watchlist.anime.length > 0) {
+      renderWatchlistItems('anime', watchlist.anime);
+    }
+    
+    console.log('İzleme listesi başarıyla yüklendi');
   } catch (error) {
     console.error('İzleme listesi yüklenirken hata oluştu:', error);
-    showError('İzleme listesi yüklenemedi. Lütfen daha sonra tekrar deneyiniz.');
-    return null;
+    showError('İzleme listesi yüklenirken bir hata oluştu: ' + error.message);
   }
 }
 
@@ -135,28 +115,34 @@ function renderWatchlistItems(mediaType, items) {
   const typePrefix = mediaType === 'movie' ? 'movies' : 
                      mediaType === 'tv' ? 'series' : 'anime';
   
-  // İzleme durumlarına göre öğeleri ayır
-  const watching = items.filter(item => item.status === 'izleniyor');
-  const planned = items.filter(item => item.status === 'izlenecek');
-  const completed = items.filter(item => item.status === 'izlendi');
-  
   // Slider elementlerini seç
   const watchingContainer = document.getElementById(`${typePrefix}-watching`);
   const plannedContainer = document.getElementById(`${typePrefix}-plan`);
   const completedContainer = document.getElementById(`${typePrefix}-completed`);
   
-  // Her durum için ilgili container'ı doldur
-  if (watching.length > 0) {
-    fillSlider(watchingContainer, watching, mediaType, `${typePrefix}-watching`);
-  }
+  // Watchlist'i al (global değişken olarak yüklenmişti)
+  const watchlist = window.currentWatchlist;
+  if (!watchlist || !watchlist.sliders || !watchlist.sliders[mediaType]) return;
   
-  if (planned.length > 0) {
-    fillSlider(plannedContainer, planned, mediaType, `${typePrefix}-plan`);
-  }
+  // Slider'ları index'e göre sırala
+  const sliders = [...watchlist.sliders[mediaType]].sort((a, b) => a.index - b.index);
   
-  if (completed.length > 0) {
-    fillSlider(completedContainer, completed, mediaType, `${typePrefix}-completed`);
-  }
+  // Her slider için içeriklerini filtrele ve göster
+  sliders.forEach(slider => {
+    // Slider adına göre içerikleri filtrele
+    const filteredItems = items.filter(item => item.status === slider.name);
+    
+    // Varolan slider container'larını kullan
+    if (slider.name.toLowerCase().includes("izleniyor") && watchingContainer && filteredItems.length > 0) {
+      fillSlider(watchingContainer, filteredItems, mediaType, `${typePrefix}-watching`);
+    } 
+    else if (slider.name.toLowerCase().includes("izlenecek") && plannedContainer && filteredItems.length > 0) {
+      fillSlider(plannedContainer, filteredItems, mediaType, `${typePrefix}-plan`);
+    }
+    else if (slider.name.toLowerCase().includes("izlendi") && completedContainer && filteredItems.length > 0) {
+      fillSlider(completedContainer, filteredItems, mediaType, `${typePrefix}-completed`);
+    }
+  });
 }
 
 // Slider'ı kartlarla doldur
@@ -703,67 +689,112 @@ async function removeFromWatchlist(id, mediaType) {
 // İzlendi olarak işaretle
 async function markAsWatched(id, mediaType, originalType) {
   try {
-    // mediaType kontrolü
-    if (!mediaType) {
-      // Eğer mediaType yoksa, orijinal içerik tipini kullan
-      if (originalType) {
-        console.warn(`mediaType tanımsız, bunun yerine originalType kullanılıyor: ${originalType}`);
-        mediaType = originalType;
-      } else {
-        throw new Error('Medya türü belirtilmedi (mediaType: undefined)');
-      }
+    // İzleme listesini al
+    const watchlist = await window.watchflowAPI.getWatchlist();
+    
+    // İzleme listesinde öğeyi bul
+    if (!watchlist[mediaType]) {
+      throw new Error(`${mediaType} kategorisinde içerik bulunamadı`);
     }
     
-    // API çağrısı yapılıyor
-    console.log(`İzlendi olarak işaretleniyor: ID ${id}, Tür: ${mediaType}`);
+    // ID'ye göre öğeyi bul
+    const contentIndex = watchlist[mediaType].findIndex(item => item.id.toString() === id.toString());
+    if (contentIndex === -1) {
+      throw new Error(`ID=${id} ile eşleşen içerik bulunamadı`);
+    }
     
-    // Onay penceresi göster
-    const confirmMessage = mediaType === 'movie' 
-      ? "Bu filmi izlendi olarak işaretlemek istediğinize emin misiniz?" 
-      : "Bu içeriği ve TÜM bölümlerini izlendi olarak işaretlemek istediğinize emin misiniz?";
+    // Mevcut durumu al
+    const currentItem = watchlist[mediaType][contentIndex];
+    const currentStatus = currentItem.status;
     
-    if (confirm(confirmMessage)) {
-      // ID doğrulaması
-      if (!id) {
-        throw new Error('İçerik ID bilgisi eksik');
-      }
+    // Slider'ları kontrol et
+    if (!watchlist.sliders || !watchlist.sliders[mediaType]) {
+      watchlist.sliders = watchlist.sliders || {};
+      watchlist.sliders[mediaType] = [];
+    }
+    
+    // Normalize fonksiyonu - Türkçe karakterleri ve büyük/küçük harfleri normalize eder
+    const normalize = (text) => {
+      return text.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Aksanlı karakterleri kaldır
+        .replace(/ı/g, "i")
+        .replace(/ğ/g, "g")
+        .replace(/ü/g, "u")
+        .replace(/ş/g, "s")
+        .replace(/ç/g, "c")
+        .replace(/ö/g, "o");
+    };
+    
+    // İzlendi içeren bir slider bul
+    let watchedSlider = watchlist.sliders[mediaType].find(slider => 
+      normalize(slider.name).includes("izlendi"));
+    
+    // İzlendi içeren bir slider yoksa, direkt yeni bir İzlendi slider'ı oluştur
+    if (!watchedSlider) {
+      // Yeni "İzlendi" slider'ı oluştur
+      const newSlider = {
+        id: `${mediaType}-slider-${Date.now()}`,
+        name: "İzlendi",
+        index: watchlist.sliders[mediaType].length
+      };
       
-      // Önce mevcut verileri alalım
-      const watchlistBefore = await window.watchflowAPI.getWatchlist();
+      // Slider'ı listeye ekle
+      watchlist.sliders[mediaType].push(newSlider);
+      watchedSlider = newSlider;
       
-      // Hangi kategoride olduğunu bulalım - mediaType keyinin varlığını kontrol et
-      if (!watchlistBefore[mediaType]) {
-        throw new Error(`Geçersiz medya türü: ${mediaType}. Mevcut kategoriler: ${Object.keys(watchlistBefore).join(', ')}`);
-      }
+      console.log(`"İzlendi" slider'ı oluşturuldu çünkü mevcut slider'larda bulunamadı.`);
+    }
+    
+    // Status'ü izlendi olarak değiştir
+    if (currentStatus !== watchedSlider.name) {
+      const confirmMessage = `"${currentItem.title}" adlı içeriği "${watchedSlider.name}" olarak işaretlemek istediğinize emin misiniz?`;
       
-      const originalCategory = watchlistBefore[mediaType].find(item => item.id.toString() === id.toString());
-      if (!originalCategory) {
-        throw new Error(`${mediaType} kategorisinde ${id} ID'li içerik bulunamadı`);
-      }
-      
-      const originalStatus = originalCategory ? originalCategory.status : null;
-      
-      // Tüm gerekli alanları eksiksiz gönder
-      console.log(`Sunucuya gönderilecek veriler: ID=${id}, MediaType=${mediaType}`);
-      const result = await window.watchflowAPI.markAsWatched({
-        id: parseInt(id),
-        mediaType: mediaType,
-        type: mediaType // type alanını da ekle, bazı eski kod bu alanı kullanabilir
-      });
-      
-      if (result.success) {
-        // Watchlist verilerini tamamen yeniden yükleyelim
-        await loadWatchlist();
+      if (confirm(confirmMessage)) {
+        // Status'ü güncelle
+        watchlist[mediaType][contentIndex].status = watchedSlider.name;
         
-        // Eğer durum değiştiyse sayfayı yeniden yükle
-        if (originalStatus && originalStatus !== 'izlendi') {
-          // Aktif sayfayı al ve yeniden yükle
+        // İçerik TV veya Anime ise, tüm bölümleri izlendi olarak işaretle
+        if (mediaType === 'tv' || mediaType === 'anime') {
+          const item = watchlist[mediaType][contentIndex];
+          
+          // watchedEpisodes dizisi yoksa oluştur
+          if (!item.watchedEpisodes) {
+            item.watchedEpisodes = [];
+          }
+          
+          // Tüm bölümleri izlendi olarak işaretle
+          if (item.seasons) {
+            item.seasons.forEach(season => {
+              const seasonNumber = season.seasonNumber;
+              const episodeCount = season.episodeCount;
+              
+              for (let i = 1; i <= episodeCount; i++) {
+                const episodeKey = `s${seasonNumber}e${i}`;
+                if (!item.watchedEpisodes.includes(episodeKey)) {
+                  item.watchedEpisodes.push(episodeKey);
+                }
+              }
+            });
+          }
+        }
+        
+        // Watchlist'i güncelle
+        const result = await window.watchflowAPI.updateWatchlist(watchlist);
+        
+        if (result.success) {
+          // Watchlist'i yeniden yükle
+          await loadWatchlist();
+          
+          // UI'da güncellemeleri göster
           const activeTabId = document.querySelector('.main-nav a.active').getAttribute('data-page');
           showPage(activeTabId);
+        } else {
+          throw new Error(result.error || 'Güncelleme sırasında bir hata oluştu');
         }
-      } else {
-        throw new Error(result.error || 'Bilinmeyen bir hata oluştu');
       }
+    } else {
+      alert(`"${currentItem.title}" zaten ${watchedSlider.name} olarak işaretlenmiş.`);
     }
   } catch (error) {
     console.error('İzlendi olarak işaretleme hatası:', error);
@@ -934,7 +965,10 @@ async function performSearch() {
 
 // Sonuçları görüntüleme işlevi
 function displayResults(results, searchType) {
-  // Sonuçlar container'ını temizle
+  // Dropdown sonuçlar container'ını al
+  const dropdownSearchResults = document.getElementById('dropdownSearchResults');
+  
+  // Container içeriğini temizle
   dropdownSearchResults.innerHTML = '';
   
   // Sonuç yoksa mesaj göster
@@ -954,32 +988,45 @@ function displayResults(results, searchType) {
   resultsGrid.className = 'results-grid';
   dropdownSearchResults.appendChild(resultsGrid);
   
-  // Her sonuç için kart oluştur
+  // Watchlist'i al - mevcut statü seçeneklerini almak için
+  const watchlist = window.currentWatchlist;
+  if (!watchlist || !watchlist.sliders) {
+    console.error('Watchlist veya sliders yapısı bulunamadı');
+    return;
+  }
+  
+  // İlgili kategorinin slider'larını al
+  const sliders = watchlist.sliders[searchType] || [];
+  if (sliders.length === 0) {
+    console.error(`"${searchType}" kategorisi için slider bulunamadı`);
+    return;
+  }
+  
+  // İçerik kartlarını oluştur
   results.forEach(item => {
     // Varsayılan resim - local dosya yolunu kullan
-    const placeholderImage = '../assets/no-image.jpg';
+    const placeholderImage = './assets/images/placeholder.jpg';
+    const imageUrl = item.imageUrl || placeholderImage;
     
-    // Medya türüne göre resim URL'si
-    let imageUrl = item.imageUrl || placeholderImage;
-    
-    // Türe göre gösterilecek tür etiketi
-    let typeLabel = '';
-    if (searchType === 'movie') {
-      typeLabel = 'Film';
-    } else if (searchType === 'tv') {
-      typeLabel = 'Dizi';
-    } else {
-      typeLabel = 'Anime';
-    }
-    
-    // Sonuç kartını oluştur
+    // Her sonuç için yeni kart
     const resultCard = document.createElement('div');
     resultCard.className = 'result-card';
     
-    // Benzersiz bir ID oluştur - kart içindeki form elemanları için
-    const cardId = `card-${item.id}-${Date.now()}`;
+    // Benzersiz bir ID oluştur
+    const cardId = `card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    // Yeni düzen için HTML yapısı - görseldeki kompakt liste görünümü
+    // Status seçenekleri HTML'ini oluştur
+    let statusOptionsHtml = '';
+    sliders.forEach(slider => {
+      statusOptionsHtml += `
+        <label class="status-label">
+          <input type="radio" name="status-${cardId}" value="${slider.name}" class="status-radio">
+          <span>${slider.name}</span>
+        </label>
+      `;
+    });
+    
+    // Yeni düzen için HTML yapısı
     resultCard.innerHTML = `
       <img src="${imageUrl}" alt="${item.title}" class="result-image" onerror="this.src='${placeholderImage}'">
       <div class="result-info">
@@ -988,18 +1035,7 @@ function displayResults(results, searchType) {
       </div>
       <div class="result-actions">
         <div class="watch-status">
-          <label class="status-label">
-            <input type="radio" name="status-${cardId}" value="izleniyor" class="status-radio">
-            <span>İzleniyor</span>
-          </label>
-          <label class="status-label">
-            <input type="radio" name="status-${cardId}" value="izlenecek" class="status-radio">
-            <span>İzlenecek</span>
-          </label>
-          <label class="status-label">
-            <input type="radio" name="status-${cardId}" value="izlendi" class="status-radio">
-            <span>İzlendi</span>
-          </label>
+          ${statusOptionsHtml}
         </div>
         <button class="add-button" disabled data-id="${item.id}" data-title="${item.title}" 
           data-type="${searchType}" data-year="${item.year || ''}" data-image="${imageUrl}">
@@ -1471,7 +1507,7 @@ function renderCustomSliders(watchlist) {
     if (!pageContainer) return;
     
     // Önce eski özel sliderları temizle (statik sliderları koruyarak)
-    const existingCustomSliders = pageContainer.querySelectorAll('.slider-section.custom-slider');
+    const existingCustomSliders = pageContainer.querySelectorAll('.slider-section');
     existingCustomSliders.forEach(slider => slider.remove());
     
     // Eğer o kategoride sliderlar varsa
@@ -1483,17 +1519,14 @@ function renderCustomSliders(watchlist) {
       categorySliders.forEach(slider => {
         // Özel slider section oluştur
         const sliderSection = document.createElement('div');
-        sliderSection.className = 'slider-section custom-slider';
+        sliderSection.className = 'slider-section';
         sliderSection.setAttribute('data-slider-id', slider.id);
         
         // Slider başlığını ve düzenleme butonunu ekle
         sliderSection.innerHTML = `
           <div class="slider-header">
             <h3>${slider.name}</h3>
-            <div class="slider-actions">
-              <button class="slider-edit-btn" data-slider-id="${slider.id}">Düzenle</button>
-              <button class="slider-delete-btn" data-slider-id="${slider.id}">Sil</button>
-            </div>
+          </div>
           </div>
           <div class="slider-container">
             <div class="slider-content" id="${slider.id}"></div>
@@ -1503,25 +1536,12 @@ function renderCustomSliders(watchlist) {
         // Slider'ı sayfaya ekle
         pageContainer.appendChild(sliderSection);
         
-        // Slider için içerik oluşturma (burada kategori tipi ve slider ID'sine göre medya öğelerini filtrele)
+        // Slider için içerik oluşturma
         fillSliderContent(slider.id, category, watchlist);
-        
-        // Slider düzenleme ve silme butonlarını aktifleştir
-        setupSliderButtons(sliderSection, slider);
+
       });
     }
   });
-  
-  // Home sayfası için tüm kategorilerden slider ekle (opsiyonel)
-  const homePage = document.getElementById('home-page');
-  if (homePage) {
-    // Mevcut özel sliderları temizle
-    const existingHomeSliders = homePage.querySelectorAll('.slider-section.custom-slider');
-    existingHomeSliders.forEach(slider => slider.remove());
-    
-    // Her kategori için seçilen sliderları göster
-    // Burada tüm kategorilerdeki sliderları gösterebilirsiniz veya belirli kriterlere göre filtreleyebilirsiniz
-  }
 }
 
 // Slider içeriğini doldur (kategori tipine göre)
@@ -1529,30 +1549,15 @@ function fillSliderContent(sliderId, category, watchlist) {
   const container = document.getElementById(sliderId);
   if (!container) return;
   
-  // Burada slider için içerik oluşturma mantığını uygula
+  // Kategori içeriklerini al
   const items = watchlist[category] || [];
   
-  // Slider'ı ID'sine göre bul
+  // Slider'ı bul
   const slider = watchlist.sliders[category].find(s => s.id === sliderId);
   if (!slider) return;
   
-  // Slider adına göre filtreleme - slider adı içerik durumunu belirtir (İzleniyor, İzlenecek, İzlendi)
-  // Türkçe karakterleri normalize edip küçük harfe çevirerek karşılaştırma yapıyoruz
-  const sliderNameLower = slider.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  
-  // İzleme durumuna göre filtreleme yap
-  let filteredItems = [];
-  
-  if (sliderNameLower.includes("izleniyor")) {
-    filteredItems = items.filter(item => item.status === "izleniyor");
-  } else if (sliderNameLower.includes("izlenecek")) {
-    filteredItems = items.filter(item => item.status === "izlenecek");
-  } else if (sliderNameLower.includes("izlendi")) {
-    filteredItems = items.filter(item => item.status === "izlendi");
-  } else {
-    // Eğer duruma göre bir filtreleme yoksa, tüm içerikleri göster
-    filteredItems = items;
-  }
+  // İzleme durumuna göre filtreleme yap - slider name kullan
+  const filteredItems = items.filter(item => item.status === slider.name);
   
   // Eğer filtrelenmiş içerikler boşsa, bir mesaj göster
   if (filteredItems.length === 0) {
@@ -1562,27 +1567,6 @@ function fillSliderContent(sliderId, category, watchlist) {
   
   // Slider içeriğini doldur
   fillSlider(container, filteredItems, category, sliderId);
-}
-
-// Slider butonlarını ayarla
-function setupSliderButtons(sliderSection, slider) {
-  // Düzenleme butonu
-  const editButton = sliderSection.querySelector('.slider-edit-btn');
-  if (editButton) {
-    editButton.addEventListener('click', () => {
-      showSliderEditPopup(slider);
-    });
-  }
-  
-  // Silme butonu
-  const deleteButton = sliderSection.querySelector('.slider-delete-btn');
-  if (deleteButton) {
-    deleteButton.addEventListener('click', () => {
-      if (confirm(`"${slider.name}" slider'ını silmek istediğinize emin misiniz?`)) {
-        deleteCustomSlider(slider.id);
-      }
-    });
-  }
 }
 
 // Özel slider içeriğini doldur
@@ -1999,54 +1983,96 @@ async function performContentSearch(sliderId) {
 function displayContentSearchResults(results, searchType, sliderId) {
   const resultsContainer = document.getElementById('content-search-results');
   
-  // Container'ı temizle
-  resultsContainer.innerHTML = '';
+  // Yükleniyor göstergesini kaldır
+  const loadingIndicator = resultsContainer.querySelector('.loading-indicator');
+  if (loadingIndicator) {
+    loadingIndicator.remove();
+  }
   
-  // Sonuç yoksa mesaj göster
+  // Sonuçlar boşsa mesaj göster
   if (!results || results.length === 0) {
-    resultsContainer.innerHTML = '<div class="no-results-message">Sonuç bulunamadı.</div>';
+    resultsContainer.innerHTML = '<div class="no-results-message">Sonuç bulunamadı. Lütfen başka bir arama terimi deneyin.</div>';
     return;
   }
   
-  // Her sonuç için bir öğe oluştur
+  // Sonuçları temizle ve yeni sonuçları ekle
+  resultsContainer.innerHTML = '';
+  
+  // Watchlist'i al
+  const watchlist = window.currentWatchlist;
+  if (!watchlist || !watchlist.sliders) {
+    console.error('Watchlist veya sliders yapısı bulunamadı');
+    return;
+  }
+  
+  // Slider'ı bul
+  let sliderCategory = null;
+  let sliderObj = null;
+  
+  for (const category in watchlist.sliders) {
+    const found = watchlist.sliders[category].find(s => s.id === sliderId);
+    if (found) {
+      sliderCategory = category;
+      sliderObj = found;
+      break;
+    }
+  }
+  
+  if (!sliderObj) {
+    console.error(`Slider ID ${sliderId} bulunamadı`);
+    return;
+  }
+  
+  // Sonuçları göster
   results.forEach(item => {
     const resultItem = document.createElement('div');
     resultItem.className = 'content-search-item';
     
-    // Medya türüne göre yıl ve görsel bilgisini ayarla
-    let imageUrl, year;
+    const imageUrl = item.imageUrl || './assets/images/placeholder.jpg';
     
-    if (searchType === 'movie') {
-      imageUrl = item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : '../assets/no-image.jpg';
-      year = item.release_date ? new Date(item.release_date).getFullYear() : 'Bilinmeyen';
-    } else if (searchType === 'tv') {
-      imageUrl = item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : '../assets/no-image.jpg';
-      year = item.first_air_date ? new Date(item.first_air_date).getFullYear() : 'Bilinmeyen';
-    } else if (searchType === 'anime') {
-      imageUrl = item.images?.jpg?.image_url || '../assets/no-image.jpg';
-      year = item.aired?.from ? new Date(item.aired.from).getFullYear() : 'Bilinmeyen';
-    }
-    
-    // Öğe içeriği
     resultItem.innerHTML = `
       <div class="content-search-item-image">
-        <img src="${imageUrl}" alt="${item.title || item.name}" onerror="this.src='../assets/no-image.jpg'">
+        <img src="${imageUrl}" alt="${item.title}" onerror="this.src='./assets/images/placeholder.jpg'">
       </div>
       <div class="content-search-item-info">
-        <div class="content-search-item-title">${item.title || item.name}</div>
-        <div class="content-search-item-year">${year}</div>
+        <div class="content-search-item-title">${item.title}</div>
+        <div class="content-search-item-year">${item.year || ''}</div>
       </div>
-      <button class="content-search-item-add-btn" data-id="${item.id}" data-type="${searchType}">
-        <span>+</span>
-      </button>
+      <button class="content-search-item-add-btn" data-id="${item.id}" data-type="${searchType}">Ekle</button>
     `;
     
     // Ekleme butonuna tıklama olayı ekle
     const addButton = resultItem.querySelector('.content-search-item-add-btn');
     addButton.addEventListener('click', async () => {
-      await addItemToSlider(sliderId, item.id, searchType);
+      // İçeriğin status değerini slider name olarak ayarla
+      const watchlistItems = watchlist[searchType] || [];
+      const existingItem = watchlistItems.find(i => i.id === item.id);
+      
+      if (existingItem) {
+        // Mevcut öğe varsa, status'ü güncelle
+        existingItem.status = sliderObj.name;
+        await window.watchflowAPI.updateWatchlist(watchlist);
+      } else {
+        // Yeni öğe ekle
+        const newItem = {
+          id: item.id,
+          title: item.title,
+          type: searchType,
+          year: item.year || '',
+          imageUrl: item.imageUrl,
+          status: sliderObj.name,
+          dateAdded: new Date().toISOString()
+        };
+        
+        await window.watchflowAPI.addToWatchlist(newItem);
+      }
+      
+      // Butonu devre dışı bırak
       addButton.disabled = true;
       addButton.textContent = 'Eklendi';
+      
+      // Watchlist'i yeniden yükle
+      loadWatchlist();
     });
     
     // Öğeyi container'a ekle
@@ -2335,54 +2361,7 @@ async function loadSliderList(sectionId) {
 
 // Yeni kategori ekle
 function addNewSlider(sectionId) {
-  // Gerçek uygulamada burası bir form açacak veya dialog gösterecek
-  const sliderName = prompt('Yeni kategori adını girin:');
-  
-  if (sliderName && sliderName.trim() !== '') {
-    const sliderList = document.getElementById('sliderList');
-    
-    // Yeni liste öğesi oluştur
-    const newItem = document.createElement('li');
-    newItem.className = 'slider-list-item';
-    newItem.innerHTML = `
-      <div class="slider-item-content">
-        <span class="slider-item-name">${sliderName}</span>
-        <div class="slider-item-actions">
-          <button class="slider-action-btn delete-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-          </button>
-          <button class="slider-action-btn drag-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="8" y1="6" x2="21" y2="6"></line>
-              <line x1="8" y1="12" x2="21" y2="12"></line>
-              <line x1="8" y1="18" x2="21" y2="18"></line>
-              <line x1="3" y1="6" x2="3.01" y2="6"></line>
-              <line x1="3" y1="12" x2="3.01" y2="12"></line>
-              <line x1="3" y1="18" x2="3.01" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-      </div>
-    `;
-    
-    // Listeye ekle
-    sliderList.appendChild(newItem);
-    
-    // Silme butonuna olay ekle
-    const deleteBtn = newItem.querySelector('.delete-btn');
-    deleteBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      if (confirm(`"${sliderName}" kategorisini silmek istediğinizden emin misiniz?`)) {
-        deleteSlider(newItem);
-      }
-    });
-    
-    // Sürükle-bırak özelliğini güncelle
-    setupDragAndDrop();
-  }
+  showAddSliderModal(sectionId);
 }
 
 // Kategori sil
@@ -2484,12 +2463,8 @@ function getCurrentSectionId() {
   return activeSection ? activeSection.id : null;
 }
 
-// Yeni slider ekle
-async function addNewSlider(sectionId) {
-  const sliderName = prompt('Yeni slider adını girin:');
-  
-  if (!sliderName || sliderName.trim() === '') return;
-  
+// Yeni slider oluştur
+async function createSlider(sectionId, sliderName) {
   // Bölüme göre kategoriyi belirle
   let category = '';
   switch(sectionId) {
@@ -2545,13 +2520,15 @@ async function addNewSlider(sectionId) {
     // İçerik sayfalarını yeniden yükle
     loadWatchlist();
     
+    return newSlider;
   } catch (error) {
-    console.error('Yeni slider eklenirken hata:', error);
-    alert('Slider eklenirken bir hata oluştu.');
+    console.error('Slider oluşturulurken hata:', error);
+    alert('Slider oluşturulurken bir hata oluştu.');
+    return null;
   }
 }
 
-// Yeni slider ekle butonuna tıklandığında gösterilecek modal
+// Yeni slider ekle butonu tıklandığında
 function showAddSliderModal(sectionId) {
   // Mevcut bir modal varsa kaldır
   const existingModal = document.querySelector('.add-slider-modal-overlay');
@@ -2616,7 +2593,7 @@ function showAddSliderModal(sectionId) {
     }
     
     // Slider'ı ekle
-    await createNewSlider(sectionId, sliderName);
+    await createSlider(sectionId, sliderName);
     
     // Modal'ı kapat
     modalOverlay.remove();
@@ -2637,78 +2614,10 @@ function showAddSliderModal(sectionId) {
       }
       
       // Slider'ı ekle
-      await createNewSlider(sectionId, sliderName);
+      await createSlider(sectionId, sliderName);
       
       // Modal'ı kapat
       modalOverlay.remove();
     }
   });
-}
-
-// Yeni slider ekle
-async function createNewSlider(sectionId, sliderName) {
-  // Bölüme göre kategoriyi belirle
-  let category = '';
-  switch(sectionId) {
-    case 'movies-page':
-      category = 'movie';
-      break;
-    case 'series-page':
-      category = 'tv';
-      break;
-    case 'anime-page':
-      category = 'anime';
-      break;
-    default:
-      alert('Geçersiz sayfa kategorisi!');
-      return;
-  }
-  
-  try {
-    // Watchlist'i al
-    const watchlist = await window.watchflowAPI.getWatchlist();
-    
-    // Kategori için sliders yoksa oluştur
-    if (!watchlist.sliders) {
-      watchlist.sliders = {};
-    }
-    
-    if (!watchlist.sliders[category]) {
-      watchlist.sliders[category] = [];
-    }
-    
-    // O kategorideki en yüksek index'i bul
-    let maxIndex = -1;
-    if (watchlist.sliders[category].length > 0) {
-      maxIndex = Math.max(...watchlist.sliders[category].map(s => s.index));
-    }
-    
-    // Yeni slider oluştur
-    const newSlider = {
-      id: `${category}-slider-${Date.now()}`,
-      name: sliderName.trim(),
-      index: maxIndex + 1
-    };
-    
-    // Slider'ı ekle
-    watchlist.sliders[category].push(newSlider);
-    
-    // JSON verisini güncelle
-    await window.watchflowAPI.updateWatchlist(watchlist);
-    
-    // Slider listesini güncelle
-    loadSliderList(sectionId);
-    
-    // İçerik sayfalarını yeniden yükle
-    loadWatchlist();
-    
-  } catch (error) {
-    console.error('Yeni slider eklenirken hata:', error);
-    alert('Slider eklenirken bir hata oluştu.');
-  }
-}
-
-// Yeni slider ekle butonuna tıklama olayı
-function addNewSlider(sectionId) {
-  showAddSliderModal(sectionId);
 }

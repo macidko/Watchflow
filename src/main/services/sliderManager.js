@@ -1,5 +1,5 @@
 // Slider Yönetim Servisi
-// Özel slider oluşturma, güncelleme, silme ve slider içerik yönetimi
+// Basit slider oluşturma, güncelleme ve silme işlemleri
 
 const { getWatchlist } = require('./watchlistManager');
 const fs = require('fs').promises;
@@ -16,7 +16,7 @@ const getWatchlistPath = () => {
 };
 
 // Özel slider oluşturma
-const createCustomSlider = async (slider) => {
+const createCustomSlider = async (sliderName) => {
   try {
     // Watchlist'i al
     const watchlist = await getWatchlist();
@@ -26,19 +26,23 @@ const createCustomSlider = async (slider) => {
       watchlist.sliders = [];
     }
     
-    // ID çakışması var mı kontrol et
-    const existingSlider = watchlist.sliders.find(s => s.id === slider.id);
-    if (existingSlider) {
-      return { success: false, error: 'Bu ID ile bir slider zaten var' };
-    }
+    // Yeni slider için ID oluştur
+    const sliderId = 'slider_' + Date.now();
     
-    // Yeni Kategori'ı ekle
-    watchlist.sliders.push(slider);
+    // Yeni slider nesnesi
+    const newSlider = {
+      id: sliderId,
+      name: sliderName,
+      index: watchlist.sliders.length // Sıradaki index değeri
+    };
+    
+    // Yeni slider'ı ekle
+    watchlist.sliders.push(newSlider);
     
     // JSON'u güncelle
     await fs.writeFile(getWatchlistPath(), JSON.stringify(watchlist, null, 2));
     
-    return { success: true, slider };
+    return { success: true, slider: newSlider };
   } catch (error) {
     console.error('Slider oluşturma hatası:', error);
     return { success: false, error: error.message };
@@ -46,7 +50,7 @@ const createCustomSlider = async (slider) => {
 };
 
 // Özel slider güncelleme
-const updateCustomSlider = async (updatedSlider) => {
+const updateCustomSlider = async (sliderId, sliderName) => {
   try {
     // Watchlist'i al
     const watchlist = await getWatchlist();
@@ -57,18 +61,18 @@ const updateCustomSlider = async (updatedSlider) => {
     }
     
     // Slider'ı bul
-    const sliderIndex = watchlist.sliders.findIndex(s => s.id === updatedSlider.id);
+    const sliderIndex = watchlist.sliders.findIndex(s => s.id === sliderId);
     if (sliderIndex === -1) {
       return { success: false, error: 'Güncellenecek slider bulunamadı' };
     }
     
-    // Slider'ı güncelle
-    watchlist.sliders[sliderIndex] = updatedSlider;
+    // Slider'ın adını güncelle
+    watchlist.sliders[sliderIndex].name = sliderName;
     
     // JSON'u güncelle
     await fs.writeFile(getWatchlistPath(), JSON.stringify(watchlist, null, 2));
     
-    return { success: true, slider: updatedSlider };
+    return { success: true, slider: watchlist.sliders[sliderIndex] };
   } catch (error) {
     console.error('Slider güncelleme hatası:', error);
     return { success: false, error: error.message };
@@ -95,6 +99,11 @@ const deleteCustomSlider = async (sliderId) => {
     // Slider'ı sil
     watchlist.sliders.splice(sliderIndex, 1);
     
+    // Kalan slider'ların index'lerini güncelle
+    watchlist.sliders.forEach((slider, index) => {
+      slider.index = index;
+    });
+    
     // JSON'u güncelle
     await fs.writeFile(getWatchlistPath(), JSON.stringify(watchlist, null, 2));
     
@@ -105,8 +114,8 @@ const deleteCustomSlider = async (sliderId) => {
   }
 };
 
-// Slider'a öğe ekleme
-const addItemToSlider = async (sliderId, itemId, mediaType) => {
+// Slider sırasını değiştirme
+const reorderSliders = async (sliderOrder) => {
   try {
     // Watchlist'i al
     const watchlist = await getWatchlist();
@@ -116,75 +125,60 @@ const addItemToSlider = async (sliderId, itemId, mediaType) => {
       return { success: false, error: 'Sliders dizisi bulunamadı' };
     }
     
-    // Slider'ı bul
-    const sliderIndex = watchlist.sliders.findIndex(s => s.id === sliderId);
-    if (sliderIndex === -1) {
-      return { success: false, error: 'Slider bulunamadı' };
+    // sliderOrder bir dizi olmalı ve tüm slider ID'lerini içermeli
+    if (!Array.isArray(sliderOrder)) {
+      return { success: false, error: 'Geçersiz slider sıralaması' };
     }
     
-    // itemIds nesnesini kontrol et
-    if (!watchlist.sliders[sliderIndex].itemIds) {
-      watchlist.sliders[sliderIndex].itemIds = { movie: [], tv: [], anime: [] };
-    }
+    // Mevcut sliderları ID'lerine göre eşleştirecek bir harita oluştur
+    const sliderMap = {};
+    watchlist.sliders.forEach(slider => {
+      sliderMap[slider.id] = slider;
+    });
     
-    // İlgili medya türü için array'i kontrol et
-    if (!watchlist.sliders[sliderIndex].itemIds[mediaType]) {
-      watchlist.sliders[sliderIndex].itemIds[mediaType] = [];
-    }
+    // Yeni sıralamaya göre sliderları düzenle
+    const newSliders = sliderOrder.map((sliderId, index) => {
+      const slider = sliderMap[sliderId];
+      if (!slider) {
+        throw new Error(`Slider bulunamadı: ${sliderId}`);
+      }
+      
+      return {
+        ...slider,
+        index
+      };
+    });
     
-    // Öğeyi ekleyecek mi kontrol et
-    if (!watchlist.sliders[sliderIndex].itemIds[mediaType].includes(itemId)) {
-      watchlist.sliders[sliderIndex].itemIds[mediaType].push(itemId);
-    }
+    // Sliderları güncelle
+    watchlist.sliders = newSliders;
     
     // JSON'u güncelle
     await fs.writeFile(getWatchlistPath(), JSON.stringify(watchlist, null, 2));
     
-    return { success: true, slider: watchlist.sliders[sliderIndex] };
+    return { success: true, sliders: newSliders };
   } catch (error) {
-    console.error('Öğe ekleme hatası:', error);
+    console.error('Slider sıralama hatası:', error);
     return { success: false, error: error.message };
   }
 };
 
-// Slider'dan öğe kaldırma
-const removeItemFromSlider = async (sliderId, itemId, mediaType) => {
+// Tüm sliderları getir
+const getAllSliders = async () => {
   try {
     // Watchlist'i al
     const watchlist = await getWatchlist();
     
-    // sliders array'i yoksa hata döndür
+    // Sliders dizisi yoksa boş dizi döndür
     if (!watchlist.sliders) {
-      return { success: false, error: 'Sliders dizisi bulunamadı' };
+      return { success: true, sliders: [] };
     }
     
-    // Slider'ı bul
-    const sliderIndex = watchlist.sliders.findIndex(s => s.id === sliderId);
-    if (sliderIndex === -1) {
-      return { success: false, error: 'Slider bulunamadı' };
-    }
+    // Sliderları index'e göre sırala
+    const sortedSliders = [...watchlist.sliders].sort((a, b) => a.index - b.index);
     
-    // itemIds nesnesini ve medya türünü kontrol et
-    if (!watchlist.sliders[sliderIndex].itemIds || 
-        !watchlist.sliders[sliderIndex].itemIds[mediaType]) {
-      return { success: false, error: 'Bu medya türü için öğe bulunamadı' };
-    }
-    
-    // Öğenin indeksini bul
-    const itemIndex = watchlist.sliders[sliderIndex].itemIds[mediaType].indexOf(itemId);
-    if (itemIndex === -1) {
-      return { success: false, error: 'Öğe bulunamadı' };
-    }
-    
-    // Öğeyi kaldır
-    watchlist.sliders[sliderIndex].itemIds[mediaType].splice(itemIndex, 1);
-    
-    // JSON'u güncelle
-    await fs.writeFile(getWatchlistPath(), JSON.stringify(watchlist, null, 2));
-    
-    return { success: true, slider: watchlist.sliders[sliderIndex] };
+    return { success: true, sliders: sortedSliders };
   } catch (error) {
-    console.error('Öğe kaldırma hatası:', error);
+    console.error('Slider listeleme hatası:', error);
     return { success: false, error: error.message };
   }
 };
@@ -194,6 +188,6 @@ module.exports = {
   createCustomSlider,
   updateCustomSlider,
   deleteCustomSlider,
-  addItemToSlider,
-  removeItemFromSlider
+  reorderSliders,
+  getAllSliders
 }; 
