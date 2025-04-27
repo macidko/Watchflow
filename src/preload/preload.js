@@ -13,6 +13,16 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
     }
   },
   
+  // Uygulama sürümünü al
+  getAppVersion: async () => {
+    try {
+      return await ipcRenderer.invoke('get-app-version');
+    } catch (error) {
+      console.error('Uygulama sürümü alınırken hata:', error);
+      throw error;
+    }
+  },
+  
   // Pencere kontrolleri
   minimizeWindow: () => {
     ipcRenderer.send('minimize-window');

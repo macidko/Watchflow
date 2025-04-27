@@ -7,6 +7,9 @@ const apiManager = require('./apiManager');
 const watchlistManager = require('./watchlistManager');
 const sliderManager = require('./sliderManager');
 const axios = require('axios');
+const { app } = require('electron');
+const path = require('path');
+const fs = require('fs');
 
 // API modüllerini al
 let apiModules = null;
@@ -25,6 +28,19 @@ const setupIpcHandlers = (ipcMain) => {
   ipcMain.on('close-window', (event) => {
     const win = windowManager.getWindowFromWebContents(event.sender);
     if (win) win.close();
+  });
+  
+  // Uygulama sürümünü al
+  ipcMain.handle('get-app-version', async () => {
+    try {
+      // package.json'ı oku
+      const packageJsonPath = path.join(app.getAppPath(), 'package.json');
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      return packageJson.version;
+    } catch (error) {
+      console.error('Uygulama sürümü okunurken hata:', error);
+      return '0.0.0'; // Hata durumunda varsayılan sürüm
+    }
   });
   
   // Dosya kaydetme dialogu
