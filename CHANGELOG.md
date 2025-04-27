@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/macidko/Watchflow/compare/v0.1.0...v0.2.0) (2025-04-27)
+
+
+### Features
+
+* Added slider-based watch status system - Changed statuses to use slider names instead of static values - Added automatic slider creation mechanism for the 'Watched' status - Fixed search results display bug - Removed slider buttons from the user interface ([e8b5d90](https://github.com/macidko/Watchflow/commit/e8b5d90c16cefde341b3a6f37d76ff78ec4f76f4))
+
 ## [0.1.0](https://github.com/macidko/Watchflow/compare/v0.0.4...v0.1.0) (2025-04-27)
 
 
