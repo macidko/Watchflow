@@ -35,3 +35,38 @@
     scroll-snap-align: start;
   }
 }
+
+/* Başlık satırı ve çark ikonu için stiller */
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.section-title-row h2 {
+  margin: 0;
+}
+
+.settings-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ff4500;
+  padding: 5px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.settings-icon:hover {
+  background-color: rgba(255, 69, 0, 0.1);
+  transform: rotate(30deg);
+}
+
+.settings-icon svg {
+  width: 22px;
+  height: 22px;
+}

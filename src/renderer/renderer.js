@@ -27,11 +27,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // İzleme listesi verilerini yükle ve UI'ı güncelle
     loadWatchlist();
     
-    // Slider ekleme butonlarını aktifleştir
-    setupSliderButtons();
-    
     // Pencere kontrol butonlarını ayarla
     setupWindowControls();
+    
+    // Çark ikonları için tıklama olaylarını ayarla
+    setupSettingsIcons();
     
   } catch (error) {
     console.error('API bağlantı hatası:', error);
@@ -225,14 +225,14 @@ function fillSlider(container, items, mediaType, sliderId) {
     // Sol ok butonu
     const leftNav = document.createElement('button');
     leftNav.className = 'slider-nav slider-nav-left';
-    leftNav.innerHTML = '&#10094;'; // Sol ok karakteri
+    leftNav.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"></path></svg>';
     leftNav.setAttribute('data-slider', sliderId);
     leftNav.addEventListener('click', () => slideContent(sliderId, 'left'));
     
     // Sağ ok butonu
     const rightNav = document.createElement('button');
     rightNav.className = 'slider-nav slider-nav-right';
-    rightNav.innerHTML = '&#10095;'; // Sağ ok karakteri
+    rightNav.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>';
     rightNav.setAttribute('data-slider', sliderId);
     rightNav.addEventListener('click', () => slideContent(sliderId, 'right'));
     
@@ -1601,14 +1601,14 @@ function fillCustomSlider(slider, watchlist) {
     // Sol ok butonu
     const leftNav = document.createElement('button');
     leftNav.className = 'slider-nav slider-nav-left';
-    leftNav.innerHTML = '&#10094;'; // Sol ok karakteri
+    leftNav.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"></path></svg>';
     leftNav.setAttribute('data-slider', slider.id);
     leftNav.addEventListener('click', () => slideContent(slider.id, 'left'));
     
     // Sağ ok butonu
     const rightNav = document.createElement('button');
     rightNav.className = 'slider-nav slider-nav-right';
-    rightNav.innerHTML = '&#10095;'; // Sağ ok karakteri
+    rightNav.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>';
     rightNav.setAttribute('data-slider', slider.id);
     rightNav.addEventListener('click', () => slideContent(slider.id, 'right'));
     
@@ -2044,34 +2044,199 @@ async function removeItemFromSlider(sliderId, itemId, mediaType) {
   }
 }
 
-// Slider ekleme butonlarını aktifleştir
-function setupSliderButtons() {
-  // Film sayfası slider butonu
-  const addMovieSliderBtn = document.getElementById('add-movie-slider');
-  if (addMovieSliderBtn) {
-    addMovieSliderBtn.addEventListener('click', () => {
-      showSliderEditPopup(null); // Null -> yeni kategori
+// Çark ikonları için tıklama olaylarını ayarla
+function setupSettingsIcons() {
+  const settingsIcons = document.querySelectorAll('.settings-icon');
+  const settingsPopupOverlay = document.getElementById('settingsPopupOverlay');
+  const settingsPopupTitle = document.querySelector('.settings-popup-title');
+  const closeSettingsPopup = document.getElementById('closeSettingsPopup');
+  const addNewSliderBtn = document.getElementById('addNewSliderBtn');
+  
+  // Popup'ı kapat
+  function closePopup() {
+    settingsPopupOverlay.classList.add('hidden');
+  }
+  
+  // Her çark ikonuna tıklama olayı ekle
+  settingsIcons.forEach(icon => {
+    icon.addEventListener('click', function() {
+      const sectionId = this.closest('.page-section').id;
+      let sectionTitle = '';
+      
+      switch(sectionId) {
+        case 'home-page':
+          sectionTitle = 'Anasayfa Kategorileri';
+          break;
+        case 'movies-page':
+          sectionTitle = 'Film Kategorileri';
+          break;
+        case 'series-page':
+          sectionTitle = 'Dizi Kategorileri';
+          break;
+        case 'anime-page':
+          sectionTitle = 'Anime Kategorileri';
+          break;
+      }
+      
+      // Popup başlığını güncelle ve göster
+      settingsPopupTitle.textContent = sectionTitle;
+      
+      // Kategori listesini yükle
+      loadSliderList(sectionId);
+      
+      // Popup'ı göster
+      settingsPopupOverlay.classList.remove('hidden');
+    });
+  });
+  
+  // Kapat butonuna tıklama olayını ekle
+  if (closeSettingsPopup) {
+    closeSettingsPopup.addEventListener('click', closePopup);
+  }
+  
+  // Yeni kategori ekle butonuna tıklama olayını ekle
+  if (addNewSliderBtn) {
+    addNewSliderBtn.addEventListener('click', () => {
+      const sectionId = getCurrentSectionId();
+      addNewSlider(sectionId);
     });
   }
   
-  // Dizi sayfası slider butonu
-  const addSeriesSliderBtn = document.getElementById('add-series-slider');
-  if (addSeriesSliderBtn) {
-    addSeriesSliderBtn.addEventListener('click', () => {
-      showSliderEditPopup(null); // Null -> yeni kategori
-    });
-  }
+  // Popup dışına tıklandığında kapat
+  settingsPopupOverlay.addEventListener('click', function(event) {
+    if (event.target === settingsPopupOverlay) {
+      closePopup();
+    }
+  });
   
-  // Anime sayfası slider butonu
-  const addAnimeSliderBtn = document.getElementById('add-anime-slider');
-  if (addAnimeSliderBtn) {
-    addAnimeSliderBtn.addEventListener('click', () => {
-      showSliderEditPopup(null); // Null -> yeni kategori
+  // Liste öğelerine sürükle-bırak işlevselliği ekle
+  setupDragAndDrop();
+}
+
+// Kategori listesini yükle
+function loadSliderList(sectionId) {
+  const sliderList = document.getElementById('sliderList');
+  
+  // Şu an için dummy data kullanıyoruz - Gerçek veri için API eklenecek
+  // Burada ilgili sekmenin kategorilerini göstereceğiz
+  
+  // Silme butonlarına tıklama olayı ekle
+  const deleteButtons = document.querySelectorAll('.slider-action-btn.delete-btn');
+  deleteButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const listItem = this.closest('.slider-list-item');
+      const sliderName = listItem.querySelector('.slider-item-name').textContent;
+      
+      if (confirm(`"${sliderName}" kategorisini silmek istediğinizden emin misiniz?`)) {
+        deleteSlider(listItem);
+      }
     });
+  });
+}
+
+// Yeni kategori ekle
+function addNewSlider(sectionId) {
+  // Gerçek uygulamada burası bir form açacak veya dialog gösterecek
+  const sliderName = prompt('Yeni kategori adını girin:');
+  
+  if (sliderName && sliderName.trim() !== '') {
+    const sliderList = document.getElementById('sliderList');
+    
+    // Yeni liste öğesi oluştur
+    const newItem = document.createElement('li');
+    newItem.className = 'slider-list-item';
+    newItem.innerHTML = `
+      <div class="slider-item-content">
+        <span class="slider-item-name">${sliderName}</span>
+        <div class="slider-item-actions">
+          <button class="slider-action-btn delete-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+          <button class="slider-action-btn drag-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+    
+    // Listeye ekle
+    sliderList.appendChild(newItem);
+    
+    // Silme butonuna olay ekle
+    const deleteBtn = newItem.querySelector('.delete-btn');
+    deleteBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (confirm(`"${sliderName}" kategorisini silmek istediğinizden emin misiniz?`)) {
+        deleteSlider(newItem);
+      }
+    });
+    
+    // Sürükle-bırak özelliğini güncelle
+    setupDragAndDrop();
   }
 }
 
-// Tıklama olayı için örnek bir işleyici
-// document.getElementById('myButton').addEventListener('click', () => {
-//   console.log('Düğmeye tıklandı');
-// }); 
+// Kategori sil
+function deleteSlider(sliderElement) {
+  // Gerçek uygulamada burada API çağrısı yapılacak
+  sliderElement.remove();
+}
+
+// Sürükle-bırak işlevselliği
+function setupDragAndDrop() {
+  const sliderList = document.getElementById('sliderList');
+  const items = sliderList.querySelectorAll('.slider-list-item');
+  
+  items.forEach(item => {
+    // Sürükleme özelliğini etkinleştir
+    item.setAttribute('draggable', true);
+    
+    // Sürükleme başladığında
+    item.addEventListener('dragstart', () => {
+      setTimeout(() => item.classList.add('dragging'), 0);
+    });
+    
+    // Sürükleme bittiğinde
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+    });
+  });
+  
+  // Listeye bırakma işlemi için olay ekle
+  sliderList.addEventListener('dragover', e => {
+    e.preventDefault();
+    const draggingItem = document.querySelector('.dragging');
+    const siblings = [...sliderList.querySelectorAll('.slider-list-item:not(.dragging)')];
+    
+    // Fare konumuna göre en yakın kardeş öğeyi bul
+    const nextSibling = siblings.find(sibling => {
+      const box = sibling.getBoundingClientRect();
+      const offset = e.clientY - box.top - box.height / 2;
+      return offset < 0;
+    });
+    
+    // Yeni konuma taşı
+    if (nextSibling) {
+      sliderList.insertBefore(draggingItem, nextSibling);
+    } else {
+      sliderList.appendChild(draggingItem);
+    }
+  });
+}
+
+// Aktif sekmeyi bul
+function getCurrentSectionId() {
+  const activeSection = document.querySelector('.page-section.active');
+  return activeSection ? activeSection.id : null;
+}

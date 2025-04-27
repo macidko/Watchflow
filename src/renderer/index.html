@@ -12,10 +12,24 @@
     <!-- Navbar - İlk satır: Logo ve Arama -->
     <div class="navbar-top">
       <div class="logo">
-        <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 5 L5 20 L10 25 L20 15 L30 25 L35 20 L20 5" fill="#ff4500" stroke="none" />
-          <path d="M20 20 L10 30 L15 35 L20 30 L25 35 L30 30 L20 20" fill="#ff4500" stroke="none" />
+        <svg width="120" height="120" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <!-- Top shape: Bounce animation -->
+          <path fill="#ff4500"
+                d="M20 5 L5 20 L10 25 L20 15 L30 25 L35 20 L20 5">
+            <!-- Vertical bounce effect -->
+            <animateTransform attributeName="transform" type="translate"
+                              values="0,0; 0,4; 0,0" dur="1.5s" repeatCount="indefinite"/>
+          </path>
+        
+          <!-- Bottom shape: Delayed bounce animation -->
+          <path fill="#ff4500"
+                d="M20 20 L10 30 L15 35 L20 30 L25 35 L30 30 L20 20">
+            <!-- Delayed vertical bounce effect -->
+            <animateTransform attributeName="transform" type="translate"
+                              values="0,0; 0,4; 0,0" dur="1.5s" begin="0.5s" repeatCount="indefinite"/>
+          </path>
         </svg>
+        
         <span class="logo-text">Watchflow</span>
       </div>
       <div class="window-controls">
@@ -74,18 +88,20 @@
       <div id="pageContent">
         <!-- Anasayfa İçeriği -->
         <div class="page-section active" id="home-page">
-          <h2>Anasayfa</h2>
+          <div class="section-title-row">
+            <h2>Anasayfa</h2>
+            <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
+          </div>
           <p>Son eklenen içerikleri burada görebilirsiniz.</p>
         </div>
         
         <!-- Film İçeriği -->
         <div class="page-section" id="movies-page">
-          <h2>Filmler</h2>
-          
-          <div class="section-header">
-            <button id="add-movie-slider" class="add-slider-btn">+</button>
+          <div class="section-title-row">
+            <h2>Filmler</h2>
+            <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
           </div>
-
+      
           <!-- İzleniyor Slider -->
           <div class="slider-section">
             <h3>İzleniyor</h3>
@@ -113,12 +129,11 @@
         
         <!-- Dizi İçeriği -->
         <div class="page-section" id="series-page">
-          <h2>Diziler</h2>
-          
-          <div class="section-header">
-            <button id="add-series-slider" class="add-slider-btn">+</button>
+          <div class="section-title-row">
+            <h2>Diziler</h2>
+            <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
           </div>
-          
+
           <!-- İzleniyor Slider -->
           <div class="slider-section">
             <h3>İzleniyor</h3>
@@ -146,10 +161,9 @@
         
         <!-- Anime İçeriği -->
         <div class="page-section" id="anime-page">
-          <h2>Animeler</h2>
-          
-          <div class="section-header">
-            <button id="add-anime-slider" class="add-slider-btn">+</button>
+          <div class="section-title-row">
+            <h2>Animeler</h2>
+            <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
           </div>
           
           <!-- İzleniyor Slider -->
@@ -223,5 +237,147 @@
   </div>
   
   <script src="renderer.js"></script>
+  
+  <!-- Çark İkonu Popup Overlay -->
+  <div id="settingsPopupOverlay" class="settings-popup-overlay hidden">
+    <div class="settings-popup">
+      <div class="settings-popup-header">
+        <div class="settings-popup-title">Sekme Ayarları</div>
+        <button id="closeSettingsPopup" class="settings-popup-close">×</button>
+      </div>
+      <div class="settings-popup-body">
+        <div class="slider-list-header">
+          <h3 class="slider-list-title">Kategoriler</h3>
+          <button id="addNewSliderBtn" class="add-slider-list-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Yeni Ekle</span>
+          </button>
+        </div>
+        <div class="slider-list-container">
+          <ul id="sliderList" class="slider-list">
+            <!-- Dummy data - Gerçek verilerle doldurulacak -->
+            <li class="slider-list-item">
+              <div class="slider-item-content">
+                <span class="slider-item-name">İzleniyor</span>
+                <div class="slider-item-actions">
+                  <button class="slider-action-btn delete-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                  <button class="slider-action-btn drag-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="8" y1="6" x2="21" y2="6"></line>
+                      <line x1="8" y1="12" x2="21" y2="12"></line>
+                      <line x1="8" y1="18" x2="21" y2="18"></line>
+                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </li>
+            <li class="slider-list-item">
+              <div class="slider-item-content">
+                <span class="slider-item-name">İzlenecek</span>
+                <div class="slider-item-actions">
+                  <button class="slider-action-btn delete-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                  <button class="slider-action-btn drag-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="8" y1="6" x2="21" y2="6"></line>
+                      <line x1="8" y1="12" x2="21" y2="12"></line>
+                      <line x1="8" y1="18" x2="21" y2="18"></line>
+                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </li>
+            <li class="slider-list-item">
+              <div class="slider-item-content">
+                <span class="slider-item-name">İzlendi</span>
+                <div class="slider-item-actions">
+                  <button class="slider-action-btn delete-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                  <button class="slider-action-btn drag-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="8" y1="6" x2="21" y2="6"></line>
+                      <line x1="8" y1="12" x2="21" y2="12"></line>
+                      <line x1="8" y1="18" x2="21" y2="18"></line>
+                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </li>
+            <li class="slider-list-item">
+              <div class="slider-item-content">
+                <span class="slider-item-name">Favori Yönetmenler</span>
+                <div class="slider-item-actions">
+                  <button class="slider-action-btn delete-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                  <button class="slider-action-btn drag-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="8" y1="6" x2="21" y2="6"></line>
+                      <line x1="8" y1="12" x2="21" y2="12"></line>
+                      <line x1="8" y1="18" x2="21" y2="18"></line>
+                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </li>
+            <li class="slider-list-item">
+              <div class="slider-item-content">
+                <span class="slider-item-name">Özel Liste</span>
+                <div class="slider-item-actions">
+                  <button class="slider-action-btn delete-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                  <button class="slider-action-btn drag-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="8" y1="6" x2="21" y2="6"></line>
+                      <line x1="8" y1="12" x2="21" y2="12"></line>
+                      <line x1="8" y1="18" x2="21" y2="18"></line>
+                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html> 
