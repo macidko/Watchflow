@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.0](https://github.com/macidko/Watchflow/compare/v0.0.4...v0.1.0) (2025-04-27)
+
+
+### Features
+
+* **UI:** Wheel icons and category management popup added to tab titles. Drag-and-drop functionality has been completed with the ability to list, delete, sort and add new categories to the slider categories. ([752c443](https://github.com/macidko/Watchflow/commit/752c443fc15617b35ee6b6cf6ec8c65f7684a1a3))
+
 ### 0.0.4 (2025-04-25)
 
 
