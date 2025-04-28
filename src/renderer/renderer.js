@@ -83,7 +83,7 @@ async function loadWatchlist() {
     window.currentWatchlist = watchlist;
     
     // Özel sliderları render et
-    renderCustomSliders(watchlist);
+      renderCustomSliders(watchlist);
     
     // Film listesini render et
     if (watchlist.movie && watchlist.movie.length > 0) {
@@ -781,17 +781,17 @@ async function markAsWatched(id, mediaType, originalType) {
         
         // Watchlist'i güncelle
         const result = await window.watchflowAPI.updateWatchlist(watchlist);
-        
-        if (result.success) {
+      
+      if (result.success) {
           // Watchlist'i yeniden yükle
-          await loadWatchlist();
-          
+        await loadWatchlist();
+        
           // UI'da güncellemeleri göster
           const activeTabId = document.querySelector('.main-nav a.active').getAttribute('data-page');
           showPage(activeTabId);
-        } else {
+      } else {
           throw new Error(result.error || 'Güncelleme sırasında bir hata oluştu');
-        }
+      }
       }
     } else {
       alert(`"${currentItem.title}" zaten ${watchedSlider.name} olarak işaretlenmiş.`);
@@ -832,14 +832,22 @@ function setupSearchInput() {
 }
 
 // Arama dropdown'ını aç
-function toggleSearchRotation(){
-  addSearchButton.classList.toggle('rotate');
-}
-
-// Arama dropdown'ını aç
 function openSearchDropdown() {
   // Dropdown'ı göster
   searchDropdown.classList.remove('hidden');
+  
+  // Başlangıç durumunu göster
+  if (dropdownSearchResults.innerHTML === '') {
+    dropdownSearchResults.innerHTML = `
+      <div class="dropdown-search-initial">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <p>İzleme listenize eklemek istediğiniz içeriği aramak için arama kutusunu kullanın</p>
+      </div>
+    `;
+  }
   
   // Artı butonunu döndür
   addSearchButton.classList.add('rotate');
@@ -940,6 +948,10 @@ async function performSearch() {
   // Arama tipi (film, dizi veya anime)
   const searchType = document.querySelector('input[name="searchType"]:checked').value;
   
+  // Arama butonunu güncelle
+  searchActionButton.disabled = true;
+  searchActionButton.innerHTML = '<div class="search-spinner"></div> Aranıyor...';
+  
   // Arama devam ediyor bilgisini göster
   dropdownSearchResults.innerHTML = '<div class="loading">Aranıyor...<div class="loader"></div></div>';
   
@@ -960,6 +972,16 @@ async function performSearch() {
   } catch (error) {
     console.error('Arama sırasında hata:', error);
     dropdownSearchResults.innerHTML = `<div class="error-message">Arama sırasında bir hata oluştu: ${error.message}</div>`;
+  } finally {
+    // Arama butonunu sıfırla
+    searchActionButton.disabled = false;
+    searchActionButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      Ara
+    `;
   }
 }
 
@@ -985,7 +1007,7 @@ function displayResults(results, searchType) {
   
   // Sonuçlar için container oluştur
   const resultsGrid = document.createElement('div');
-  resultsGrid.className = 'results-grid';
+  resultsGrid.className = 'results-list';
   dropdownSearchResults.appendChild(resultsGrid);
   
   // Watchlist'i al - mevcut statü seçeneklerini almak için
@@ -1010,7 +1032,7 @@ function displayResults(results, searchType) {
     
     // Her sonuç için yeni kart
     const resultCard = document.createElement('div');
-    resultCard.className = 'result-card';
+    resultCard.className = 'search-result-item';
     
     // Benzersiz bir ID oluştur
     const cardId = `card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -1019,27 +1041,31 @@ function displayResults(results, searchType) {
     let statusOptionsHtml = '';
     sliders.forEach(slider => {
       statusOptionsHtml += `
-        <label class="status-label">
-          <input type="radio" name="status-${cardId}" value="${slider.name}" class="status-radio">
-          <span>${slider.name}</span>
-        </label>
+        <option value="${slider.name}">${slider.name}</option>
       `;
     });
     
+    // Watchlist içinde zaten varsa kontrol et
+    const watchlistItems = watchlist[searchType] || [];
+    const isInWatchlist = watchlistItems.some(i => i.id === item.id);
+    
     // Yeni düzen için HTML yapısı
     resultCard.innerHTML = `
-      <img src="${imageUrl}" alt="${item.title}" class="result-image" onerror="this.src='${placeholderImage}'">
-      <div class="result-info">
-        <div class="result-title" title="${item.title}">${item.title}</div>
-        <div class="result-year">${item.year || '--'}</div>
-      </div>
-      <div class="result-actions">
-        <div class="watch-status">
-          ${statusOptionsHtml}
+      <div class="search-result-item-left">
+        <img src="${imageUrl}" alt="${item.title}" class="search-result-image" onerror="this.src='${placeholderImage}'">
+        <div class="search-result-info">
+          <div class="search-result-title" title="${item.title}">${item.title}</div>
+          <div class="search-result-year">${item.year || '--'}</div>
         </div>
-        <button class="add-button" disabled data-id="${item.id}" data-title="${item.title}" 
+      </div>
+      <div class="search-result-item-right">
+        <select class="status-select" data-id="${item.id}">
+          <option value="" disabled selected>Kategori Seç</option>
+          ${statusOptionsHtml}
+        </select>
+        <button class="search-add-button" disabled data-id="${item.id}" data-title="${item.title}" 
           data-type="${searchType}" data-year="${item.year || ''}" data-image="${imageUrl}">
-          Ekle
+          ${isInWatchlist ? 'Güncelle' : 'Ekle'}
         </button>
       </div>
     `;
@@ -1047,20 +1073,22 @@ function displayResults(results, searchType) {
     // Kartı sonuçlar container'ına ekle
     resultsGrid.appendChild(resultCard);
     
-    // Radio butonlarını dinle ve butonun aktif/pasif durumunu değiştir
-    const radios = resultCard.querySelectorAll('.status-radio');
-    const addButton = resultCard.querySelector('.add-button');
+    // Select değişikliğini dinle ve butonun aktif/pasif durumunu değiştir
+    const statusSelect = resultCard.querySelector('.status-select');
+    const addButton = resultCard.querySelector('.search-add-button');
     
-    radios.forEach(radio => {
-      radio.addEventListener('change', () => {
-        addButton.disabled = false;
-      });
+    statusSelect.addEventListener('change', () => {
+      addButton.disabled = !statusSelect.value;
     });
     
     // Ekle butonuna tıklandığında
     addButton.addEventListener('click', () => {
       // Seçilen izleme durumunu al
-      const selectedStatus = resultCard.querySelector('input[name="status-' + cardId + '"]:checked').value;
+      const selectedStatus = statusSelect.value;
+      
+      if (!selectedStatus) {
+        return; // Status seçilmediyse işlem yapma
+      }
       
       // Eklenecek öğeyi oluştur
       const watchItem = {
@@ -1526,7 +1554,7 @@ function renderCustomSliders(watchlist) {
         sliderSection.innerHTML = `
           <div class="slider-header">
             <h3>${slider.name}</h3>
-          </div>
+            </div>
           </div>
           <div class="slider-container">
             <div class="slider-content" id="${slider.id}"></div>
@@ -1538,7 +1566,7 @@ function renderCustomSliders(watchlist) {
         
         // Slider için içerik oluşturma
         fillSliderContent(slider.id, category, watchlist);
-
+        
       });
     }
   });
@@ -1879,6 +1907,21 @@ function showContentSearchPopup(sliderId) {
     existingPopup.remove();
   }
   
+  // Slider bilgisini al
+  const watchlist = window.currentWatchlist;
+  let sliderName = "";
+  
+  if (watchlist && watchlist.sliders) {
+    // Tüm kategorilerde ara
+    for (const category in watchlist.sliders) {
+      const found = watchlist.sliders[category].find(s => s.id === sliderId);
+      if (found) {
+        sliderName = found.name;
+        break;
+      }
+    }
+  }
+  
   // Popup oluştur
   const popupOverlay = document.createElement('div');
   popupOverlay.className = 'content-search-popup-overlay';
@@ -1886,7 +1929,7 @@ function showContentSearchPopup(sliderId) {
   popupOverlay.innerHTML = `
     <div class="content-search-popup">
       <div class="content-search-popup-header">
-        <div class="content-search-popup-title">İçerik Ara</div>
+        <div class="content-search-popup-title">"${sliderName}" İçin İçerik Ekle</div>
         <button class="content-search-popup-close">&times;</button>
       </div>
       <div class="content-search-popup-body">
@@ -1905,11 +1948,23 @@ function showContentSearchPopup(sliderId) {
             </label>
           </div>
           
-          <button id="content-search-button" class="content-search-button">Ara</button>
+          <button id="content-search-button" class="content-search-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            Ara
+          </button>
         </div>
         
         <div id="content-search-results" class="content-search-results">
-          <!-- Arama sonuçları burada listelenecek -->
+          <div class="initial-search-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <p>Eklemek istediğiniz içeriği aramak için yukarıdaki arama kutusunu kullanın</p>
+          </div>
         </div>
       </div>
     </div>
@@ -1918,25 +1973,30 @@ function showContentSearchPopup(sliderId) {
   // Popup'ı sayfaya ekle
   document.body.appendChild(popupOverlay);
   
+  // Arama giriş kutusuna odaklan
+  setTimeout(() => {
+    const searchInput = document.getElementById('content-search-input');
+    if (searchInput) searchInput.focus();
+  }, 100);
+  
   // Arama butonuna tıklama olayını ekle
   document.getElementById('content-search-button').addEventListener('click', () => {
     performContentSearch(sliderId);
   });
   
-  // Enter tuşu ile arama
+  // Enter tuşu ile arama yapma
   document.getElementById('content-search-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       performContentSearch(sliderId);
     }
   });
   
-  // Kapatma butonuna tıklama olayı ekle
-  const closeButton = popupOverlay.querySelector('.content-search-popup-close');
-  closeButton.addEventListener('click', () => {
+  // Kapat butonuna tıklama olayını ekle
+  document.querySelector('.content-search-popup-close').addEventListener('click', () => {
     popupOverlay.remove();
   });
   
-  // Popup dışına tıklanınca kapatma
+  // Popup dışına tıklandığında kapat
   popupOverlay.addEventListener('click', (e) => {
     if (e.target === popupOverlay) {
       popupOverlay.remove();
@@ -2022,32 +2082,61 @@ function displayContentSearchResults(results, searchType, sliderId) {
     console.error(`Slider ID ${sliderId} bulunamadı`);
     return;
   }
+
+  // Sonuç sayısını gösteren başlık ekle
+  const resultCount = document.createElement('div');
+  resultCount.className = 'content-result-count';
+  resultCount.textContent = `${results.length} sonuç bulundu`;
+  resultsContainer.appendChild(resultCount);
+  
+  // Sonuçlar için liste container oluştur
+  const resultsListContainer = document.createElement('div');
+  resultsListContainer.className = 'content-results-list-container';
+  resultsContainer.appendChild(resultsListContainer);
   
   // Sonuçları göster
   results.forEach(item => {
     const resultItem = document.createElement('div');
-    resultItem.className = 'content-search-item';
+    resultItem.className = 'content-search-list-item';
     
     const imageUrl = item.imageUrl || './assets/images/placeholder.jpg';
     
+    // Mevcut watchlist'de bu öğenin olup olmadığını kontrol et
+    const watchlistItems = watchlist[searchType] || [];
+    const existingItem = watchlistItems.find(i => i.id === item.id);
+    
+    // HTML yapısını oluştur
     resultItem.innerHTML = `
-      <div class="content-search-item-image">
-        <img src="${imageUrl}" alt="${item.title}" onerror="this.src='./assets/images/placeholder.jpg'">
+      <div class="content-search-item-left">
+        <img class="content-result-image" src="${imageUrl}" alt="${item.title}" onerror="this.src='./assets/images/placeholder.jpg'">
+        <div class="content-search-item-info">
+          <div class="content-search-item-title">${item.title}</div>
+          <div class="content-search-item-year">${item.year || ''}</div>
+        </div>
       </div>
-      <div class="content-search-item-info">
-        <div class="content-search-item-title">${item.title}</div>
-        <div class="content-search-item-year">${item.year || ''}</div>
+      <div class="content-search-item-right">
+        <button class="content-search-item-add-btn" data-id="${item.id}" data-type="${searchType}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Ekle
+        </button>
       </div>
-      <button class="content-search-item-add-btn" data-id="${item.id}" data-type="${searchType}">Ekle</button>
     `;
     
     // Ekleme butonuna tıklama olayı ekle
     const addButton = resultItem.querySelector('.content-search-item-add-btn');
+    
+    // İçerik zaten slider içinde ise butonu devre dışı bırak
+    if (existingItem && existingItem.status === sliderObj.name) {
+      addButton.disabled = true;
+      addButton.innerHTML = 'Eklendi';
+      addButton.classList.add('added');
+    }
+    
     addButton.addEventListener('click', async () => {
       // İçeriğin status değerini slider name olarak ayarla
-      const watchlistItems = watchlist[searchType] || [];
-      const existingItem = watchlistItems.find(i => i.id === item.id);
-      
       if (existingItem) {
         // Mevcut öğe varsa, status'ü güncelle
         existingItem.status = sliderObj.name;
@@ -2069,14 +2158,15 @@ function displayContentSearchResults(results, searchType, sliderId) {
       
       // Butonu devre dışı bırak
       addButton.disabled = true;
-      addButton.textContent = 'Eklendi';
+      addButton.innerHTML = 'Eklendi';
+      addButton.classList.add('added');
       
       // Watchlist'i yeniden yükle
       loadWatchlist();
     });
     
     // Öğeyi container'a ekle
-    resultsContainer.appendChild(resultItem);
+    resultsListContainer.appendChild(resultItem);
   });
 }
 
@@ -2620,4 +2710,9 @@ function showAddSliderModal(sectionId) {
       modalOverlay.remove();
     }
   });
+}
+
+// Arama butonunu döndür
+function toggleSearchRotation(){
+  addSearchButton.classList.toggle('rotate');
 }

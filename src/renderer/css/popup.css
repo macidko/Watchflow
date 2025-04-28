@@ -333,24 +333,38 @@
 
 .search-type-selection {
   display: flex;
-  gap: 15px;
-  margin: 10px 0;
+  gap: 10px;
+  margin: 15px 0;
+  justify-content: center;
 }
 
 .content-search-button {
-  align-self: flex-end;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   background-color: var(--accent-color);
   border: none;
   color: white;
   padding: 10px 20px;
   border-radius: var(--border-radius-sm);
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(255, 69, 0, 0.2);
 }
 
 .content-search-button:hover {
   background-color: var(--hover-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 69, 0, 0.3);
+}
+
+.content-search-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(255, 69, 0, 0.2);
 }
 
 .content-search-results {
@@ -451,25 +465,28 @@
 
 /* İçerik arama popup'ındaki radio butonlar */
 .search-type-selection .radio-label {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  background-color: #333;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
   border-radius: var(--border-radius-sm);
-  padding: 5px 15px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
-.search-type-selection .radio-label:has(input:checked),
-.search-type-selection input[type="radio"]:checked + .radio-label,
-.search-type-selection .radio-label:has(input[type="radio"]:checked) {
-  background-color: var(--accent-color);
-  color: white;
+.search-type-selection .radio-label:hover {
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
-.search-type-selection input[type="radio"] {
-  display: none;
+.search-type-selection .radio-label input {
+  position: absolute;
+  opacity: 0;
+}
+
+.search-type-selection .radio-label:has(input:checked) {
+  background-color: rgba(255, 69, 0, 0.2);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  font-weight: 500;
 }
 
 /* Rating Container Stilleri */
@@ -978,4 +995,154 @@ input:checked + .settings-slider:before {
   background-color: rgba(255, 69, 0, 1);
   transform: translateY(-2px);
   box-shadow: 0 3px 8px rgba(255, 69, 0, 0.3);
+}
+
+/* İçerik arama popupundaki yeni liste görünümü stilleri */
+.content-result-count {
+  font-size: 1rem;
+  color: var(--secondary-text);
+  margin-bottom: 15px;
+  font-weight: 500;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.content-results-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.content-search-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: var(--secondary-bg);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
+}
+
+.content-search-list-item:hover {
+  background-color: #2a2a2a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.content-search-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.content-result-image {
+  width: 45px;
+  height: 65px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.content-search-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.content-search-item-title {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--primary-text);
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content-search-item-year {
+  color: var(--secondary-text);
+  font-size: 0.8rem;
+}
+
+.content-search-item-right {
+  display: flex;
+  align-items: center;
+}
+
+.content-search-item-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.content-search-item-add-btn:hover:not(:disabled) {
+  background-color: var(--hover-color);
+  transform: scale(1.05);
+}
+
+.content-search-item-add-btn:disabled,
+.content-search-item-add-btn.added {
+  background-color: #4caf50;
+  cursor: default;
+}
+
+.content-search-item-add-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Kaydırma çubuğu stilleri */
+.content-results-list-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content-results-list-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.content-results-list-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.content-results-list-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.initial-search-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--secondary-text);
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius-md);
+  border: 1px dashed var(--border-color);
+  margin-top: 20px;
+}
+
+.initial-search-state svg {
+  opacity: 0.3;
+  margin-bottom: 15px;
+}
+
+.initial-search-state p {
+  max-width: 260px;
+  line-height: 1.5;
+  font-size: 0.95rem;
 } 
