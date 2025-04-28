@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.1](https://github.com/macidko/Watchflow/compare/v0.2.0...v0.2.1) (2025-04-28)
+
+
+### Bug Fixes
+
+* **ui:** fixed settings page HTML bug and improved search results interface ([49d39fd](https://github.com/macidko/Watchflow/commit/49d39fd4bade1291c5838778a20a40dff8038c76))
+
 ## [0.2.0](https://github.com/macidko/Watchflow/compare/v0.1.0...v0.2.0) (2025-04-27)
 
 
