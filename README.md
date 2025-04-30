@@ -1,53 +1,72 @@
-# Watchflow 🎬
+# Watchflow
 
-A tracking application for movies, TV shows, and anime.
+A desktop application for tracking movies, TV shows, and anime.
+
+## Overview
+
+Watchflow helps you organize and monitor your watchlist for movies, series, and anime. You can create custom categories, track your progress, and manage your content in a simple and efficient way.
 
 ## Features
 
-Watchflow lets you:
 - Search for movies, TV shows, and anime
-- Create and manage watchlists
-- Track episodes and progress
-- Visualize your watching progress
+- Create and manage your personal watchlist
+- Add custom categories (sliders) for better organization
+- Track seasons and episodes for series and anime
+- Rate your content
+- Bulk add items to your list
+- Drag-and-drop category sorting
+- Notification system for user feedback
 
 ## Getting Started
 
-```bash
-# Installation
-npm install
+1. Install dependencies:
 
-# Run the application
+```bash
+npm install
+```
+
+2. Start the application:
+
+```bash
 npm start
+```
+
+For development mode:
+
+```bash
+npm run dev
 ```
 
 ## Build
 
+To package the app for different platforms:
+
 ```bash
-# Windows executable
-npm run build:win
+npm run build:win   # Windows
+npm run build:mac   # macOS
+npm run build:linux # Linux
 ```
 
-## API Keys
+## API Key Requirement
 
-On first launch, you'll need to enter API keys for:
-- TMDB API: [themoviedb.org](https://www.themoviedb.org/settings/api)
+On first launch, you will be prompted to enter your TMDB API key. This is required to fetch movie and TV show data. You can obtain a key from [themoviedb.org](https://www.themoviedb.org/settings/api).
 
 ## Project Structure
 
 ```
 src/
-  ├── main/     # Main process
-  ├── renderer/ # UI components
-  ├── preload/  # Preload bridge
-  ├── api/      # Data services
-  └── data/     # Local storage
+  main/       # Main process and services
+  renderer/   # UI and CSS files
+  preload/    # Preload bridge
+  api/        # API services
+  data/       # Local storage
 ```
 
-## Technologies
+## Requirements
 
-- Electron
-- Node.js
-- TMDB & Jikan APIs
+- Node.js 14 or higher
+- npm 6 or higher
+- Internet connection (for API requests)
 
 ## License
 
