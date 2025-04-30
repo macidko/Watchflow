@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/macidko/Watchflow/compare/v0.3.0...v0.4.0) (2025-04-30)
+
+
+### Features
+
+* **ui:** confirmation popup, notifications ([7f4f2b5](https://github.com/macidko/Watchflow/commit/7f4f2b5e82ddd7f70b35fb0589dc8cf2ea39ed3f))
+
 ## [0.3.0](https://github.com/macidko/Watchflow/compare/v0.2.1...v0.3.0) (2025-04-30)
 
 
