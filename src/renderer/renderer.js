@@ -651,38 +651,113 @@ function updateProgressBar(popupElement, item) {
   }
 }
 
+/**
+ * Onay Dialogu Sistemi
+ * Kullanım: showConfirmation('Başlık', 'Mesaj', confirmCallback, cancelCallback);
+ */
+function showConfirmation(title, message, onConfirm, onCancel = null) {
+  // Overlay oluştur
+  const overlay = document.createElement('div');
+  overlay.className = 'confirmation-overlay';
+  
+  // Uyarı ikonu 
+  const icon = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+  
+  // Dialog içeriği
+  overlay.innerHTML = `
+    <div class="confirmation-dialog">
+      <div class="confirmation-icon">${icon}</div>
+      <div class="confirmation-title">${title}</div>
+      <div class="confirmation-message">${message}</div>
+      <div class="confirmation-actions">
+        <button class="confirmation-btn confirmation-btn-cancel">İptal</button>
+        <button class="confirmation-btn confirmation-btn-confirm">Onayla</button>
+      </div>
+    </div>
+  `;
+  
+  // Sayfaya ekle
+  document.body.appendChild(overlay);
+  
+  // ESC tuşu ile iptal et
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      closeDialog(false);
+    }
+  };
+  
+  document.addEventListener('keydown', handleKeyDown);
+  
+  // Onay ve İptal butonlarını seç
+  const confirmButton = overlay.querySelector('.confirmation-btn-confirm');
+  const cancelButton = overlay.querySelector('.confirmation-btn-cancel');
+  
+  // Dialog'u kapat ve sonucu işle
+  function closeDialog(confirmed) {
+    // Dialog'u kapatma animasyonu
+    const dialog = overlay.querySelector('.confirmation-dialog');
+    dialog.style.animation = 'fadeOut 0.3s ease forwards';
+    
+    // Animasyon bittikten sonra DOM'dan kaldır
+    setTimeout(() => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (overlay && overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+      
+      // Callback'i çağır
+      if (confirmed && typeof onConfirm === 'function') {
+        onConfirm();
+      } else if (!confirmed && typeof onCancel === 'function') {
+        onCancel();
+      }
+    }, 300);
+  }
+  
+  // Onayla butonuna tıklama
+  confirmButton.addEventListener('click', () => closeDialog(true));
+  
+  // İptal butonuna tıklama
+  cancelButton.addEventListener('click', () => closeDialog(false));
+  
+  // Dışarıya tıklama ile iptal
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      closeDialog(false);
+    }
+  });
+  
+  return overlay;
+}
+
 // İzleme listesinden kaldır
 async function removeFromWatchlist(id, mediaType) {
   try {
-    // mediaType kontrolü
     if (!mediaType) {
       throw new Error('Medya türü belirtilmedi (mediaType: undefined)');
     }
-    
-    // ID kontrolü
     if (!id) {
       throw new Error('İçerik ID bilgisi eksik');
     }
     
-    // API çağrısı yapılıyor
-    console.log(`İzleme listesinden kaldırılıyor: ID ${id}, Tür: ${mediaType}`);
-    
-    // Onay penceresi göster
-    if (confirm("Bu içeriği izleme listenizden kaldırmak istediğinize emin misiniz?")) {
-      const result = await window.watchflowAPI.removeFromWatchlist(parseInt(id), mediaType);
-      
-      if (result.success) {
-        // Başarı durumunda bildirim göster (isteğe bağlı)
-        // alert(result.message);
-        
-        // Listeyi yeniden yükle
-        loadWatchlist();
-      } else {
-        throw new Error(result.error || 'Bilinmeyen bir hata oluştu');
+    showConfirmation(
+      'İçeriği Kaldır', 
+      'Bu içeriği izleme listenizden kaldırmak istediğinize emin misiniz?',
+      async () => {
+        try {
+          const result = await window.watchflowAPI.removeFromWatchlist(parseInt(id), mediaType);
+          if (result.success) {
+            showNotification('Başarılı', 'İçerik başarıyla kaldırıldı.', 'success');
+            loadWatchlist();
+          } else {
+            throw new Error(result.error || 'Bilinmeyen bir hata oluştu');
+          }
+        } catch (error) {
+          showNotification('Hata', 'İçerik kaldırılırken bir hata oluştu: ' + error.message, 'error');
+        }
       }
-    }
+    );
   } catch (error) {
-    console.error('İzleme listesinden kaldırma hatası:', error);
     showNotification('Hata', 'İçerik kaldırılırken bir hata oluştu: ' + error.message, 'error');
   }
 }
@@ -690,35 +765,24 @@ async function removeFromWatchlist(id, mediaType) {
 // İzlendi olarak işaretle
 async function markAsWatched(id, mediaType, originalType) {
   try {
-    // İzleme listesini al
     const watchlist = await window.watchflowAPI.getWatchlist();
-    
-    // İzleme listesinde öğeyi bul
     if (!watchlist[mediaType]) {
       throw new Error(`${mediaType} kategorisinde içerik bulunamadı`);
     }
-    
-    // ID'ye göre öğeyi bul
     const contentIndex = watchlist[mediaType].findIndex(item => item.id.toString() === id.toString());
     if (contentIndex === -1) {
       throw new Error(`ID=${id} ile eşleşen içerik bulunamadı`);
     }
-    
-    // Mevcut durumu al
     const currentItem = watchlist[mediaType][contentIndex];
     const currentStatus = currentItem.status;
-    
-    // Slider'ları kontrol et
     if (!watchlist.sliders || !watchlist.sliders[mediaType]) {
       watchlist.sliders = watchlist.sliders || {};
       watchlist.sliders[mediaType] = [];
     }
-    
-    // Normalize fonksiyonu - Türkçe karakterleri ve büyük/küçük harfleri normalize eder
     const normalize = (text) => {
       return text.toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // Aksanlı karakterleri kaldır
+        .replace(/[\u0300-\u036f]/g, "")
         .replace(/ı/g, "i")
         .replace(/ğ/g, "g")
         .replace(/ü/g, "u")
@@ -726,79 +790,61 @@ async function markAsWatched(id, mediaType, originalType) {
         .replace(/ç/g, "c")
         .replace(/ö/g, "o");
     };
-    
-    // İzlendi içeren bir slider bul
-    let watchedSlider = watchlist.sliders[mediaType].find(slider => 
-      normalize(slider.name).includes("izlendi"));
-    
-    // İzlendi içeren bir slider yoksa, direkt yeni bir İzlendi slider'ı oluştur
+    let watchedSlider = watchlist.sliders[mediaType].find(slider => normalize(slider.name).includes("izlendi"));
     if (!watchedSlider) {
-      // Yeni "İzlendi" slider'ı oluştur
       const newSlider = {
         id: `${mediaType}-slider-${Date.now()}`,
         name: "İzlendi",
         index: watchlist.sliders[mediaType].length
       };
-      
-      // Slider'ı listeye ekle
       watchlist.sliders[mediaType].push(newSlider);
       watchedSlider = newSlider;
-      
-      console.log(`"İzlendi" slider'ı oluşturuldu çünkü mevcut slider'larda bulunamadı.`);
     }
-    
-    // Status'ü izlendi olarak değiştir
     if (currentStatus !== watchedSlider.name) {
       const confirmMessage = `"${currentItem.title}" adlı içeriği "${watchedSlider.name}" olarak işaretlemek istediğinize emin misiniz?`;
       
-      if (confirm(confirmMessage)) {
-        // Status'ü güncelle
-        watchlist[mediaType][contentIndex].status = watchedSlider.name;
-        
-        // İçerik TV veya Anime ise, tüm bölümleri izlendi olarak işaretle
-        if (mediaType === 'tv' || mediaType === 'anime') {
-          const item = watchlist[mediaType][contentIndex];
-          
-          // watchedEpisodes dizisi yoksa oluştur
-          if (!item.watchedEpisodes) {
-            item.watchedEpisodes = [];
-          }
-          
-          // Tüm bölümleri izlendi olarak işaretle
-          if (item.seasons) {
-            item.seasons.forEach(season => {
-              const seasonNumber = season.seasonNumber;
-              const episodeCount = season.episodeCount;
-              
-              for (let i = 1; i <= episodeCount; i++) {
-                const episodeKey = `s${seasonNumber}e${i}`;
-                if (!item.watchedEpisodes.includes(episodeKey)) {
-                  item.watchedEpisodes.push(episodeKey);
-                }
+      showConfirmation(
+        'İzlendi Olarak İşaretle', 
+        confirmMessage,
+        async () => {
+          try {
+            watchlist[mediaType][contentIndex].status = watchedSlider.name;
+            if (mediaType === 'tv' || mediaType === 'anime') {
+              const item = watchlist[mediaType][contentIndex];
+              if (!item.watchedEpisodes) {
+                item.watchedEpisodes = [];
               }
-            });
+              if (item.seasons) {
+                item.seasons.forEach(season => {
+                  const seasonNumber = season.seasonNumber;
+                  const episodeCount = season.episodeCount;
+                  for (let i = 1; i <= episodeCount; i++) {
+                    const episodeKey = `s${seasonNumber}e${i}`;
+                    if (!item.watchedEpisodes.includes(episodeKey)) {
+                      item.watchedEpisodes.push(episodeKey);
+                    }
+                  }
+                });
+              }
+            }
+            const result = await window.watchflowAPI.updateWatchlist(watchlist);
+            if (result.success) {
+              showNotification('Başarılı', 'İçerik izlendi olarak işaretlendi.', 'success');
+              await loadWatchlist();
+              const activeTabId = document.querySelector('.main-nav a.active').getAttribute('data-page');
+              showPage(activeTabId);
+            } else {
+              throw new Error(result.error || 'Güncelleme sırasında bir hata oluştu');
+            }
+          } catch (error) {
+            showNotification('Hata', 'İçerik işaretlenirken bir hata oluştu: ' + error.message, 'error');
           }
         }
-        
-        // Watchlist'i güncelle
-        const result = await window.watchflowAPI.updateWatchlist(watchlist);
-      
-      if (result.success) {
-          // Watchlist'i yeniden yükle
-        await loadWatchlist();
-        
-          // UI'da güncellemeleri göster
-          const activeTabId = document.querySelector('.main-nav a.active').getAttribute('data-page');
-          showPage(activeTabId);
-      } else {
-          throw new Error(result.error || 'Güncelleme sırasında bir hata oluştu');
-      }
-      }
+      );
     } else {
       showNotification('Bilgi', `"${currentItem.title}" zaten ${watchedSlider.name} olarak işaretlenmiş.`, 'info');
     }
   } catch (error) {
-    console.error('İzlendi olarak işaretleme hatası:', error);
     showNotification('Hata', 'İçerik işaretlenirken bir hata oluştu: ' + error.message, 'error');
   }
 }
@@ -929,11 +975,12 @@ function showPage(pageId) {
 function showError(message) {
   // Dropdown içinde hata mesajı göster
   dropdownSearchResults.innerHTML = `<div class="error-message">${message}</div>`;
-  
   // Dropdown açık değilse aç
   if (searchDropdown.classList.contains('hidden')) {
     openSearchDropdown();
   }
+  // Kullanıcıya bildirim olarak da göster
+  showNotification('Hata', message, 'error');
 }
 
 // Arama işlevi
@@ -2444,9 +2491,11 @@ async function loadSliderList(sectionId) {
         if (deleteBtn) {
           deleteBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            if (confirm(`"${slider.name}" slider'ını silmek istediğinize emin misiniz?`)) {
-              deleteCustomSlider(slider.id);
-            }
+            showConfirmation(
+              'Slider\'ı Sil',
+              `"${slider.name}" slider'ını silmek istediğinize emin misiniz?`,
+              () => deleteCustomSlider(slider.id)
+            );
           });
         }
       });
