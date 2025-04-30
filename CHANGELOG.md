@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/macidko/Watchflow/compare/v0.2.1...v0.3.0) (2025-04-30)
+
+
+### Features
+
+* **watchlist-ui:** bulk-add, notification ([50c7cd2](https://github.com/macidko/Watchflow/commit/50c7cd2f3fd518001a29a07b02c23421f27d0aae))
+
 ### [0.2.1](https://github.com/macidko/Watchflow/compare/v0.2.0...v0.2.1) (2025-04-28)
 
 
