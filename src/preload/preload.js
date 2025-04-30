@@ -32,6 +32,23 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
     ipcRenderer.send('close-window');
   },
   
+  // İçerik araması yap (TMDB veya Jikan)
+  searchMedia: async (query, type = 'multi') => {
+    try {
+      // Anime araması için Jikan API kullan
+      if (type === 'anime') {
+        return await ipcRenderer.invoke('search-jikan', query);
+      }
+      // Diğer içerikler için TMDB API kullan
+      else {
+        return await ipcRenderer.invoke('search-tmdb', query, type);
+      }
+    } catch (error) {
+      console.error('İçerik araması sırasında hata:', error);
+      throw error;
+    }
+  },
+  
   // TMDB API ile arama yap
   searchTMDB: async (query, type = 'multi') => {
     try {
@@ -98,6 +115,16 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
       return await ipcRenderer.invoke('add-to-watchlist', item);
     } catch (error) {
       console.error('İzleme listesine ekleme hatası:', error);
+      throw error;
+    }
+  },
+  
+  // İzleme listesine toplu içerik ekle
+  bulkAddToWatchlist: async (items) => {
+    try {
+      return await ipcRenderer.invoke('bulk-add-to-watchlist', items);
+    } catch (error) {
+      console.error('Toplu içerik ekleme hatası:', error);
       throw error;
     }
   },

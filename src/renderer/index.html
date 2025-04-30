@@ -8,6 +8,11 @@
   <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
+  <!-- Bildirim Sistemi (en üstte) -->
+  <div id="notificationContainer" class="notification-container">
+    <!-- Bildirimler dinamik olarak buraya eklenecek -->
+  </div>
+
   <div class="app-container">
     <!-- Navbar - İlk satır: Logo ve Arama -->
     <div class="navbar-top">
@@ -153,6 +158,10 @@
                 <button id="exportWatchlist" class="settings-button">İzleme Listesini Dışa Aktar</button>
                 <p class="settings-help">İzleme listenizi bir JSON dosyasına kopyalayın.</p>
               </div>
+              <div class="settings-action-group">
+                <button id="bulkAddButton" class="settings-button primary-btn">Toplu İçerik Ekle</button>
+                <p class="settings-help">Metin formatında içerik listesi ekleyin.</p>
+              </div>
               <div id="exportMessage" class="settings-message"></div>
             </div>
           </div>
@@ -169,8 +178,6 @@
       </div>
     </div>
   </div>
-  
-  <script src="renderer.js"></script>
   
   <!-- Çark İkonu Popup Overlay -->
   <div id="settingsPopupOverlay" class="settings-popup-overlay hidden">
@@ -313,5 +320,83 @@
       </div>
     </div>
   </div>
+  
+  <!-- Toplu İçerik Ekleme Popup -->
+  <div id="bulkAddPopupOverlay" class="settings-popup-overlay hidden">
+    <div class="settings-popup">
+      <div class="settings-popup-header">
+        <div class="settings-popup-title">Toplu İçerik Ekleme</div>
+        <button id="closeBulkAddPopup" class="settings-popup-close">×</button>
+      </div>
+      <div class="settings-popup-body">
+        <!-- Adım 1: Metin Girişi -->
+        <div id="bulkAddStep1" class="bulk-add-step">
+          <p class="bulk-add-description">
+            Her satıra <strong>bir içerik</strong> ekleyerek toplu içerik listesi oluşturabilirsiniz. 
+            <br><br>
+            <strong>Format:</strong> <code>İçerik Adı - kategori</code>
+            <br>
+            <strong>Örnekler:</strong> 
+            <br><code>Interstellar - movie</code>
+            <br><code>Breaking Bad - tv</code>
+            <br><code>Naruto - anime</code>
+            <br><br>
+            <strong>Kategori türleri:</strong> <code>movie</code>, <code>tv</code> veya <code>anime</code>
+          </p>
+          <div class="form-group">
+            <textarea id="bulkContentInput" class="form-input" rows="10" placeholder="Her satıra bir içerik ekleyin..."></textarea>
+          </div>
+          <div class="settings-popup-actions">
+            <button id="searchBulkContent" class="settings-popup-btn settings-popup-btn-save">İçerikleri Ara</button>
+          </div>
+        </div>
+        
+        <!-- Adım 2: Arama Sonuçları ve Onaylama -->
+        <div id="bulkAddStep2" class="bulk-add-step hidden">
+          <div class="bulk-results-header">
+            <h3 class="bulk-results-title">Bulunan İçerikler</h3>
+            <div class="bulk-select-actions">
+              <button id="selectAllResults" class="bulk-select-btn">Tümünü Seç</button>
+              <button id="deselectAllResults" class="bulk-select-btn">Tümünü Kaldır</button>
+            </div>
+          </div>
+          
+          <div id="bulkSearchResults" class="bulk-search-results">
+            <!-- Arama sonuçları buraya yüklenecek -->
+            <div class="loading-indicator">
+              <div class="loader"></div>
+              <p>İçerikler aranıyor...</p>
+            </div>
+          </div>
+          
+          <div class="settings-popup-actions">
+            <button id="backToBulkInput" class="settings-popup-btn">Geri Dön</button>
+            <button id="addSelectedContent" class="settings-popup-btn settings-popup-btn-save">Seçili İçerikleri Ekle</button>
+          </div>
+        </div>
+        
+        <!-- Adım 3: Sonuç -->
+        <div id="bulkAddStep3" class="bulk-add-step hidden">
+          <div class="bulk-add-result">
+            <div id="bulkAddSuccessMessage" class="success-message">
+              <p>İçerikler başarıyla eklendi!</p>
+              <div id="bulkAddStats"></div>
+            </div>
+            <div id="bulkAddErrorMessage" class="error-message hidden">
+              <p>Bazı içerikler eklenirken hata oluştu.</p>
+              <div id="bulkAddErrorDetails"></div>
+            </div>
+          </div>
+          
+          <div class="settings-popup-actions">
+            <button id="newBulkAdd" class="settings-popup-btn">Yeni İçerik Ekle</button>
+            <button id="closeBulkAddResult" class="settings-popup-btn settings-popup-btn-save">Kapat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="renderer.js"></script>
 </body>
 </html> 

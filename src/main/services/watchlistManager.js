@@ -434,6 +434,47 @@ const addToWatchlist = async (item) => {
   }
 };
 
+// İzleme listesine toplu içerik ekleme
+const bulkAddToWatchlist = async (items) => {
+  try {
+    // Sonuç sayaçları
+    let successCount = 0;
+    let errorCount = 0;
+    let errorMessages = [];
+    
+    // Her bir öğe için addToWatchlist fonksiyonunu çağır
+    for (const item of items) {
+      try {
+        const result = await addToWatchlist(item);
+        if (result.success) {
+          successCount++;
+        } else {
+          errorCount++;
+          errorMessages.push(`${item.title}: ${result.error}`);
+        }
+      } catch (err) {
+        errorCount++;
+        errorMessages.push(`${item.title || 'Bilinmeyen içerik'}: ${err.message}`);
+      }
+    }
+    
+    return {
+      success: true,
+      successCount,
+      errorCount,
+      errorMessages: errorMessages.length > 0 ? errorMessages : null
+    };
+  } catch (error) {
+    console.error('Toplu içerik ekleme hatası:', error);
+    return { 
+      success: false, 
+      successCount: 0,
+      errorCount: items?.length || 0,
+      error: error.message 
+    };
+  }
+};
+
 // Bölüm izleme durumunu güncelle
 const updateEpisodeStatus = async (data) => {
   try {
@@ -644,6 +685,7 @@ module.exports = {
   ensureWatchlistExists,
   getWatchlist,
   addToWatchlist,
+  bulkAddToWatchlist,
   updateEpisodeStatus,
   updateContentRating,
   removeFromWatchlist,

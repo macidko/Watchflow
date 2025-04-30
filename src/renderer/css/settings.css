@@ -137,4 +137,194 @@
 
 .app-info p {
   margin-bottom: 8px;
+}
+
+/* Toplu içerik ekleme stilleri */
+.bulk-add-step {
+  width: 100%;
+}
+
+.bulk-add-description {
+  margin-bottom: 15px;
+  color: var(--secondary-text);
+  line-height: 1.6;
+}
+
+.bulk-add-description code {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  color: var(--accent-color);
+}
+
+.bulk-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.bulk-results-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--primary-text);
+}
+
+.bulk-select-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.bulk-select-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
+  color: var(--secondary-text);
+  padding: 5px 10px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bulk-select-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--primary-text);
+}
+
+.bulk-search-results {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding-right: 5px;
+}
+
+.bulk-result-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  border-radius: var(--border-radius-sm);
+  background-color: rgba(255, 255, 255, 0.05);
+  margin-bottom: 15px;
+  transition: background-color 0.2s;
+}
+
+.bulk-result-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.bulk-item-selection {
+  display: flex;
+  align-items: center;
+}
+
+.bulk-item-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.bulk-item-image {
+  width: 80px;
+  min-width: 80px;
+  height: 120px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.bulk-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bulk-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bulk-item-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--primary-text);
+}
+
+.bulk-item-type {
+  font-size: 0.9rem;
+  color: var(--secondary-text);
+}
+
+.bulk-item-status {
+  margin-top: auto;
+}
+
+.bulk-item-status-select {
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: var(--primary-text);
+  padding: 5px 10px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+}
+
+.bulk-add-result {
+  margin-bottom: 20px;
+}
+
+.settings-popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.settings-popup-btn {
+  padding: 10px 15px;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+}
+
+.settings-popup-btn-save {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.settings-popup-btn-save:hover {
+  background-color: var(--hover-color);
+}
+
+.settings-popup-btn:not(.settings-popup-btn-save) {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--secondary-text);
+}
+
+.settings-popup-btn:not(.settings-popup-btn-save):hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--primary-text);
+}
+
+/* Scrollbar stilleri */
+.bulk-search-results::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.bulk-search-results::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.bulk-search-results::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.bulk-search-results::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 } 

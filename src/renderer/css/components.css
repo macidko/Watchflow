@@ -211,4 +211,153 @@
   border-radius: var(--border-radius-sm);
   border-left: 4px solid #4caf50;
   margin: 20px 0;
+}
+
+/* Bildirim Sistemi */
+.notification-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 350px;
+  pointer-events: none; /* Arka plandaki elementlerle etkileşime izin verir */
+}
+
+.notification {
+  pointer-events: auto; /* Bu element için etkileşimi geri açar */
+  display: flex;
+  align-items: flex-start;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 4px 20px rgba(255, 69, 0, 0.5); /* Daha görünür gölge */
+  animation: slideInRight 0.3s ease forwards;
+  position: relative;
+  overflow: hidden;
+  background-color: #1e1e1e; /* Daha koyu arka plan */
+  border-left: 6px solid; /* Daha kalın kenar */
+  transform: scale(1.05); /* Biraz daha büyük */
+}
+
+.notification.info {
+  border-color: #3498db;
+}
+
+.notification.success {
+  border-color: #4caf50;
+}
+
+.notification.warning {
+  border-color: #f39c12;
+}
+
+.notification.error {
+  border-color: #e74c3c;
+}
+
+.notification-icon {
+  flex-shrink: 0;
+  margin-right: 10px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification.info .notification-icon {
+  color: #3498db;
+}
+
+.notification.success .notification-icon {
+  color: #4caf50;
+}
+
+.notification.warning .notification-icon {
+  color: #f39c12;
+}
+
+.notification.error .notification-icon {
+  color: #e74c3c;
+}
+
+.notification-content {
+  flex-grow: 1;
+}
+
+.notification-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--primary-text);
+}
+
+.notification-message {
+  color: var(--secondary-text);
+  font-size: 14px;
+}
+
+.notification-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  cursor: pointer;
+  color: var(--secondary-text);
+  border: none;
+  background: none;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+.notification-close:hover {
+  color: var(--primary-text);
+}
+
+.notification-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 100%;
+  transition: width linear;
+}
+
+.notification.info .notification-progress {
+  background-color: #3498db;
+}
+
+.notification.success .notification-progress {
+  background-color: #4caf50;
+}
+
+.notification.warning .notification-progress {
+  background-color: #f39c12;
+}
+
+.notification.error .notification-progress {
+  background-color: #e74c3c;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 } 

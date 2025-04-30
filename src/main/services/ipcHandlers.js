@@ -200,8 +200,25 @@ const setupIpcHandlers = (ipcMain) => {
       const result = await watchlistManager.addToWatchlist(item);
       return result;
     } catch (error) {
-      console.error('Watchlist\'e eklenirken hata:', error);
-      return { error: error.message };
+      console.error('İzleme listesine ekleme hatası:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  // İzleme listesine toplu içerik ekleme işleyicisi
+  ipcMain.handle('bulk-add-to-watchlist', async (event, items) => {
+    try {
+      console.log(`Toplu ekleme: ${items.length} öğe işleniyor...`);
+      const result = await watchlistManager.bulkAddToWatchlist(items);
+      return result;
+    } catch (error) {
+      console.error('Toplu izleme listesine ekleme hatası:', error);
+      return { 
+        success: false, 
+        successCount: 0, 
+        errorCount: items?.length || 0, 
+        error: error.message 
+      };
     }
   });
   
