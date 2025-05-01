@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.1](https://github.com/macidko/Watchflow/compare/v0.4.0...v0.4.1) (2025-05-01)
+
+
+### Code Refactoring
+
+* **index.css-bulkAdd:** moved styles that should not be in index.css. bulkadd was changed to appear on the homepage ([6981f49](https://github.com/macidko/Watchflow/commit/6981f4970c8bd147afd38671fe7c3b655aade044))
+
 ## [0.4.0](https://github.com/macidko/Watchflow/compare/v0.3.0...v0.4.0) (2025-04-30)
 
 
