@@ -46,6 +46,7 @@
 
 /* Arama butonu */
 .add-search-button {
+  -webkit-app-region: no-drag;
   background-color: var(--accent-color);
   color: white;
   border: none;
@@ -83,30 +84,55 @@
   background-color: #555;
 }
 
+/* Döndürme animasyonu için stil */
 .rotate {
-  transform: rotate(45deg);
+  transform: rotate(45deg) !important;
 }
 
-/* Arama Açılır Menüsü */
-.search-dropdown {
+/* Overlay stil (popup açıkken arka plan) */
+.overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--main-bg);
-  z-index: 110;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 90;
+  animation: fade-in 0.3s ease;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Arama Açılır Menüsü */
+.search-dropdown {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--dropdown-bg, var(--secondary-bg));
+  box-shadow: var(--dropdown-shadow, 0 8px 16px rgba(0, 0, 0, 0.3));
+  z-index: 99;
+  border-radius: 8px;
+  transition: opacity 0.2s, transform 0.2s;
+  max-height: 85vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease;
-  transform: translateY(0);
 }
 
 .search-dropdown.hidden {
   display: none;
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translate(-50%, -20px);
   pointer-events: none;
 }
 
