@@ -59,14 +59,14 @@
         "dmg",
         "zip"
       ],
-      "icon": "src/assets/icons/mac/icon.icns"
+      "icon": "./icon.icns"
     },
     "win": {
       "target": [
         "nsis",
         "portable"
       ],
-      "icon": "src/assets/icons/win/icon.ico"
+      "icon": "./icon.ico"
     },
     "linux": {
       "target": [
@@ -74,7 +74,7 @@
         "deb"
       ],
       "category": "Entertainment",
-      "icon": "src/assets/icons/png"
+      "icon": ".icons/png"
     },
     "nsis": {
       "oneClick": false,

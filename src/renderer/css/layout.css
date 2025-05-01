@@ -18,6 +18,41 @@
   backdrop-filter: blur(10px);
 }
 
+/* Search Control Buttons */
+.search-control-buttons {
+  display: flex;
+  gap: 10px;
+  -webkit-app-region: no-drag;
+}
+
+.bulk-add-button {
+  background-color: rgba(255, 69, 0, 0.1);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  color: var(--accent-color);
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-app-region: no-drag;
+}
+
+.bulk-add-button:hover {
+  background-color: rgba(255, 69, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.bulk-add-button svg {
+  transition: transform 0.2s ease;
+}
+
+.bulk-add-button:hover svg {
+  transform: scale(1.1);
+}
+
 /* Logo alanı iyileştirmeleri */
 .logo {
   display: flex;

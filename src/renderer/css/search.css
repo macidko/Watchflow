@@ -1,6 +1,7 @@
 /* Arama ve Sonuçları Stilleri */
 
-/* Arama Buton ve Formları */
+/* Arama Kutusu ve Dropdown */
+
 .search-container {
   display: none; /* Eski search-container'ı gizle */
 }
@@ -31,57 +32,75 @@
   box-shadow: 0 0 0 2px var(--accent-color);
 }
 
-/* Floating Action Button (FAB) - Ekle Butonu */
-.add-search-button {
-  -webkit-app-region: no-drag;
+/* FAB container */
+.fab-container {
   position: fixed;
   bottom: 30px;
   right: 30px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
+  gap: 15px;
+  z-index: 1000;
+}
+
+/* Arama butonu */
+.add-search-button {
   background-color: var(--accent-color);
   color: white;
-  font-size: 28px;
-  font-weight: bold;
   border: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s, box-shadow 0.3s;
-  box-shadow: 0 4px 12px rgba(255, 69, 0, 0.4);
-  z-index: 1000;
-  animation: pulse 2s infinite;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+/* Toplu ekleme butonu */
+.bulk-fab {
+  background-color: #444;
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+}
+
+.add-search-button:hover, .bulk-add-button:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 .add-search-button:hover {
   background-color: var(--hover-color);
-  transform: translateY(-5px);
-  box-shadow: 0 6px 16px rgba(255, 69, 0, 0.5);
+}
+
+.bulk-fab:hover {
+  background-color: #555;
 }
 
 .rotate {
-  transform: rotate(45deg) !important;
+  transform: rotate(45deg);
 }
 
 /* Arama Açılır Menüsü */
 .search-dropdown {
-  position: absolute;
-  top: 70px;
-  left: 50%;
-  transform: translate(-50%, 0%);
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 600px;
-  background-color: var(--dropdown-bg);
-  box-shadow: var(--dropdown-shadow);
-  z-index: 99;
-  border-radius: 0 0 8px 8px;
-  transition: opacity 0.2s, transform 0.2s;
-  max-height: 85vh;
+  height: 100%;
+  background-color: var(--main-bg);
+  z-index: 110;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s ease;
+  transform: translateY(0);
 }
 
 .search-dropdown.hidden {

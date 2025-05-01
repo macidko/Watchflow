@@ -77,8 +77,20 @@
       </div>
     </div>
     
-    <!-- Floating Action Button (FAB) - Ekle Butonu -->
-    <button id="searchButton" class="add-search-button">+</button>
+    <!-- Floating Action Buttons -->
+    <div class="fab-container">
+      <button id="searchButton" class="add-search-button">+</button>
+      <button id="bulkAddButton" class="add-search-button bulk-fab">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+      </button>
+    </div>
     
     <!-- Navbar - İkinci satır: Navigasyon Menüsü -->
     <div class="navbar-bottom">
@@ -157,10 +169,6 @@
               <div class="settings-action-group">
                 <button id="exportWatchlist" class="settings-button">İzleme Listesini Dışa Aktar</button>
                 <p class="settings-help">İzleme listenizi bir JSON dosyasına kopyalayın.</p>
-              </div>
-              <div class="settings-action-group">
-                <button id="bulkAddButton" class="settings-button primary-btn">Toplu İçerik Ekle</button>
-                <p class="settings-help">Metin formatında içerik listesi ekleyin.</p>
               </div>
               <div id="exportMessage" class="settings-message"></div>
             </div>
