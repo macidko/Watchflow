@@ -2784,29 +2784,38 @@ document.addEventListener('DOMContentLoaded', () => {
   // Toplu içerik ekleme butonuna tıklama işlevini ekle
   const bulkAddButton = document.getElementById('bulkAddButton');
   const bulkAddPopupOverlay = document.getElementById('bulkAddPopupOverlay');
-  const closeBulkAddPopup = document.getElementById('closeBulkAddPopup');
+  const closeBulkAddPopupBtn = document.getElementById('closeBulkAddPopup');
   
   if (bulkAddButton) {
     bulkAddButton.addEventListener('click', openBulkAddPopup);
   }
   
-  if (closeBulkAddPopup) {
-    closeBulkAddPopup.addEventListener('click', closeBulkAddPopup);
+  if (closeBulkAddPopupBtn) {
+    closeBulkAddPopupBtn.addEventListener('click', closeBulkAddPopup);
   }
   
   // Toplu içerik ekleme adımlarını yönet
   setupBulkAddProcessSteps();
 });
 
-// Toplu içerik ekleme popup'ını aç
+// Toplu içerik ekleme popup'ını açma
 function openBulkAddPopup() {
+  // DOM elementlerini seç
   const bulkAddPopupOverlay = document.getElementById('bulkAddPopupOverlay');
+  const closeBulkAddPopupBtn = document.getElementById('closeBulkAddPopup');
+  
+  // Popup'ı aç
   if (bulkAddPopupOverlay) {
     bulkAddPopupOverlay.classList.remove('hidden');
-    
-    // İlk adımı göster, diğerlerini gizle
-    showBulkAddStep(1);
   }
+  
+  // Kapatma butonuna tıklama olayı ekle
+  if (closeBulkAddPopupBtn) {
+    closeBulkAddPopupBtn.addEventListener('click', closeBulkAddPopup);
+  }
+  
+  // İlk adımı göster
+  showBulkAddStep(1);
 }
 
 // Toplu içerik ekleme popup'ını kapat
@@ -2967,20 +2976,40 @@ function parseContentLine(line) {
   return { title, type };
 }
 
-// İçerik için arama yap
+// API istekleri arasındaki gecikme (ms) - anime API'leri için hız sınırlaması
+const API_DELAY = 1000; 
+
+// Belirli bir süre bekleyen yardımcı fonksiyon
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// İçerik arama
 async function searchContent(content) {
   try {
-    // İçerik türüne göre API araması yap
-    const results = await window.watchflowAPI.searchMedia(content.title, content.type);
-    
-    if (results && results.length > 0) {
-      // İlk sonucu döndür
-      return results[0];
+    if (!content || !content.title || !content.type) {
+      console.error("Geçersiz içerik formatı:", content);
+      return null;
     }
-    showNotification('Uyarı', 'İçerik bulunamadı.', 'warning');
-    return null;
+
+    let results;
+    
+    // Anime için Jikan API'si arasında gecikme ekleyelim
+    if (content.type === 'anime') {
+      // Her anime araması öncesi bekle
+      await sleep(API_DELAY);
+      results = await window.watchflowAPI.searchJikan(content.title);
+    } else if (content.type === 'movie') {
+      results = await window.watchflowAPI.searchTMDB(content.title, 'movie');
+    } else if (content.type === 'tv') {
+      results = await window.watchflowAPI.searchTMDB(content.title, 'tv');
+    }
+    
+    // İlk sonucu dön (varsa)
+    return results && results.length > 0 ? results[0] : null;
   } catch (error) {
-    showNotification('Hata', 'İçerik aranırken bir hata oluştu: ' + error.message, 'error');
+    console.error(`"${content.title}" içeriği aranırken hata:`, error);
+    // Hatayı yutmayalım, ancak bu içeriği atlayıp devam edelim
     return null;
   }
 }
@@ -3056,150 +3085,118 @@ function toggleAllBulkResults(select) {
 
 // Seçili içerikleri izleme listesine ekle
 async function addSelectedContents() {
-  const resultItems = document.querySelectorAll('.bulk-result-item');
-  const itemsToAdd = [];
+  const checkboxes = document.querySelectorAll('.bulk-item-checkbox:checked');
+  const totalSelected = checkboxes.length;
   
-  resultItems.forEach(item => {
-    const checkbox = item.querySelector('.bulk-item-checkbox');
-    if (checkbox && checkbox.checked) {
-      const dataInput = item.querySelector('.bulk-item-data');
-      const statusSelect = item.querySelector('.bulk-item-status-select');
-      
-      if (dataInput && statusSelect) {
-        try {
-          // Base64 olarak encode edilmiş veriyi çözümleme
-          const encodedData = dataInput.value;
-          const jsonData = decodeURIComponent(atob(encodedData));
-          const itemData = JSON.parse(jsonData);
-          
-          // İzleme durumunu ekle
-          itemData.status = statusSelect.value;
-          
-          // Veri tiplerini düzeltme ve doğrulama
-          if (itemData.id) {
-            // ID'nin sayısal formatta olduğundan emin ol
-            itemData.id = Number(itemData.id);
-          }
-          
-          // Anime kaynaklarından gelen verileri düzelt
-          // Jikan API'dan gelen "TV" veya farklı anime tipleri "anime" olarak düzeltilmeli
-          if (itemData.type === 'TV' || itemData.type === 'tv' || itemData.type === 'TV Show') {
-            // Anime olup olmadığını kontrol et - score veya MAL ID'leri genellikle anime içeriğini gösterir
-            if (itemData.score || (itemData.imageUrl && itemData.imageUrl.includes("myanimelist.net"))) {
-              // Bu bir anime içeriği
-              itemData.type = 'anime';
-            }
-          }
-          
-          // Anime türü için özel düzeltmeler
-          if (itemData.type === 'anime') {
-            // MAL/Jikan API'dan gelen ID'yi sayısal formata çevir
-            itemData.id = Number(itemData.id);
-            
-            // Anime türü için gerekli alanların var olduğundan emin ol
-            if (!itemData.totalSeasons) {
-              itemData.totalSeasons = 1;
-            }
-            
-            if (!itemData.watchedEpisodes) {
-              itemData.watchedEpisodes = [];
-            }
-            
-            // Anime için varsayılan sezon bilgilerini ekle
-            if (!itemData.seasons) {
-              itemData.seasons = [{
-                seasonNumber: 1,
-                episodeCount: itemData.totalEpisodes || 13,
-                episodes: []
-              }];
-            }
-          }
-          
-          itemsToAdd.push(itemData);
-          showNotification('Başarılı', 'İçerik başarıyla eklendi!', 'success');
-        } catch (error) {
-          showNotification('Hata', 'İçerik ekleme hatası: ' + error.message, 'error');
-        }
-      }
-    }
-  });
-  
-  if (itemsToAdd.length === 0) {
+  if (totalSelected === 0) {
     showNotification('Uyarı', 'Lütfen eklemek için en az bir içerik seçin.', 'warning');
     return;
   }
   
-  try {
-    // İçerikleri tek tek ekle - bulkAddToWatchlist yerine tek tek ekleme yapalım
-    let successCount = 0;
-    let errorCount = 0;
-    let errorMessages = [];
-    
-    // Her içeriği tek tek ekle
-    for (const item of itemsToAdd) {
-      try {
-        // addToWatchlist kullanarak tek tek ekleyelim
-        const result = await window.watchflowAPI.addToWatchlist(item);
-        if (result.success) {
-          successCount++;
-        } else {
-          errorCount++;
-          errorMessages.push(`${item.title}: ${result.error || 'Bilinmeyen hata'}`);
-          console.error(`Ekleme hatası: ${item.title}`, result);
-        }
-      } catch (err) {
-        errorCount++;
-        errorMessages.push(`${item.title}: ${err.message || 'Bilinmeyen hata'}`);
-        console.error(`Ekleme istisnası: ${item.title}`, err);
+  // Yükleniyor mesajı
+  showNotification('Bilgi', 'Seçilen içerikler ekleniyor...', 'info');
+  
+  // İstatistikler
+  let successCount = 0;
+  let errorCount = 0;
+  let errorMessages = [];
+  
+  // Seçilen her içerik için
+  for (const checkbox of checkboxes) {
+    try {
+      const resultItem = JSON.parse(checkbox.dataset.item);
+      const status = checkbox.closest('.bulk-result-item').querySelector('.bulk-item-status-select').value;
+      
+      // Watch status objesini oluştur
+      const watchStatus = {
+        id: resultItem.id,
+        status: status,
+        addedAt: new Date().toISOString(),
+        title: resultItem.title || resultItem.name,
+        originalType: resultItem.original_type || resultItem.type,
+        backdrop_path: resultItem.backdrop_path,
+        poster_path: resultItem.poster_path,
+        release_date: resultItem.release_date || resultItem.first_air_date,
+        vote_average: resultItem.vote_average,
+        overview: resultItem.overview,
+        watched: status === 'watched' ? true : false,
+        watchedAt: status === 'watched' ? new Date().toISOString() : null,
+        watchedEpisodes: [],
+        airingCompleted: resultItem.status === 'Completed' || resultItem.status === 'Ended'
+      };
+      
+      // İçeriği ekle
+      const type = resultItem.original_type || resultItem.type;
+      
+      if (!type) {
+        throw new Error(`İçerik türü tanımlanmamış: ${JSON.stringify(resultItem)}`);
       }
-    }
-    
-    // Adım 3'e geç ve sonucu göster
-    showBulkAddStep(3);
-    
-    // Başarı mesajını güncelle
-    const statsDiv = document.getElementById('bulkAddStats');
-    if (statsDiv) {
-      statsDiv.innerHTML = `
-        <p>Toplam: ${itemsToAdd.length} içerik</p>
-        <p>Başarılı: ${successCount} içerik</p>
-        <p>Başarısız: ${errorCount} içerik</p>
-      `;
-    }
-    
-    // Hata mesajını göster/gizle
-    const errorMsg = document.getElementById('bulkAddErrorMessage');
-    if (errorMsg) {
-      if (errorCount > 0) {
-        errorMsg.classList.remove('hidden');
-        
-        // Hata detaylarını da gösterelim
-        const errorDetails = document.getElementById('bulkAddErrorDetails');
-        if (errorDetails && errorMessages.length > 0) {
-          errorDetails.textContent = errorMessages.join('\n');
-        }
+      
+      // İçerik zaten var mı diye kontrol et
+      const watchlist = await window.watchflowAPI.getWatchlist();
+      let existingItems = [];
+      
+      // Watchlist objesini ve ilgili türdeki öğeleri kontrol et
+      if (watchlist && watchlist[type]) {
+        existingItems = watchlist[type];
+      }
+      
+      // findIndex kullanmadan önce dizi kontrolü
+      if (!Array.isArray(existingItems)) {
+        existingItems = [];
+      }
+      
+      const existingIndex = existingItems.findIndex(item => item.id === resultItem.id);
+      
+      if (existingIndex !== -1) {
+        // Zaten varsa güncelle
+        await window.watchflowAPI.updateWatchlistItem(type, resultItem.id, watchStatus);
       } else {
-        errorMsg.classList.add('hidden');
+        // Yoksa ekle
+        await window.watchflowAPI.addToWatchlist(type, watchStatus);
       }
+      
+      successCount++;
+    } catch (error) {
+      console.error('İçerik eklenirken hata:', error);
+      // İçerik bilgisini al
+      const item = checkbox.closest('.bulk-result-item');
+      const title = item.querySelector('.bulk-item-title').textContent;
+      errorCount++;
+      errorMessages.push(`${title}: ${error.message}`);
     }
+  }
+  
+  // Adım 3'e geç ve sonuçları göster
+  showBulkAddStep(3);
+  
+  // Başarı mesajı
+  const statsDiv = document.getElementById('bulkAddStats');
+  if (statsDiv) {
+    statsDiv.innerHTML = `
+      <p>Toplam seçilen: ${totalSelected}</p>
+      <p>Başarıyla eklenen: ${successCount}</p>
+      <p>Hata oluşan: ${errorCount}</p>
+    `;
+  }
+  
+  // Hata mesajları
+  if (errorCount > 0) {
+    const errorDiv = document.getElementById('bulkAddErrorMessage');
+    const errorDetailsDiv = document.getElementById('bulkAddErrorDetails');
     
-    // İzleme listesini güncelle
-    await loadWatchlist();
+    if (errorDiv) errorDiv.classList.remove('hidden');
     
-  } catch (error) {
-    console.error('Toplu içerik ekleme hatası:', error);
-    
-    // Hata mesajını göster
-    const errorMsg = document.getElementById('bulkAddErrorMessage');
-    const errorDetails = document.getElementById('bulkAddErrorDetails');
-    
-    if (errorMsg && errorDetails) {
-      errorMsg.classList.remove('hidden');
-      errorDetails.textContent = `Hata: ${error.message || 'Bilinmeyen bir hata oluştu'}`;
+    if (errorDetailsDiv) {
+      errorDetailsDiv.innerHTML = errorMessages.map(msg => `<p>${msg}</p>`).join('');
     }
-    
-    // Adım 3'e geç
-    showBulkAddStep(3);
+  }
+  
+  // Bildirim
+  if (errorCount === 0) {
+    showNotification('Başarılı', 'Tüm içerikler başarıyla eklendi!', 'success');
+  } else {
+    showNotification('Uyarı', `${successCount} içerik eklendi, ${errorCount} içerik eklenemedi.`, 'warning');
   }
 }
 
