@@ -83,8 +83,26 @@ async function loadWatchlist() {
     // Global değişkene kaydet (diğer fonksiyonlar tarafından kullanılmak üzere)
     window.currentWatchlist = watchlist;
     
+    console.log("Yüklenen watchlist:", watchlist);
+    
+    // Kategorilere göre içerik sayılarını logla
+    console.log(`Watchlist film sayısı: ${watchlist.movie ? watchlist.movie.length : 0}`);
+    console.log(`Watchlist dizi sayısı: ${watchlist.tv ? watchlist.tv.length : 0}`);
+    console.log(`Watchlist anime sayısı: ${watchlist.anime ? watchlist.anime.length : 0}`);
+    
+    // Kategoriler boş dizi değilse sadece bunları temizle
+    if (Array.isArray(watchlist.movie) && watchlist.movie.length === 0) {
+      const moviesContainer = document.getElementById('movies-page');
+      if (moviesContainer) {
+        const sliders = moviesContainer.querySelectorAll('.slider-content');
+        sliders.forEach(slider => {
+          slider.innerHTML = '<div class="empty-slider-message">Bu kategoride henüz içerik bulunmuyor</div>';
+        });
+      }
+    }
+    
     // Özel sliderları render et
-      renderCustomSliders(watchlist);
+    renderCustomSliders(watchlist);
     
     // Film listesini render et
     if (watchlist.movie && watchlist.movie.length > 0) {
@@ -110,7 +128,12 @@ async function loadWatchlist() {
 
 // İzleme listesindeki öğeleri kategoriye göre oluştur
 function renderWatchlistItems(mediaType, items) {
-  if (!items || items.length === 0) return;
+  if (!items || items.length === 0) {
+    console.log(`${mediaType} için içerik bulunamadı`);
+    return;
+  }
+  
+  console.log(`${mediaType} türünde ${items.length} içerik render ediliyor`);
   
   // Film, dizi veya anime için doğru container ID'lerini belirle
   const typePrefix = mediaType === 'movie' ? 'movies' : 
@@ -121,29 +144,65 @@ function renderWatchlistItems(mediaType, items) {
   const plannedContainer = document.getElementById(`${typePrefix}-plan`);
   const completedContainer = document.getElementById(`${typePrefix}-completed`);
   
+  // Slider elementlerinin var olup olmadığını kontrol et
+  if (!watchingContainer && !plannedContainer && !completedContainer) {
+    console.warn(`${typePrefix} için hiçbir slider container bulunamadı!`);
+  } else {
+    console.log(`${typePrefix} slider containerları bulundu`);
+  }
+  
   // Watchlist'i al (global değişken olarak yüklenmişti)
   const watchlist = window.currentWatchlist;
-  if (!watchlist || !watchlist.sliders || !watchlist.sliders[mediaType]) return;
+  if (!watchlist || !watchlist.sliders || !watchlist.sliders[mediaType]) {
+    console.warn(`${mediaType} için slider yapısı bulunamadı`);
+    return;
+  }
   
   // Slider'ları index'e göre sırala
   const sliders = [...watchlist.sliders[mediaType]].sort((a, b) => a.index - b.index);
+  console.log(`${mediaType} için ${sliders.length} slider bulundu`);
   
   // Her slider için içeriklerini filtrele ve göster
   sliders.forEach(slider => {
     // Slider adına göre içerikleri filtrele
     const filteredItems = items.filter(item => item.status === slider.name);
+    console.log(`${slider.name} slider'ı için ${filteredItems.length} içerik var`);
+    
+    // Slider adını normalize et - küçük harfe çevir ve Türkçe karakterleri kaldır
+    const normalizedSliderName = normalizeSliderName(slider.name);
     
     // Varolan slider container'larını kullan
-    if (slider.name.toLowerCase().includes("izleniyor") && watchingContainer && filteredItems.length > 0) {
+    if (normalizedSliderName.includes("izleniyor") && watchingContainer && filteredItems.length > 0) {
+      console.log(`${slider.name} için "izleniyor" slider'ına içerikler ekleniyor`);
       fillSlider(watchingContainer, filteredItems, mediaType, `${typePrefix}-watching`);
     } 
-    else if (slider.name.toLowerCase().includes("izlenecek") && plannedContainer && filteredItems.length > 0) {
+    else if (normalizedSliderName.includes("izlenecek") && plannedContainer && filteredItems.length > 0) {
+      console.log(`${slider.name} için "izlenecek" slider'ına içerikler ekleniyor`);
       fillSlider(plannedContainer, filteredItems, mediaType, `${typePrefix}-plan`);
     }
-    else if (slider.name.toLowerCase().includes("izlendi") && completedContainer && filteredItems.length > 0) {
+    else if (normalizedSliderName.includes("izlendi") && completedContainer && filteredItems.length > 0) {
+      console.log(`${slider.name} için "izlendi" slider'ına içerikler ekleniyor`);
       fillSlider(completedContainer, filteredItems, mediaType, `${typePrefix}-completed`);
     }
+    else {
+      console.log(`${slider.name} slider'ı için uygun container bulunamadı veya içerik yok`);
+    }
   });
+}
+
+// Slider adını normalize et - küçük harfe çevir ve Türkçe karakterleri kaldır
+function normalizeSliderName(name) {
+  if (!name) return '';
+  
+  return name.toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ç/g, "c")
+    .replace(/ö/g, "o");
 }
 
 // Slider'ı kartlarla doldur
@@ -193,15 +252,17 @@ function fillSlider(container, items, mediaType, sliderId) {
     
     // Kart içeriği
     card.innerHTML = `
-      ${ratingsHTML}
-      ${ratingAddHTML}
-      <img src="${item.imageUrl || placeholderImage}" class="media-card-image" 
-           alt="${item.title}" onerror="this.src='${placeholderImage}'">
-      <div class="media-card-content">
-        <div class="media-card-title" title="${item.title}">${item.title}</div>
-        <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
-        ${item.totalSeasons ? 
-          `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
+      <div class="media-card-inner">
+        ${ratingsHTML}
+        ${ratingAddHTML}
+        <img src="${item.imageUrl || placeholderImage}" class="media-card-image" 
+             alt="${item.title}" onerror="this.src='${placeholderImage}'">
+        <div class="media-card-content">
+          <div class="media-card-title" title="${item.title}">${item.title}</div>
+          <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
+          ${item.totalSeasons ? 
+            `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
+        </div>
       </div>
     `;
     
@@ -283,6 +344,9 @@ async function showMediaDetails(item, mediaType) {
     existingPopup.remove();
   }
   
+  // İlişkili animeler için değişken tanımla
+  let relatedAnimeData = [];
+  
   // Dizi veya anime ise ve sezon bilgisi yoksa API'den al
   if ((mediaType === 'tv' || mediaType === 'anime') && (!item.seasons || item.seasons.length === 0)) {
     try {
@@ -332,6 +396,57 @@ async function showMediaDetails(item, mediaType) {
     }
   }
   
+  // Eğer anime ise, ilişkili animeleri al
+  if (mediaType === 'anime') {
+    try {
+      // Önce bellekten kontrol et (item.relations var mı?)
+      if (item.relations) {
+        console.log(`İlişkili anime verileri bellekten alınıyor: ${item.id}`);
+        relatedAnimeData = item.relations;
+      } else {
+        // Bellekte yoksa API'den çek
+        console.log(`Anime ilişkileri API'den alınıyor: ${item.id}`);
+        relatedAnimeData = await window.watchflowAPI.getAnimeRelations(item.id);
+        
+        // Verileri kaydet
+        if (relatedAnimeData && relatedAnimeData.length > 0) {
+          console.log('İlişkili anime verileri kaydediliyor...');
+          
+          // Watchlist nesnesini al
+          const watchlist = await window.watchflowAPI.getWatchlist();
+          
+          // Anime'yi bul
+          const animeIndex = watchlist.anime.findIndex(a => a.id === item.id);
+          
+          if (animeIndex !== -1) {
+            // İlişkili anime verilerini ekle
+            watchlist.anime[animeIndex].relations = relatedAnimeData;
+            
+            // Watchlist'i güncelle - doğrudan JSON'a yazacak
+            await window.watchflowAPI.updateWatchlist(watchlist);
+            
+            // Item nesnesini de güncelle
+            item.relations = relatedAnimeData;
+            
+            // Global watchlistData'yı da güncelle
+            if (window.currentWatchlist && window.currentWatchlist.anime) {
+              const itemIndex = window.currentWatchlist.anime.findIndex(i => i.id === item.id);
+              if (itemIndex !== -1) {
+                window.currentWatchlist.anime[itemIndex].relations = relatedAnimeData;
+              }
+            }
+            
+            console.log('İlişkili anime verileri JSON dosyasına kaydedildi');
+          }
+        }
+      }
+      console.log('İlişkili anime verileri:', relatedAnimeData);
+    } catch (error) {
+      console.error('Anime ilişkileri alınırken hata:', error);
+      relatedAnimeData = [];
+    }
+  }
+  
   // İzlenen bölümleri al - doğrudan item'dan gelen diziyi kullan
   const watchedEpisodes = item.watchedEpisodes || [];
   
@@ -339,6 +454,9 @@ async function showMediaDetails(item, mediaType) {
   const totalEpisodes = getTotalEpisodes(item);
   const watchedCount = watchedEpisodes.length;
   const progressPercent = totalEpisodes > 0 ? Math.round((watchedCount / totalEpisodes) * 100) : 0;
+  
+  // İlişkili anime HTML'i oluştur
+  const relatedAnimeHTML = generateRelatedAnimeHTML(relatedAnimeData);
   
   // Popup oluştur
   const popupOverlay = document.createElement('div');
@@ -369,6 +487,8 @@ async function showMediaDetails(item, mediaType) {
         
         ${generateSeasonsHTML(item, watchedEpisodes)}
         
+        ${mediaType === 'anime' && relatedAnimeHTML ? relatedAnimeHTML : ''}
+        
         <div class="popup-actions">
           <button class="popup-btn popup-btn-remove" data-id="${item.id}" data-type="${mediaType}">KALDIR</button>
           <button class="popup-btn popup-btn-mark-watched" data-id="${item.id}" data-type="${mediaType}">İZLENDİ OLARAK İŞARETLE</button>
@@ -388,6 +508,38 @@ async function showMediaDetails(item, mediaType) {
   if (progressBar) {
     progressBar.style.width = `${progressPercent}%`;
   }
+  
+  // İlişkili anime kartlarına tıklama olayı ekle
+  const relatedAnimeCards = popupOverlay.querySelectorAll('.related-anime-card');
+  relatedAnimeCards.forEach(card => {
+    card.addEventListener('click', async () => {
+      const animeId = card.getAttribute('data-id');
+      const animeTitle = card.getAttribute('data-title');
+      const animeImageUrl = card.querySelector('img').src;
+      const animeYear = card.getAttribute('data-year');
+      const animeEpisodes = card.getAttribute('data-episodes');
+      
+      // Popup'ı kapat
+      popupOverlay.remove();
+      
+      // Anime detaylarını getir ve göster
+      try {
+        const animeItem = {
+          id: parseInt(animeId),
+          title: animeTitle,
+          imageUrl: animeImageUrl,
+          year: animeYear,
+          episodes: animeEpisodes,
+          type: 'anime'
+        };
+        
+        showMediaDetails(animeItem, 'anime');
+      } catch (error) {
+        console.error('İlişkili anime detayları gösterilirken hata:', error);
+        showNotification('Hata', 'İlişkili anime detayları gösterilirken bir hata oluştu', 'error');
+      }
+    });
+  });
   
   // Yıldız derecelendirme sistemine olay ekle
   const ratingStars = popupOverlay.querySelector('.rating-stars');
@@ -442,7 +594,7 @@ async function showMediaDetails(item, mediaType) {
             // Tüm izleme listesini yenile
             await loadWatchlist();
           }
-        } catch (error) {
+    } catch (error) {
           console.error('Puan güncellenirken hata:', error);
           showNotification('Hata', 'Puan güncellenirken bir hata oluştu: ' + error.message, 'error');
         }
@@ -553,7 +705,7 @@ async function showMediaDetails(item, mediaType) {
 // Sezon HTML'ini oluştur
 function generateSeasonsHTML(item, watchedEpisodes) {
   if (!item.seasons || item.seasons.length === 0) {
-    return '<div>Sezon bilgisi bulunamadı.</div>';
+    return '';
   }
   
   let seasonsHTML = '';
@@ -1545,7 +1697,6 @@ function showRatingPopup(item, mediaType, button) {
           
           // Tüm izleme listesini yenile
           await loadWatchlist();
-          showNotification('Başarılı', 'İçerik puanı başarıyla güncellendi!', 'success');
         }
       } catch (error) {
         console.error('Puan güncellenirken hata:', error);
@@ -1719,15 +1870,17 @@ function fillCustomSlider(slider, watchlist) {
     
     // Kart içeriği
     card.innerHTML = `
-      ${ratingsHTML}
-      ${ratingAddHTML}
-      <img src="${item.imageUrl || placeholderImage}" class="media-card-image" 
-           alt="${item.title}" onerror="this.src='${placeholderImage}'">
-      <div class="media-card-content">
-        <div class="media-card-title" title="${item.title}">${item.title}</div>
-        <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
-        ${item.totalSeasons ? 
-          `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
+      <div class="media-card-inner">
+        ${ratingsHTML}
+        ${ratingAddHTML}
+        <img src="${item.imageUrl || placeholderImage}" class="media-card-image" 
+             alt="${item.title}" onerror="this.src='${placeholderImage}'">
+        <div class="media-card-content">
+          <div class="media-card-title" title="${item.title}">${item.title}</div>
+          <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
+          ${item.totalSeasons ? 
+            `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
+        </div>
       </div>
     `;
     
@@ -2784,14 +2937,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Toplu içerik ekleme butonuna tıklama işlevini ekle
   const bulkAddButton = document.getElementById('bulkAddButton');
   const bulkAddPopupOverlay = document.getElementById('bulkAddPopupOverlay');
-  const closeBulkAddPopupBtn = document.getElementById('closeBulkAddPopup');
+  const closeBulkAddPopupButton = document.getElementById('closeBulkAddPopup');
   
   if (bulkAddButton) {
     bulkAddButton.addEventListener('click', openBulkAddPopup);
   }
   
-  if (closeBulkAddPopupBtn) {
-    closeBulkAddPopupBtn.addEventListener('click', closeBulkAddPopup);
+  if (closeBulkAddPopupButton) {
+    closeBulkAddPopupButton.addEventListener('click', () => closeBulkAddPopup());
   }
   
   // Toplu içerik ekleme adımlarını yönet
@@ -2802,7 +2955,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function openBulkAddPopup() {
   // DOM elementlerini seç
   const bulkAddPopupOverlay = document.getElementById('bulkAddPopupOverlay');
-  const closeBulkAddPopupBtn = document.getElementById('closeBulkAddPopup');
+  const closeBulkAddPopupButton = document.getElementById('closeBulkAddPopup');
   
   // Popup'ı aç
   if (bulkAddPopupOverlay) {
@@ -2810,8 +2963,8 @@ function openBulkAddPopup() {
   }
   
   // Kapatma butonuna tıklama olayı ekle
-  if (closeBulkAddPopupBtn) {
-    closeBulkAddPopupBtn.addEventListener('click', closeBulkAddPopup);
+  if (closeBulkAddPopupButton) {
+    closeBulkAddPopupButton.addEventListener('click', () => closeBulkAddPopup());
   }
   
   // İlk adımı göster
@@ -2867,7 +3020,7 @@ function setupBulkAddProcessSteps() {
   // Kapat butonu (son adımda)
   const closeBulkAddResult = document.getElementById('closeBulkAddResult');
   if (closeBulkAddResult) {
-    closeBulkAddResult.addEventListener('click', closeBulkAddPopup);
+    closeBulkAddResult.addEventListener('click', () => closeBulkAddPopup());
   }
 }
 
@@ -2909,47 +3062,192 @@ async function searchContentsFromText() {
   // Adım 2'ye geç
   showBulkAddStep(2);
   
+  // Metni satır satır bölelim
+  const lines = text.split('\n').filter(line => line.trim());
+  
+  // Anime içeriği var mı kontrol et (ve hazırla)
+  const animeContents = [];
+  const nonAnimeContents = [];
+  
+  // İçerikleri türüne göre ayır
+  lines.forEach(line => {
+    const content = parseContentLine(line);
+    if (content) {
+      if (content.type === 'anime') {
+        animeContents.push(content);
+      } else {
+        nonAnimeContents.push(content);
+      }
+    }
+  });
+  
   // Yükleniyor göstergesini göster
   resultsContainer.innerHTML = `
     <div class="loading-indicator">
       <div class="loader"></div>
       <p>İçerikler aranıyor...</p>
+      
+      <div id="currentSearchItem" class="currently-searching-container">
+        <span>Aranıyor: <span class="currently-searching-text">Hazırlanıyor...</span></span>
+      </div>
+      
+      <div class="loading-progress-container">
+        <div class="loading-progress-bar" id="searchProgressBar"></div>
+        <div class="loading-progress-text" id="searchProgressText">Hazırlanıyor (0/${lines.length})</div>
+      </div>
+      
+      ${animeContents.length > 0 ? `
+      <div class="loading-info">
+        <p><strong>Not:</strong> Anime aramaları için toplu arama kullanılıyor.</p>
+        <p>Bu, işlemi hızlandıracak ve API rate limit sorunlarını azaltacaktır.</p>
+      </div>` : ''}
     </div>
   `;
   
-  // Metni satır satır bölelim
-  const lines = text.split('\n').filter(line => line.trim());
+  // İlerleme çubuğu elementlerini al
+  const progressBar = document.getElementById('searchProgressBar');
+  const progressText = document.getElementById('searchProgressText');
   
-  // Tüm içerik arama işlemlerini başlat
-  const searchPromises = [];
+  // Tüm arama isteklerini sırayla işleyeceğiz
   const searchResults = [];
+  const totalItems = lines.length;
+  let processedItems = 0;
   
-  for (const line of lines) {
-    const parsedContent = parseContentLine(line);
-    if (parsedContent) {
-      searchPromises.push(
-        searchContent(parsedContent)
-          .then(result => {
-            if (result) {
-              searchResults.push({
-                original: parsedContent,
-                result: result
-              });
-            }
-          })
-          .catch(error => {
-           showNotification('Hata', 'İçerik aranırken bir hata oluştu: ' + error.message, 'error');
-          })
-      );
+  // İlerleme bilgisini güncelleyen yardımcı fonksiyon
+  function updateProgress(currentItem = '') {
+    if (progressBar && progressText) {
+      // İlerleme çubuğunu güncelle
+      const progress = (processedItems / totalItems) * 100;
+      progressBar.style.width = `${progress}%`;
+      
+      // İlerleme metnini güncelle
+      progressText.textContent = `İşleniyor: ${processedItems}/${totalItems}`;
+      
+      // Güncel arama öğesini güncelle
+      const currentSearchElement = document.querySelector('.currently-searching-text');
+      if (currentSearchElement && currentItem) {
+        currentSearchElement.textContent = currentItem;
+      }
     }
   }
   
-  // Tüm aramaların tamamlanmasını bekle
-  await Promise.all(searchPromises);
-  
-  // Sonuçları göster
-  displayBulkSearchResults(searchResults, resultsContainer);
-  showNotification('Başarılı', 'İçerik arama işlemi başarıyla tamamlandı!', 'success');
+  try {
+    // Başlangıç mesajı
+    updateProgress();
+    
+    // 1. Önce anime içeriklerini batch olarak işle (varsa)
+    if (animeContents.length > 0) {
+      // Sadece başlıkları içeren bir dizi oluştur
+      const animeTitles = animeContents.map(content => content.title);
+      
+      updateProgress(`Anime araması: ${animeTitles.length} başlık toplu aranıyor...`);
+      console.log(`Toplu anime araması yapılıyor: ${animeTitles.length} başlık`);
+      
+      try {
+        // Batch anime araması yap
+        const batchResults = await window.watchflowAPI.batchSearchAnime(animeTitles);
+        
+        // Sonuçları işle
+        if (batchResults) {
+          animeContents.forEach(content => {
+            const title = content.title;
+            
+            // Bu başlık için sonuçları al
+            const titleResults = batchResults[title] || [];
+            
+            // İlk sonucu (en iyi eşleşmeyi) kullan
+            if (titleResults.length > 0) {
+              searchResults.push({
+                original: content,
+                result: titleResults[0]
+              });
+            }
+            
+            // İşlenmiş öğe sayısını artır
+            processedItems++;
+            updateProgress();
+          });
+        }
+      } catch (error) {
+        console.error('Toplu anime araması hatası:', error);
+        // Batch arama başarısız olduysa, her anime için tek tek arama yapalım
+        showNotification('Uyarı', 'Toplu anime araması başarısız oldu, tek tek aranıyor...', 'warning');
+        
+        // Her anime için tek tek ara
+        for (const content of animeContents) {
+          try {
+            updateProgress(content.title);
+            const result = await searchContent(content);
+            
+            if (result) {
+              searchResults.push({
+                original: content,
+                result: result
+              });
+            }
+          } catch (error) {
+            console.error(`"${content.title}" içeriği aranırken hata:`, error);
+          }
+          
+          // İşlenmiş öğe sayısını artır
+          processedItems++;
+          updateProgress();
+        }
+      }
+    }
+    
+    // 2. Film ve Dizi içeriklerini tek tek ara
+    for (const content of nonAnimeContents) {
+      try {
+        updateProgress(content.title);
+        const result = await searchContent(content);
+        
+        if (result) {
+          searchResults.push({
+            original: content,
+            result: result
+          });
+        }
+      } catch (error) {
+        console.error(`"${content.title}" içeriği aranırken hata:`, error);
+      }
+      
+      // İşlenmiş öğe sayısını artır
+      processedItems++;
+      updateProgress();
+    }
+    
+    // Tüm işlemler tamamlandıktan sonra sonuçları göster
+    displayBulkSearchResults(searchResults, resultsContainer);
+    
+    if (searchResults.length > 0) {
+      showNotification('Başarılı', `İçerik arama işlemi tamamlandı! ${searchResults.length} içerik bulundu.`, 'success');
+    } else {
+      showNotification('Uyarı', 'Hiçbir içerik bulunamadı. Lütfen girdiğiniz verileri kontrol edin.', 'warning');
+    }
+    
+    // Özet bilgileri konsola yazdır
+    console.log(`Arama özeti: 
+      Toplam İçerik: ${totalItems}
+      Bulunan: ${searchResults.length}
+      Anime Sayısı: ${animeContents.length}
+      Film/Dizi Sayısı: ${nonAnimeContents.length}`);
+      
+  } catch (error) {
+    console.error('İçerik arama işlemi sırasında hata:', error);
+    showNotification('Hata', 'İçerik arama işlemi sırasında bir hata oluştu.', 'error');
+    
+    // Hata durumunda da sonuçları göster (varsa)
+    if (searchResults.length > 0) {
+      displayBulkSearchResults(searchResults, resultsContainer);
+    } else {
+      resultsContainer.innerHTML = `
+        <div class="error-message">
+          <p>İçerik arama işlemi sırasında bir hata oluştu: ${error.message}</p>
+        </div>
+      `;
+    }
+  }
 }
 
 // İçerik satırını ayrıştır
@@ -2977,7 +3275,7 @@ function parseContentLine(line) {
 }
 
 // API istekleri arasındaki gecikme (ms) - anime API'leri için hız sınırlaması
-const API_DELAY = 1000; 
+const API_DELAY = 8000; // 4 saniyeden 8 saniyeye çıkarıldı
 
 // Belirli bir süre bekleyen yardımcı fonksiyon
 function sleep(ms) {
@@ -2993,12 +3291,45 @@ async function searchContent(content) {
     }
 
     let results;
+    let retryCount = 0;
+    const maxRetries = 3;
     
-    // Anime için Jikan API'si arasında gecikme ekleyelim
+    // Anime aramalarında retry mekanizması ile deneme
     if (content.type === 'anime') {
-      // Her anime araması öncesi bekle
-      await sleep(API_DELAY);
-      results = await window.watchflowAPI.searchJikan(content.title);
+      while (retryCount <= maxRetries) {
+        try {
+          // Her anime araması öncesi bekle - önceki denemede hata alındıysa daha uzun bekle
+          const delay = API_DELAY * (retryCount + 1);
+          console.log(`"${content.title}" için anime araması öncesi ${delay}ms bekleniyor...`);
+          await sleep(delay);
+          
+          console.log(`"${content.title}" için anime araması yapılıyor (${retryCount + 1}. deneme)`);
+          results = await window.watchflowAPI.searchJikan(content.title);
+          
+          // Başarılı olunca döngüden çık
+          if (results && results.length > 0) {
+            break;
+          } else {
+            console.log(`"${content.title}" için sonuç bulunamadı, ${maxRetries - retryCount} deneme hakkı kaldı`);
+            retryCount++;
+          }
+        } catch (error) {
+          retryCount++;
+          console.warn(`"${content.title}" aramasında hata (${retryCount}/${maxRetries}): ${error.message}`);
+          
+          // Rate limit sorunu varsa daha uzun bekle
+          if (error.status === 429) {
+            const waitTime = API_DELAY * 3; // Rate limit için daha uzun bekle
+            console.log(`Rate limit aşıldı, ${waitTime}ms bekleniyor...`);
+            await sleep(waitTime);
+          }
+          
+          // Son deneme başarısız olduysa hatayı fırlat
+          if (retryCount > maxRetries) {
+            throw error;
+          }
+        }
+      }
     } else if (content.type === 'movie') {
       results = await window.watchflowAPI.searchTMDB(content.title, 'movie');
     } else if (content.type === 'tv') {
@@ -3027,17 +3358,46 @@ function displayBulkSearchResults(results, container) {
   
   let html = '';
   
+  // Watchlist'i al - kategorileri almak için
+  const watchlist = window.currentWatchlist;
+  if (!watchlist || !watchlist.sliders) {
+    console.error('Watchlist veya sliders yapısı bulunamadı');
+    // Watchlist yapısı bulunamadığında bile temel kategorilerle devam et
+  }
+  
   results.forEach((item, index) => {
     const result = item.result;
     const year = result.year || '';
     const posterUrl = result.imageUrl || 'placeholder-image.jpg';
+    const mediaType = result.type; // İçerik türü (movie, tv, anime)
+    
+    // İlgili türün kategorilerini al
+    let statusOptions = '';
+    
+    // Eğer watchlist ve sliders yapısı varsa, dinamik kategorileri kullan
+    if (watchlist && watchlist.sliders && watchlist.sliders[mediaType] && watchlist.sliders[mediaType].length > 0) {
+      // Kategorileri sırala (slider.index'e göre)
+      const sortedSliders = [...watchlist.sliders[mediaType]].sort((a, b) => a.index - b.index);
+      
+      // Kategori seçeneklerini oluştur
+      sortedSliders.forEach(slider => {
+        statusOptions += `<option value="${slider.name}">${slider.name}</option>`;
+      });
+    } else {
+      // Watchlist yapısı bulunamadığında veya kategoriler yoksa varsayılan kategorileri kullan
+      statusOptions = `
+        <option value="İzlendi">İzlendi</option>
+        <option value="İzleniyor">İzleniyor</option>
+        <option value="İzlenecek" selected>İzlenecek</option>
+      `;
+    }
     
     // JSON'u base64 olarak encode edelim - bu şekilde tırnak işaretlerinden kaynaklanabilecek hataları önlemiş oluruz
     const jsonData = JSON.stringify(result);
     const encodedData = btoa(encodeURIComponent(jsonData));
     
     html += `
-      <div class="bulk-result-item" data-index="${index}">
+      <div class="bulk-result-item" data-index="${index}" data-type="${mediaType}">
         <div class="bulk-item-selection">
           <input type="checkbox" id="bulkItem${index}" class="bulk-item-checkbox" checked>
         </div>
@@ -3046,13 +3406,11 @@ function displayBulkSearchResults(results, container) {
         </div>
         <div class="bulk-item-info">
           <h4 class="bulk-item-title">${result.title} ${year ? `(${year})` : ''}</h4>
-          <div class="bulk-item-type">${translateType(result.type)}</div>
+          <div class="bulk-item-type">${translateType(mediaType)}</div>
           <div class="bulk-item-status">
             <label>Durum: 
-              <select class="bulk-item-status-select">
-                <option value="İzlendi">İzlendi</option>
-                <option value="İzleniyor">İzleniyor</option>
-                <option value="İzlenecek">İzlenecek</option>
+              <select class="bulk-item-status-select" data-media-type="${mediaType}">
+                ${statusOptions}
               </select>
             </label>
           </div>
@@ -3093,6 +3451,27 @@ async function addSelectedContents() {
     return;
   }
   
+  // İşlem başladığında UI güncellemesi
+  document.getElementById('addSelectedContent').disabled = true;
+  document.getElementById('addSelectedContent').textContent = 'Ekleniyor...';
+  
+  // Yükleniyor göstergesi ekle
+  const resultsContainer = document.getElementById('bulkSearchResults');
+  resultsContainer.innerHTML = `
+    <div class="loading-indicator">
+      <div class="loader"></div>
+      <p>Seçilen içerikler ekleniyor...</p>
+      <div class="loading-progress-container">
+        <div class="loading-progress-bar" id="addProgressBar"></div>
+        <div class="loading-progress-text" id="addProgressText">İşleniyor: 0/${totalSelected}</div>
+      </div>
+    </div>
+  `;
+  
+  // İlerleme çubuğu elementlerini al
+  const progressBar = document.getElementById('addProgressBar');
+  const progressText = document.getElementById('addProgressText');
+  
   // Yükleniyor mesajı
   showNotification('Bilgi', 'Seçilen içerikler ekleniyor...', 'info');
   
@@ -3102,33 +3481,93 @@ async function addSelectedContents() {
   let errorMessages = [];
   
   // Seçilen her içerik için
+  let counter = 0;
   for (const checkbox of checkboxes) {
     try {
-      const resultItem = JSON.parse(checkbox.dataset.item);
-      const status = checkbox.closest('.bulk-result-item').querySelector('.bulk-item-status-select').value;
+      const bulkItem = checkbox.closest('.bulk-result-item');
+      if (!bulkItem) continue;
       
-      // Watch status objesini oluştur
+      // İçerik verilerini base64 encoded JSON'dan al
+      const encodedData = bulkItem.querySelector('.bulk-item-data').value;
+      const jsonData = decodeURIComponent(atob(encodedData));
+      const resultItem = JSON.parse(jsonData);
+      
+      // İçerik adını al ve ilerleme metnini güncelle
+      const itemTitle = resultItem.title || "İçerik";
+      progressText.textContent = `İşleniyor: ${counter+1}/${totalSelected} - "${itemTitle}"`;
+      
+      // Kullanıcının seçtiği kategoriyi (slider) al
+      const statusSelect = bulkItem.querySelector('.bulk-item-status-select');
+      const status = statusSelect ? statusSelect.value : 'İzlenecek'; // Varsayılan olarak "İzlenecek"
+      
+      // İçerik türünü al
+      const mediaType = bulkItem.dataset.type || resultItem.type;
+      
+      // Watch status objesini oluştur - Arama sonuçlarından gelen bilgileri kullan
       const watchStatus = {
         id: resultItem.id,
+        type: mediaType,
         status: status,
-        addedAt: new Date().toISOString(),
+        dateAdded: new Date().toISOString(),
         title: resultItem.title || resultItem.name,
-        originalType: resultItem.original_type || resultItem.type,
-        backdrop_path: resultItem.backdrop_path,
-        poster_path: resultItem.poster_path,
-        release_date: resultItem.release_date || resultItem.first_air_date,
-        vote_average: resultItem.vote_average,
-        overview: resultItem.overview,
-        watched: status === 'watched' ? true : false,
-        watchedAt: status === 'watched' ? new Date().toISOString() : null,
+        imageUrl: resultItem.imageUrl || 
+                 (resultItem.poster_path && `https://image.tmdb.org/t/p/w500${resultItem.poster_path}`),
+        year: resultItem.year || 
+             (resultItem.release_date ? resultItem.release_date.substring(0, 4) : ''),
+        rating: resultItem.vote_average || resultItem.score || 0,
         watchedEpisodes: [],
-        airingCompleted: resultItem.status === 'Completed' || resultItem.status === 'Ended'
+        totalSeasons: resultItem.totalSeasons || (resultItem.number_of_seasons || 0)
       };
       
-      // İçeriği ekle
-      const type = resultItem.original_type || resultItem.type;
+      // Sonuçta sezon bilgisi varsa kullan, yoksa basit bir sezon bilgisi oluştur
+      if (mediaType === 'tv' || mediaType === 'anime') {
+        // Eğer sonuçta seasons varsa, onu kullan
+        if (resultItem.seasons && Array.isArray(resultItem.seasons)) {
+          watchStatus.seasons = resultItem.seasons;
+        } 
+        // Eğer sadece bölüm sayısı biliniyorsa, basit bir seasons oluştur
+        else if (resultItem.episodes || resultItem.number_of_episodes) {
+          const episodeCount = resultItem.episodes || resultItem.number_of_episodes || 0;
+          watchStatus.seasons = [{
+            seasonNumber: 1,
+            episodeCount: episodeCount,
+            name: resultItem.title
+          }];
+        }
+        // Hiçbir bilgi yoksa, eksik bilgi için tek seferlik API çağrısı yap
+        else {
+          try {
+            let seasonsData;
+            
+            if (mediaType === 'tv') {
+              seasonsData = await window.watchflowAPI.getTvShowSeasons(resultItem.id);
+            } else if (mediaType === 'anime') {
+              seasonsData = await window.watchflowAPI.getAnimeSeasons(resultItem.id);
+            }
+            
+            if (seasonsData) {
+              if (Array.isArray(seasonsData)) {
+                watchStatus.seasons = seasonsData;
+                watchStatus.totalSeasons = seasonsData.length;
+              } else if (seasonsData.seasons && Array.isArray(seasonsData.seasons)) {
+                watchStatus.seasons = seasonsData.seasons;
+                watchStatus.totalSeasons = seasonsData.seasons.length;
+              }
+            }
+          } catch (error) {
+            console.warn(`${resultItem.title} için sezon bilgileri alınamadı:`, error);
+            // Varsayılan tek sezon ve 0 bölüm oluştur
+            watchStatus.seasons = [{
+              seasonNumber: 1,
+              episodeCount: 0,
+              name: resultItem.title
+            }];
+          }
+        }
+      }
       
-      if (!type) {
+      // İçeriği ekle
+      if (!mediaType) {
         throw new Error(`İçerik türü tanımlanmamış: ${JSON.stringify(resultItem)}`);
       }
       
@@ -3137,8 +3576,8 @@ async function addSelectedContents() {
       let existingItems = [];
       
       // Watchlist objesini ve ilgili türdeki öğeleri kontrol et
-      if (watchlist && watchlist[type]) {
-        existingItems = watchlist[type];
+      if (watchlist && watchlist[mediaType]) {
+        existingItems = watchlist[mediaType];
       }
       
       // findIndex kullanmadan önce dizi kontrolü
@@ -3149,26 +3588,48 @@ async function addSelectedContents() {
       const existingIndex = existingItems.findIndex(item => item.id === resultItem.id);
       
       if (existingIndex !== -1) {
-        // Zaten varsa güncelle
-        await window.watchflowAPI.updateWatchlistItem(type, resultItem.id, watchStatus);
+        // Zaten varsa güncelle - updateWatchlistItem yerine addToWatchlist kullanıyoruz
+        await window.watchflowAPI.addToWatchlist(watchStatus);
       } else {
         // Yoksa ekle
-        await window.watchflowAPI.addToWatchlist(type, watchStatus);
+        await window.watchflowAPI.addToWatchlist(watchStatus);
       }
       
       successCount++;
+      
+      // İlerleme çubuğunu güncelle
+      counter++;
+      const progress = (counter / totalSelected) * 100;
+      if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+      }
+      
     } catch (error) {
       console.error('İçerik eklenirken hata:', error);
       // İçerik bilgisini al
       const item = checkbox.closest('.bulk-result-item');
-      const title = item.querySelector('.bulk-item-title').textContent;
+      const title = item ? item.querySelector('.bulk-item-title')?.textContent : 'Bilinmeyen içerik';
       errorCount++;
       errorMessages.push(`${title}: ${error.message}`);
+      
+      // İlerleme çubuğunu yine de güncelle
+      counter++;
+      const progress = (counter / totalSelected) * 100;
+      if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+      }
     }
   }
   
+  // Tüm işlemler tamamlandıktan sonra bir kez yenileme yap
+  await loadWatchlist();
+  
   // Adım 3'e geç ve sonuçları göster
   showBulkAddStep(3);
+  
+  // UI'ı sıfırla
+  document.getElementById('addSelectedContent').disabled = false;
+  document.getElementById('addSelectedContent').textContent = 'Seçili İçerikleri Ekle';
   
   // Başarı mesajı
   const statsDiv = document.getElementById('bulkAddStats');
@@ -3198,6 +3659,10 @@ async function addSelectedContents() {
   } else {
     showNotification('Uyarı', `${successCount} içerik eklendi, ${errorCount} içerik eklenemedi.`, 'warning');
   }
+  
+  // Aktif sekmeyi yeniden göster (sayfayı yenileme)
+  const activeTabId = document.querySelector('.main-nav a.active').getAttribute('data-page');
+  showPage(activeTabId);
 }
 
 /**
@@ -3283,3 +3748,79 @@ function closeNotification(notification) {
     }
   }, 300);
 }
+
+// İlişkili animeleri HTML formatına dönüştür
+function generateRelatedAnimeHTML(relatedData) {
+  if (!relatedData || !Array.isArray(relatedData) || relatedData.length === 0) {
+    return '';
+  }
+  
+  // İlişki türlerini Türkçe'ye çevir
+  const relationTranslations = {
+    'SEQUEL': 'Devam Serisi',
+    'PREQUEL': 'Önceki Seri',
+    'SIDE_STORY': 'Yan Hikaye',
+    'PARENT': 'Ana Seri',
+    'SUMMARY': 'Özet',
+    'ALTERNATIVE': 'Alternatif Versiyon',
+    'SPIN_OFF': 'Yan Ürün',
+    'CHARACTER': 'Aynı Karakterler',
+    'OTHER': 'Diğer',
+    'SOURCE': 'Kaynak',
+    'ADAPTATION': 'Uyarlama',
+    'RECOMMENDATION': 'Tavsiye',
+  };
+  
+  let html = '<div class="related-anime-container">';
+  html += '<h3>İlişkili Animeler</h3>';
+  
+  // Her bir ilişki türü için bir bölüm oluştur
+  relatedData.forEach(relation => {
+    const relationName = relationTranslations[relation.relation] || relation.relation;
+    html += `<div class="related-anime-section">`;
+    html += `<h4>${relationName}</h4>`;
+    html += `<div class="related-anime-list">`;
+    
+    // Bu ilişki türündeki tüm animeleri listele
+    relation.entries.forEach(anime => {
+      let animeType = '';
+      
+      // Format türüne göre etiket oluştur
+      switch(anime.format) {
+        case 'TV': animeType = 'TV'; break;
+        case 'MOVIE': animeType = 'Film'; break;
+        case 'OVA': animeType = 'OVA'; break;
+        case 'ONA': animeType = 'ONA'; break;
+        case 'SPECIAL': animeType = 'Özel'; break;
+        default: animeType = anime.format || ''; 
+      }
+      
+      // Anime kartı oluştur
+      html += `
+        <div class="related-anime-card" 
+          data-id="${anime.id}" 
+          data-title="${anime.title}" 
+          data-year="${anime.year || ''}" 
+          data-episodes="${anime.episodes || 0}">
+          <div class="related-anime-image">
+            <img src="${anime.imageUrl || '/assets/no-image.png'}" alt="${anime.title}">
+          </div>
+          <div class="related-anime-info">
+            <div class="related-anime-title">${anime.title}</div>
+            <div class="related-anime-meta">
+              ${anime.year ? `<span class="related-anime-year">${anime.year}</span>` : ''}
+              ${animeType ? `<span class="related-anime-type">${animeType}</span>` : ''}
+              ${anime.episodes ? `<span class="related-anime-episodes">${anime.episodes} Bölüm</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    html += `</div></div>`;
+  });
+  
+  html += '</div>';
+  return html;
+}
+  

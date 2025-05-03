@@ -90,8 +90,14 @@ const loadApiModules = () => {
     }
     
     // API modüllerini yükle
-    const { tmdbApi, jikanApi } = require('../../api');
-    return { tmdbApi, jikanApi };
+    const { tmdb: tmdbApi, anime, jikan: jikanApi, anilist: anilistApi, kitsu: kitsuApi } = require('../../api');
+    return { 
+      tmdbApi,      // TMDB API
+      anime,        // Fallback mekanizmalı anime API
+      jikanApi,     // Jikan API (direkt erişim)
+      anilistApi,   // AniList API (direkt erişim)
+      kitsuApi      // Kitsu API (direkt erişim)
+    };
   } catch (error) {
     console.error('API modülleri yüklenirken hata:', error);
     return null;

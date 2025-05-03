@@ -69,6 +69,16 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
     }
   },
   
+  // Toplu anime araması yap (çoklu başlıklar için)
+  batchSearchAnime: async (searchTexts) => {
+    try {
+      return await ipcRenderer.invoke('batch-search-anime', searchTexts);
+    } catch (error) {
+      console.error('Toplu anime araması sırasında hata:', error);
+      throw error;
+    }
+  },
+  
   // Film/Dizi detayları al (TMDB API)
   getMovieTVDetails: async (id, type) => {
     try {
@@ -105,6 +115,16 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
       return await ipcRenderer.invoke('get-anime-seasons', animeId);
     } catch (error) {
       console.error('Anime sezon bilgileri alınırken hata:', error);
+      throw error;
+    }
+  },
+  
+  // Anime ilişkilerini al (sequel, prequel vb.)
+  getAnimeRelations: async (animeId) => {
+    try {
+      return await ipcRenderer.invoke('get-anime-relations', animeId);
+    } catch (error) {
+      console.error('Anime ilişkileri alınırken hata:', error);
       throw error;
     }
   },

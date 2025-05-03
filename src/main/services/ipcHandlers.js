@@ -119,16 +119,34 @@ const setupIpcHandlers = (ipcMain) => {
   // Jikan API araması
   ipcMain.handle('search-jikan', async (event, query) => {
     try {
-      if (!apiModules || !apiModules.jikanApi) {
-        throw new Error('Jikan API yüklenmemiş.');
+      if (!apiModules || !apiModules.anime) {
+        throw new Error('Anime API yüklenmemiş.');
       }
       
-      console.log(`Jikan Araması: "${query}"`);
-      const results = await apiModules.jikanApi.searchAnime(query);
+      console.log(`Anime Araması (Fallback Sistemi): "${query}"`);
+      // Yeni anime API'yi kullan (AniList -> Kitsu -> Jikan fallback sırası)
+      const results = await apiModules.anime.searchAnime(query);
       return results;
     } catch (error) {
-      console.error('Jikan arama hatası:', error);
+      console.error('Anime arama hatası:', error);
       throw new Error('Anime araması sırasında bir hata oluştu: ' + error.message);
+    }
+  });
+  
+  // Toplu anime araması
+  ipcMain.handle('batch-search-anime', async (event, searchTexts) => {
+    try {
+      if (!apiModules || !apiModules.anime) {
+        throw new Error('Anime API yüklenmemiş.');
+      }
+      
+      console.log(`Toplu Anime Araması: ${searchTexts.length} başlık`);
+      // Batch search yöntemi kullan (AniList -> Kitsu -> Jikan fallback sırası)
+      const results = await apiModules.anime.batchSearchAnime(searchTexts);
+      return results;
+    } catch (error) {
+      console.error('Toplu anime arama hatası:', error);
+      throw new Error('Toplu anime araması sırasında bir hata oluştu: ' + error.message);
     }
   });
   
@@ -168,27 +186,30 @@ const setupIpcHandlers = (ipcMain) => {
   // Anime sezon ve bölüm bilgilerini al
   ipcMain.handle('get-anime-seasons', async (event, animeId) => {
     try {
-      if (!apiModules || !apiModules.jikanApi) {
-        throw new Error('Jikan API yüklenmemiş.');
+      if (!apiModules || !apiModules.anime) {
+        throw new Error('Anime API yüklenmemiş.');
       }
       
-      // Anime ID'sini sayıya dönüştür
-      const numericAnimeId = parseInt(animeId);
-      if (isNaN(numericAnimeId)) {
-        throw new Error('Geçersiz Anime ID formatı: ' + animeId);
-      }
-      
-      console.log(`Anime sezon bilgilerini alınıyor: Anime ID ${numericAnimeId}`);
-      const result = await apiModules.jikanApi.getAnimeSeasons(numericAnimeId);
-      
-      if (!result) {
-        throw new Error('API yanıtı geçersiz veya sezon bilgisi içermiyor');
-      }
-      
-      return result;
+      const results = await apiModules.anime.getAnimeSeasons(animeId);
+      return results;
     } catch (error) {
       console.error('Anime sezon bilgileri alınırken hata:', error);
-      throw new Error('Anime sezon bilgileri alınamadı: ' + error.message);
+      throw new Error('Anime sezon bilgileri alınırken bir hata oluştu: ' + error.message);
+    }
+  });
+  
+  // Anime ilişkilerini al (sequel, prequel vb.)
+  ipcMain.handle('get-anime-relations', async (event, animeId) => {
+    try {
+      if (!apiModules || !apiModules.anime) {
+        throw new Error('Anime API yüklenmemiş.');
+      }
+      
+      const results = await apiModules.anime.getAnimeRelations(animeId);
+      return results;
+    } catch (error) {
+      console.error('Anime ilişkileri alınırken hata:', error);
+      throw new Error('Anime ilişkileri alınırken bir hata oluştu: ' + error.message);
     }
   });
   
@@ -339,9 +360,13 @@ const setupIpcHandlers = (ipcMain) => {
   // Anime detaylarını getir
   ipcMain.handle('get-anime-details', async (event, {id}) => {
     try {
-      const url = `https://api.jikan.moe/v4/anime/${id}`;
-      const response = await axios.get(url);
-      return response.data.data;
+      if (!apiModules || !apiModules.anime) {
+        throw new Error('Anime API yüklenmemiş.');
+      }
+      
+      console.log(`Anime detay bilgilerini alınıyor (Fallback Sistemi): Anime ID ${id}`);
+      // Yeni anime API'yi kullan (AniList -> Kitsu -> Jikan fallback sırası)
+      return await apiModules.anime.getAnimeDetails(id);
     } catch (error) {
       console.error('Anime detayları alınamadı:', error);
       return null;

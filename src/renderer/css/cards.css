@@ -19,7 +19,7 @@
 
 .slider-section h3 {
   color: var(--accent-color);
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   font-size: 1.2rem;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
@@ -28,32 +28,11 @@
   letter-spacing: 0.5px;
 }
 
-.slider-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, 
-    transparent, 
-    var(--accent-color), 
-    transparent);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.slider-section:hover::before {
-  opacity: 1;
-}
-
 .slider-container {
   position: relative;
   width: 100%;
   overflow-x: hidden;
   padding: 15px 0 5px;
-  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
 }
 
 .slider-content {
@@ -188,45 +167,127 @@
 
 /* Medya Kart Stili */
 .media-card {
+  position: relative;
   min-width: 160px;
   width: 160px;
-  background-color: transparent;
-  border-radius: var(--border-radius-md);
+  height: 225px;
+  background-color: #333;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: var(--card-shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+  border: none;
+  z-index: 1;
 }
 
 .media-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 69, 0, 0.3);
-  z-index: 5;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 6px 6px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 2;
 }
 
-.media-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
+/* Wrapper div for scaling */
+.media-card-inner {
+  position: relative;
   width: 100%;
-  height: 100px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 20%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
-  pointer-events: none;
-  z-index: 1;
+  height: 100%;
+  transform-origin: center center;
+  transform: scale(1);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+}
+
+.media-card:hover .media-card-inner {
+  transform: scale(1.05);
+}
+
+/* Tüm slayt içeriğine hover yapıldığında, hover OLMAYAN kartların küçülmesi */
+.slider-content:hover .media-card:not(:hover) {
+  transform: scale(0.93);
+  filter: brightness(0.85);
+  background-color: transparent;
+}
+
+.slider-content:hover .media-card:not(:hover) .media-card-inner {
+  transform: scale(1);
+  filter: brightness(0.85);
+  background-color: transparent;
+}
+
+.media-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.25);
+  transition: all 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.media-card:active .media-card-inner {
+  transform: scale(1);
+  transition: all 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .media-card-image {
   width: 100%;
-  height: 225px;
+  height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: all 0.5s ease;
+  display: block;
+  filter: brightness(0.95);
+  position: relative;
+  z-index: 1;
 }
 
 .media-card:hover .media-card-image {
-  transform: scale(1.05);
+  transform: scale(1.08);
+  filter: brightness(1.05) contrast(1.05);
+}
+
+/* Gradient kaplamayı içeren element */
+.media-card-inner::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  height: 0;
+  background: linear-gradient(to top, #ff4500, #ff8c00);
+  transition: height 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  z-index: 5;
+  border-radius: 0 2px 0 0;
+  opacity: 0;
+  box-shadow: 0 0 8px rgba(255, 69, 0, 0.5);
+}
+
+.media-card:hover .media-card-inner::before {
+  height: 35%;
+  opacity: 1;
+}
+
+/* Ana gradient elementi */
+.media-card-inner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to top, 
+    rgba(0, 0, 0, 0.95) 0%, 
+    rgba(0, 0, 0, 0.7) 30%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.3s ease;
+  opacity: 0.95;
+}
+
+.media-card:hover .media-card-inner::after {
+  opacity: 1;
 }
 
 .media-card-content {
@@ -234,38 +295,89 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 15px 12px;
-  z-index: 2;
+  padding: 16px 14px;
+  z-index: 3;
+  transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+.media-card:hover .media-card-content {
+  transform: translateY(-8px);
+  padding-left: 18px;
 }
 
 .media-card-title {
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-size: 0.95rem;
-  color: #ffffff;
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: 0.3px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  transition: all 0.3s ease;
+  transform-origin: left;
+  position: relative;
+  padding-bottom: 4px;
+}
+
+.media-card:hover .media-card-title {
+  transform: scale(1.05);
+  color: #ff7e4f;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Başlık altındaki çizgi */
+.media-card-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #ff4500;
+  transition: width 0.3s ease 0.1s;
+  opacity: 0;
+}
+
+.media-card:hover .media-card-title::after {
+  width: 40%;
+  opacity: 1;
 }
 
 .media-card-year {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.8rem;
   font-weight: 500;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-}
-
-.media-card-meta {
+  transition: all 0.3s ease;
+  transform-origin: left;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
-  font-size: 0.75rem;
+  opacity: 0.8;
 }
 
-/* Platform ve Kullanıcı Derecelendirme Stilleri */
+.media-card:hover .media-card-year {
+  color: rgba(255, 255, 255, 1);
+  transform: translateX(6px);
+  opacity: 1;
+}
+
+/* Yıl yanında simge */
+.media-card-year::before {
+  content: '•';
+  display: inline-block;
+  margin-right: 6px;
+  color: #ff4500;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.3s ease;
+}
+
+.media-card:hover .media-card-year::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .media-card-ratings {
   position: absolute;
   top: 10px;
@@ -273,7 +385,13 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  z-index: 3;
+  z-index: 6;
+  opacity: 0.85;
+  transition: opacity 0.3s ease;
+}
+
+.media-card:hover .media-card-ratings {
+  opacity: 1;
 }
 
 .media-card-rating {
@@ -287,7 +405,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease;
+  transition: all 0.2s ease, transform 0.2s ease;
 }
 
 .media-card-rating.platform {
@@ -299,7 +417,8 @@
 }
 
 .media-card:hover .media-card-rating {
-  opacity: 1;
+  transform: translateY(2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 .media-card-rating .star-icon {
@@ -308,7 +427,6 @@
   margin-right: 3px;
 }
 
-/* Puan Ekleme Butonu */
 .media-card-rating-add {
   position: absolute;
   top: 10px;
@@ -322,10 +440,17 @@
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(2px);
-  z-index: 3;
+  z-index: 6;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(-5px);
+}
+
+.media-card:hover .media-card-rating-add {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .media-card-rating-add:hover {
@@ -352,12 +477,14 @@
   align-items: center;
   gap: 3px;
   backdrop-filter: blur(2px);
+  transition: all 0.3s ease;
+  opacity: 0.8;
+  z-index: 6;
 }
 
-.seasons-icon {
-  font-size: 0.8rem;
-  color: #aaccff;
-  font-style: normal;
+.media-card:hover .media-card-seasons {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.8);
 }
 
 /* Yeni slider ekleme butonu */
