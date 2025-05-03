@@ -19,7 +19,7 @@ Watchflow helps you organize and monitor your watchlist for movies, series, and 
 - 
 ## 📦 Download
 
-➡️ [Download the latest release (.exe)](https://github.com/<kullanici-adi>/<repo-adi>/releases/latest)
+➡️ [Download the latest release (.exe)](https://github.com/macidko/Watchflow/releases/latest)
 
 ## Getting Started
 
