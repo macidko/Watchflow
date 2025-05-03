@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/macidko/Watchflow/compare/v0.4.2...v0.5.0) (2025-05-03)
+
+
+### Features
+
+* **ui, api:** Implemented fallback mechanisms for anime APIs (Anilist, Kitsu, Jikan) to handle rate limiting ([5ae0842](https://github.com/macidko/Watchflow/commit/5ae08425982da7dd61e0ac537a037979a24ef710))
+
 ### [0.4.2](https://github.com/macidko/Watchflow/compare/v0.4.1...v0.4.2) (2025-05-01)
 
 
