@@ -16,6 +16,10 @@ Watchflow helps you organize and monitor your watchlist for movies, series, and 
 - Bulk add items to your list
 - Drag-and-drop category sorting
 - Notification system for user feedback
+- 
+## 📦 Download
+
+➡️ [Download the latest release (.exe)](https://github.com/<kullanici-adi>/<repo-adi>/releases/latest)
 
 ## Getting Started
 
