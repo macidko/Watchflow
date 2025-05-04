@@ -176,7 +176,7 @@ async function searchAnime(searchText) {
     // AniList sonuçlarını uygulama formatına dönüştür
     return data.data.Page.media.map(item => ({
       id: item.id,
-      title: item.title.english || item.title.romaji,
+      title: item.title.romaji || item.title.english,
       original_title: item.title.romaji,
       type: 'anime',
       year: item.startDate.year,
@@ -209,7 +209,7 @@ async function getAnimeDetails(animeId) {
     // AniList verilerini uygulama formatına dönüştür
     return {
       id: anime.id,
-      title: anime.title.english || anime.title.romaji,
+      title: anime.title.romaji || anime.title.english,
       original_title: anime.title.romaji,
       native_title: anime.title.native,
       overview: anime.description,

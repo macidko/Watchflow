@@ -340,19 +340,24 @@
         <!-- Adım 1: Metin Girişi -->
         <div id="bulkAddStep1" class="bulk-add-step">
           <p class="bulk-add-description">
-            Her satıra <strong>bir içerik</strong> ekleyerek toplu içerik listesi oluşturabilirsiniz. 
-            <br><br>
-            <strong>Format:</strong> <code>İçerik Adı - kategori</code>
-            <br>
-            <strong>Örnekler:</strong> 
-            <br><code>Interstellar - movie</code>
-            <br><code>Breaking Bad - tv</code>
-            <br><code>Naruto - anime</code>
-            <br><br>
-            <strong>Kategori türleri:</strong> <code>movie</code>, <code>tv</code> veya <code>anime</code>
+            Her satıra <strong>bir içerik adı</strong> ekleyerek toplu içerik listesi oluşturabilirsiniz.
           </p>
+          
+          <!-- İçerik türü seçimi -->
+          <div class="search-type-selection bulk-search-type">
+            <label class="radio-label">
+              <input type="radio" name="bulkContentType" value="movie" checked> Film
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="bulkContentType" value="tv"> Dizi
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="bulkContentType" value="anime"> Anime
+            </label>
+          </div>
+          
           <div class="form-group">
-            <textarea id="bulkContentInput" class="form-input" rows="10" placeholder="Her satıra bir içerik ekleyin..."></textarea>
+            <textarea id="bulkContentInput" class="form-input" rows="10" placeholder="Her satıra bir içerik adı ekleyin..."></textarea>
           </div>
           <div class="settings-popup-actions">
             <button id="searchBulkContent" class="settings-popup-btn settings-popup-btn-save">İçerikleri Ara</button>

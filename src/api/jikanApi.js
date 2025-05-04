@@ -101,7 +101,8 @@ const searchAnime = async (searchText) => {
     // Sonuçları dönüştür
     return data.data.map(anime => ({
       id: anime.mal_id,
-      title: anime.title,
+      title: anime.title_japanese || anime.title,
+      original_title: anime.title_japanese || anime.title,
       type: 'anime',
       imageUrl: anime.images?.jpg?.image_url || null,
       year: anime.aired?.from ? new Date(anime.aired.from).getFullYear() : null,
@@ -180,7 +181,8 @@ const getAnimeDetails = async (animeId) => {
     // Detayları dönüştür
     return {
       id: anime.mal_id,
-      title: anime.title,
+      title: anime.title_japanese || anime.title,
+      original_title: anime.title_japanese || anime.title,
       type: 'anime',
       imageUrl: anime.images?.jpg?.image_url || null,
       year: anime.aired?.from ? new Date(anime.aired.from).getFullYear() : null,

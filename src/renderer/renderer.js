@@ -1230,6 +1230,9 @@ function displayResults(results, searchType) {
     const placeholderImage = './assets/images/placeholder.jpg';
     const imageUrl = item.imageUrl || placeholderImage;
     
+    // Anime için orijinal başlığı kullan, diğer içerikler için normal başlık
+    const displayTitle = searchType === 'anime' && item.original_title ? item.original_title : item.title;
+    
     // Her sonuç için yeni kart
     const resultCard = document.createElement('div');
     resultCard.className = 'search-result-item';
@@ -1252,9 +1255,9 @@ function displayResults(results, searchType) {
     // Yeni düzen için HTML yapısı
     resultCard.innerHTML = `
       <div class="search-result-item-left">
-        <img src="${imageUrl}" alt="${item.title}" class="search-result-image" onerror="this.src='${placeholderImage}'">
+        <img src="${imageUrl}" alt="${displayTitle}" class="search-result-image" onerror="this.src='${placeholderImage}'">
         <div class="search-result-info">
-          <div class="search-result-title" title="${item.title}">${item.title}</div>
+          <div class="search-result-title" title="${displayTitle}">${displayTitle}</div>
           <div class="search-result-year">${item.year || '--'}</div>
         </div>
       </div>
@@ -1263,7 +1266,7 @@ function displayResults(results, searchType) {
           <option value="" disabled selected>Kategori Seç</option>
           ${statusOptionsHtml}
         </select>
-        <button class="search-add-button" disabled data-id="${item.id}" data-title="${item.title}" 
+        <button class="search-add-button" disabled data-id="${item.id}" data-title="${displayTitle}" 
           data-type="${searchType}" data-year="${item.year || ''}" data-image="${imageUrl}">
           ${isInWatchlist ? 'Güncelle' : 'Ekle'}
         </button>
@@ -1272,38 +1275,27 @@ function displayResults(results, searchType) {
     
     // Kartı sonuçlar container'ına ekle
     resultsGrid.appendChild(resultCard);
-    
-    // Select değişikliğini dinle ve butonun aktif/pasif durumunu değiştir
-    const statusSelect = resultCard.querySelector('.status-select');
-    const addButton = resultCard.querySelector('.search-add-button');
-    
-    statusSelect.addEventListener('change', () => {
-      addButton.disabled = !statusSelect.value;
-    });
-    
-    // Ekle butonuna tıklandığında
-    addButton.addEventListener('click', () => {
-      // Seçilen izleme durumunu al
-      const selectedStatus = statusSelect.value;
+  });
+  
+  // Status seçimi olaylarını ekle
+  document.querySelectorAll('.status-select').forEach(select => {
+    select.addEventListener('change', function() {
+      // Seçildiğinde ilgili butonu aktifleştir
+      const button = this.nextElementSibling;
+      button.disabled = !this.value;
       
-      if (!selectedStatus) {
-        return; // Status seçilmediyse işlem yapma
+      // Seçilen değeri butonun dataset'ine ekle
+      if (this.value) {
+        button.setAttribute('data-status', this.value);
+      } else {
+        button.removeAttribute('data-status');
       }
-      
-      // Eklenecek öğeyi oluştur
-      const watchItem = {
-        id: item.id,
-        title: item.title,
-        type: searchType,
-        year: item.year || '',
-        imageUrl: imageUrl,
-        status: selectedStatus,
-        dateAdded: new Date().toISOString()
-      };
-      
-      // İzleme listesine ekle
-      addToWatchlist(watchItem, addButton);
     });
+  });
+  
+  // Ekle butonlarını etkinleştir
+  document.querySelectorAll('.search-add-button').forEach(button => {
+    button.addEventListener('click', addToWatchlistFromSearch);
   });
 }
 
@@ -2305,6 +2297,9 @@ function displayContentSearchResults(results, searchType, sliderId) {
     
     const imageUrl = item.imageUrl || './assets/images/placeholder.jpg';
     
+    // Anime için orijinal başlığı kullan, diğer içerikler için normal başlık
+    const displayTitle = searchType === 'anime' && item.original_title ? item.original_title : item.title;
+    
     // Mevcut watchlist'de bu öğenin olup olmadığını kontrol et
     const watchlistItems = watchlist[searchType] || [];
     const existingItem = watchlistItems.find(i => i.id === item.id);
@@ -2312,9 +2307,9 @@ function displayContentSearchResults(results, searchType, sliderId) {
     // HTML yapısını oluştur
     resultItem.innerHTML = `
       <div class="content-search-item-left">
-        <img class="content-result-image" src="${imageUrl}" alt="${item.title}" onerror="this.src='./assets/images/placeholder.jpg'">
+        <img class="content-result-image" src="${imageUrl}" alt="${displayTitle}" onerror="this.src='./assets/images/placeholder.jpg'">
         <div class="content-search-item-info">
-          <div class="content-search-item-title">${item.title}</div>
+          <div class="content-search-item-title">${displayTitle}</div>
           <div class="content-search-item-year">${item.year || ''}</div>
         </div>
       </div>
@@ -3059,27 +3054,122 @@ async function searchContentsFromText() {
     return;
   }
   
-  // Adım 2'ye geç
-  showBulkAddStep(2);
+  // Seçilen içerik türünü al
+  const selectedType = document.querySelector('input[name="bulkContentType"]:checked').value;
   
   // Metni satır satır bölelim
   const lines = text.split('\n').filter(line => line.trim());
   
-  // Anime içeriği var mı kontrol et (ve hazırla)
-  const animeContents = [];
-  const nonAnimeContents = [];
+  if (lines.length === 0) {
+    showNotification('Uyarı', 'Geçerli içerik bulunamadı.', 'warning');
+    return;
+  }
   
-  // İçerikleri türüne göre ayır
-  lines.forEach(line => {
-    const content = parseContentLine(line);
-    if (content) {
-      if (content.type === 'anime') {
-        animeContents.push(content);
-      } else {
-        nonAnimeContents.push(content);
+  // İçerikleri hazırla
+  const contents = lines.map(line => ({
+    title: line.trim(),
+    type: selectedType
+  }));
+  
+  // Doğrudan arama yap
+  performBulkSearch(contents);
+  
+  // Adım 2'ye geç (arama sonuçları)
+  showBulkAddStep(2);
+}
+
+// Arama önizlemesi göster
+function showSearchPreview(lines, contentType) {
+  const previewContainer = document.getElementById('bulkSearchResults');
+  
+  let html = `
+    <div class="search-preview">
+      <h3>Arama Önizlemesi</h3>
+      <p>Arama yapmadan önce içerikleri kontrol edin ve düzenleyin.</p>
+      
+      <div class="preview-list">
+  `;
+  
+  // Her satırı işle ve önizleme göster
+  lines.forEach((line, index) => {
+    const title = line.trim();
+    if (title) {
+      html += `
+        <div class="preview-item" data-index="${index}">
+          <div class="preview-item-number">${index + 1}</div>
+          <div class="preview-item-content">
+            <input type="text" class="preview-title-input" data-index="${index}" value="${title}">
+            <select class="preview-type-select" data-index="${index}">
+              <option value="movie" ${contentType === 'movie' ? 'selected' : ''}>Film</option>
+              <option value="tv" ${contentType === 'tv' ? 'selected' : ''}>Dizi</option>
+              <option value="anime" ${contentType === 'anime' ? 'selected' : ''}>Anime</option>
+            </select>
+          </div>
+        </div>
+      `;
+    }
+  });
+  
+  html += `
+      </div>
+      
+      <div class="preview-actions">
+        <button id="startBulkSearch" class="preview-search-button">Aramayı Başlat</button>
+        <button id="cancelBulkSearch" class="preview-cancel-button">İptal</button>
+      </div>
+    </div>
+  `;
+  
+  previewContainer.innerHTML = html;
+  
+  // Adım 2'ye geç
+  showBulkAddStep(2);
+  
+  // "Aramayı Başlat" butonuna olay ekle
+  document.getElementById('startBulkSearch').addEventListener('click', () => {
+    const updatedContents = collectPreviewData();
+    if (updatedContents.length > 0) {
+      performBulkSearch(updatedContents);
+    } else {
+      showNotification('Hata', 'Aranacak geçerli içerik bulunamadı!', 'error');
+    }
+  });
+  
+  // "İptal" butonuna olay ekle
+  document.getElementById('cancelBulkSearch').addEventListener('click', () => {
+    showBulkAddStep(1);
+  });
+}
+
+// Önizleme formundan güncellenmiş içerikleri topla
+function collectPreviewData() {
+  const previewItems = document.querySelectorAll('.preview-item');
+  const updatedContents = [];
+  
+  previewItems.forEach(item => {
+    const index = parseInt(item.dataset.index);
+    
+    if (!isNaN(index)) {
+      const titleInput = item.querySelector(`.preview-title-input[data-index="${index}"]`);
+      const typeSelect = item.querySelector(`.preview-type-select[data-index="${index}"]`);
+      
+      if (titleInput && typeSelect) {
+        const title = titleInput.value.trim();
+        const type = typeSelect.value;
+        
+        if (title && type && ['movie', 'tv', 'anime'].includes(type)) {
+          updatedContents.push({ title, type });
+        }
       }
     }
   });
+  
+  return updatedContents;
+}
+
+// Bulk aramasını gerçekleştir
+async function performBulkSearch(contents) {
+  const resultsContainer = document.getElementById('bulkSearchResults');
   
   // Yükleniyor göstergesini göster
   resultsContainer.innerHTML = `
@@ -3093,10 +3183,10 @@ async function searchContentsFromText() {
       
       <div class="loading-progress-container">
         <div class="loading-progress-bar" id="searchProgressBar"></div>
-        <div class="loading-progress-text" id="searchProgressText">Hazırlanıyor (0/${lines.length})</div>
+        <div class="loading-progress-text" id="searchProgressText">Hazırlanıyor (0/${contents.length})</div>
       </div>
       
-      ${animeContents.length > 0 ? `
+      ${contents.filter(c => c.type === 'anime').length > 0 ? `
       <div class="loading-info">
         <p><strong>Not:</strong> Anime aramaları için toplu arama kullanılıyor.</p>
         <p>Bu, işlemi hızlandıracak ve API rate limit sorunlarını azaltacaktır.</p>
@@ -3108,9 +3198,13 @@ async function searchContentsFromText() {
   const progressBar = document.getElementById('searchProgressBar');
   const progressText = document.getElementById('searchProgressText');
   
+  // Anime içeriği var mı kontrol et (ve hazırla)
+  const animeContents = contents.filter(content => content.type === 'anime');
+  const nonAnimeContents = contents.filter(content => content.type !== 'anime');
+  
   // Tüm arama isteklerini sırayla işleyeceğiz
   const searchResults = [];
-  const totalItems = lines.length;
+  const totalItems = contents.length;
   let processedItems = 0;
   
   // İlerleme bilgisini güncelleyen yardımcı fonksiyon
@@ -3252,26 +3346,36 @@ async function searchContentsFromText() {
 
 // İçerik satırını ayrıştır
 function parseContentLine(line) {
-  // İçerik adı - kategori formatını ayrıştırma
-  const parts = line.split('-').map(part => part.trim());
-  
-  if (parts.length < 2) {
-    // Hata mesajını sadece konsola yazdıralım, kullanıcıya göstermeyelim
-    console.log(`Geçersiz format: ${line} (Doğru format: "İçerik Adı - kategori")`);
-    return null;
+  // Eski format için basit bir kontrol
+  if (line.includes('-')) {
+    // İçerik adı - kategori formatını ayrıştırma
+    const parts = line.split('-').map(part => part.trim());
+    
+    if (parts.length < 2) {
+      console.log(`Geçersiz format: ${line}`);
+      return null;
+    }
+    
+    const title = parts[0];
+    let type = parts[1].toLowerCase();
+    
+    // Tür kontrolü
+    if (!['movie', 'tv', 'anime'].includes(type)) {
+      console.log(`Geçersiz içerik türü: ${type} (Geçerli türler: movie, tv, anime)`);
+      return null;
+    }
+    
+    return { title, type };
   }
   
-  const title = parts[0];
-  let type = parts[1].toLowerCase();
-  
-  // Tür kontrolü
-  if (!['movie', 'tv', 'anime'].includes(type)) {
-    // Hata mesajını sadece konsola yazdıralım, kullanıcıya göstermeyelim
-    console.log(`Geçersiz içerik türü: ${type} (Geçerli türler: movie, tv, anime)`);
-    return null;
+  // Basit satır formatı (sadece başlık)
+  const title = line.trim();
+  if (title) {
+    // Varsayılan tür olarak 'movie' kullan
+    return { title, type: 'movie' };
   }
   
-  return { title, type };
+  return null;
 }
 
 // API istekleri arasındaki gecikme (ms) - anime API'leri için hız sınırlaması
@@ -3371,6 +3475,9 @@ function displayBulkSearchResults(results, container) {
     const posterUrl = result.imageUrl || 'placeholder-image.jpg';
     const mediaType = result.type; // İçerik türü (movie, tv, anime)
     
+    // Anime için orijinal başlığı kullan, diğer içerikler için normal başlık
+    const displayTitle = mediaType === 'anime' && result.original_title ? result.original_title : result.title;
+    
     // İlgili türün kategorilerini al
     let statusOptions = '';
     
@@ -3396,16 +3503,19 @@ function displayBulkSearchResults(results, container) {
     const jsonData = JSON.stringify(result);
     const encodedData = btoa(encodeURIComponent(jsonData));
     
+    // Tekrar arama butonu ve input için orijinal içerik adını saklayalım
+    const originalQuery = item.original ? item.original.title : displayTitle;
+    
     html += `
       <div class="bulk-result-item" data-index="${index}" data-type="${mediaType}">
         <div class="bulk-item-selection">
           <input type="checkbox" id="bulkItem${index}" class="bulk-item-checkbox" checked>
         </div>
         <div class="bulk-item-image">
-          <img src="${posterUrl}" alt="${result.title}">
+          <img src="${posterUrl}" alt="${displayTitle}">
         </div>
         <div class="bulk-item-info">
-          <h4 class="bulk-item-title">${result.title} ${year ? `(${year})` : ''}</h4>
+          <h4 class="bulk-item-title">${displayTitle} ${year ? `(${year})` : ''}</h4>
           <div class="bulk-item-type">${translateType(mediaType)}</div>
           <div class="bulk-item-status">
             <label>Durum: 
@@ -3414,13 +3524,34 @@ function displayBulkSearchResults(results, container) {
               </select>
             </label>
           </div>
+          <div class="bulk-item-actions">
+            <button class="bulk-item-research-btn" data-type="${mediaType}" data-title="${originalQuery}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              Yeniden Ara
+            </button>
+          </div>
         </div>
         <input type="hidden" class="bulk-item-data" value="${encodedData}">
       </div>
     `;
   });
   
+  // Mevcut HTML'i container'a ata
   container.innerHTML = html;
+  
+  // Yeniden arama butonlarına olay ekle
+  const researchButtons = container.querySelectorAll('.bulk-item-research-btn');
+  researchButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const title = button.getAttribute('data-title');
+      const type = button.getAttribute('data-type');
+      openResearchDialog(title, type, button);
+    });
+  });
 }
 
 // Tür çevirisi
@@ -3503,13 +3634,16 @@ async function addSelectedContents() {
       // İçerik türünü al
       const mediaType = bulkItem.dataset.type || resultItem.type;
       
+      // Anime için orijinal başlığı kullan
+      const displayTitle = mediaType === 'anime' && resultItem.original_title ? resultItem.original_title : (resultItem.title || resultItem.name);
+      
       // Watch status objesini oluştur - Arama sonuçlarından gelen bilgileri kullan
       const watchStatus = {
         id: resultItem.id,
         type: mediaType,
         status: status,
         dateAdded: new Date().toISOString(),
-        title: resultItem.title || resultItem.name,
+        title: displayTitle,
         imageUrl: resultItem.imageUrl || 
                  (resultItem.poster_path && `https://image.tmdb.org/t/p/w500${resultItem.poster_path}`),
         year: resultItem.year || 
@@ -3822,5 +3956,232 @@ function generateRelatedAnimeHTML(relatedData) {
   
   html += '</div>';
   return html;
+}
+
+// Yeniden arama diyalogunu aç
+function openResearchDialog(initialQuery, contentType, sourceButton) {
+  // Mevcut diyalog varsa kaldır
+  const existingDialog = document.querySelector('.research-dialog-overlay');
+  if (existingDialog) {
+    existingDialog.remove();
+  }
+  
+  // Diyalog HTML'i
+  const dialogHTML = `
+    <div class="research-dialog-overlay">
+      <div class="research-dialog">
+        <div class="research-dialog-header">
+          <h3>İçeriği Yeniden Ara</h3>
+          <button class="research-dialog-close">&times;</button>
+        </div>
+        <div class="research-dialog-body">
+          <div class="research-form">
+            <div class="research-input-group">
+              <label for="research-query">İçerik Adı:</label>
+              <input type="text" id="research-query" class="research-query-input" value="${initialQuery}" autofocus>
+            </div>
+            
+            <div class="research-type-selection">
+              <label class="radio-label">
+                <input type="radio" name="researchType" value="movie" ${contentType === 'movie' ? 'checked' : ''}> Film
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="researchType" value="tv" ${contentType === 'tv' ? 'checked' : ''}> Dizi
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="researchType" value="anime" ${contentType === 'anime' ? 'checked' : ''}> Anime
+              </label>
+            </div>
+          </div>
+          
+          <div class="research-results-container">
+            <div class="research-loading hidden">
+              <div class="loader"></div>
+              <p>Aranıyor...</p>
+            </div>
+            <div id="researchResults" class="research-results"></div>
+          </div>
+        </div>
+        <div class="research-dialog-footer">
+          <button class="research-cancel-btn">İptal</button>
+          <button class="research-search-btn">Ara</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Diyalogu sayfaya ekle
+  document.body.insertAdjacentHTML('beforeend', dialogHTML);
+  
+  // DOM elementlerini seç
+  const dialog = document.querySelector('.research-dialog-overlay');
+  const closeBtn = dialog.querySelector('.research-dialog-close');
+  const cancelBtn = dialog.querySelector('.research-cancel-btn');
+  const searchBtn = dialog.querySelector('.research-search-btn');
+  const queryInput = dialog.querySelector('#research-query');
+  
+  // Kapatma fonksiyonu
+  const closeDialog = () => {
+    dialog.remove();
+  };
+  
+  // Kapatma butonuna tıklama
+  closeBtn.addEventListener('click', closeDialog);
+  cancelBtn.addEventListener('click', closeDialog);
+  
+  // Dışarıya tıklama ile kapat
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) {
+      closeDialog();
+    }
+  });
+  
+  // Arama butonuna tıklama
+  searchBtn.addEventListener('click', () => {
+    performSingleReSearch(dialog, sourceButton);
+  });
+  
+  // Enter tuşu ile arama
+  queryInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      performSingleReSearch(dialog, sourceButton);
+    }
+  });
+  
+  // Input'a otomatik odaklan ve metnin sonuna konumlan
+  queryInput.focus();
+  queryInput.setSelectionRange(queryInput.value.length, queryInput.value.length);
+}
+
+// Tek bir içerik için yeniden arama yap
+async function performSingleReSearch(dialog, sourceButton) {
+  // Form elementlerini seç
+  const queryInput = dialog.querySelector('#research-query');
+  const resultsContainer = dialog.querySelector('#researchResults');
+  const loadingIndicator = dialog.querySelector('.research-loading');
+  
+  // Arama değerlerini al
+  const query = queryInput.value.trim();
+  const contentType = dialog.querySelector('input[name="researchType"]:checked').value;
+  
+  // Validasyon
+  if (!query) {
+    showNotification('Uyarı', 'Lütfen arama sorgusu girin!', 'warning');
+    return;
+  }
+  
+  // Yükleniyor göstergesini göster
+  loadingIndicator.classList.remove('hidden');
+  resultsContainer.innerHTML = '';
+  
+  try {
+    // İçerik türüne göre arama yap
+    let results;
+    if (contentType === 'movie') {
+      results = await window.watchflowAPI.searchTMDB(query, 'movie');
+    } else if (contentType === 'tv') {
+      results = await window.watchflowAPI.searchTMDB(query, 'tv');
+    } else if (contentType === 'anime') {
+      results = await window.watchflowAPI.searchJikan(query);
+    }
+    
+    // Yükleniyor göstergesini gizle
+    loadingIndicator.classList.add('hidden');
+    
+    // Sonuç yoksa mesaj göster
+    if (!results || results.length === 0) {
+      resultsContainer.innerHTML = '<div class="no-results">Sonuç bulunamadı. Lütfen başka bir arama terimi deneyin.</div>';
+      return;
+    }
+    
+    // Sonuçları listele
+    let resultsHTML = `<div class="research-results-list">`;
+    
+    results.forEach((item, idx) => {
+      const year = item.year || '';
+      const imageUrl = item.imageUrl || './assets/images/placeholder.jpg';
+      const displayTitle = contentType === 'anime' && item.original_title ? item.original_title : item.title;
+      
+      resultsHTML += `
+        <div class="research-result-item" data-index="${idx}">
+          <div class="research-result-image">
+            <img src="${imageUrl}" alt="${displayTitle}" onerror="this.src='./assets/images/placeholder.jpg'">
+          </div>
+          <div class="research-result-info">
+            <div class="research-result-title">${displayTitle} ${year ? `(${year})` : ''}</div>
+            <div class="research-result-type">${translateType(contentType)}</div>
+          </div>
+          <button class="research-result-select-btn" data-index="${idx}">Seç</button>
+        </div>
+      `;
+    });
+    
+    resultsHTML += `</div>`;
+    resultsContainer.innerHTML = resultsHTML;
+    
+    // Seç butonlarına olayları ekle
+    const selectButtons = resultsContainer.querySelectorAll('.research-result-select-btn');
+    selectButtons.forEach((button, idx) => {
+      button.addEventListener('click', () => {
+        // Seçilen içeriği orijinal toplu-arama listesindeki içerikle değiştir
+        replaceSearchResult(sourceButton, results[idx], contentType, dialog);
+      });
+    });
+    
+  } catch (error) {
+    console.error('Yeniden arama sırasında hata:', error);
+    loadingIndicator.classList.add('hidden');
+    resultsContainer.innerHTML = `<div class="error-message">Arama sırasında bir hata oluştu: ${error.message}</div>`;
+  }
+}
+
+// Arama sonucunu değiştir
+function replaceSearchResult(sourceButton, newResult, contentType, dialog) {
+  try {
+    // Kaynak butonunun bulunduğu kart öğesini bul
+    const resultItem = sourceButton.closest('.bulk-result-item');
+    if (!resultItem) {
+      throw new Error('Sonuç kartı bulunamadı');
+    }
+    
+    // Anime için orijinal başlığı kullan, diğer içerikler için normal başlık
+    const displayTitle = contentType === 'anime' && newResult.original_title ? newResult.original_title : newResult.title;
+    
+    // Kart içindeki öğeleri güncelle
+    const titleElement = resultItem.querySelector('.bulk-item-title');
+    const imageElement = resultItem.querySelector('.bulk-item-image img');
+    const dataInput = resultItem.querySelector('.bulk-item-data');
+    
+    // Öğeleri kontrol et
+    if (!titleElement || !imageElement || !dataInput) {
+      throw new Error('Sonuç kartı elemanları bulunamadı');
+    }
+    
+    // Başlık ve görsel güncelle
+    titleElement.textContent = displayTitle + (newResult.year ? ` (${newResult.year})` : '');
+    imageElement.src = newResult.imageUrl || './assets/images/placeholder.jpg';
+    
+    // data-type özniteliğini güncelle
+    resultItem.setAttribute('data-type', contentType);
+    
+    // İçerik verisi JSON'ını güncelle ve base64 olarak sakla
+    const jsonData = JSON.stringify(newResult);
+    const encodedData = btoa(encodeURIComponent(jsonData));
+    dataInput.value = encodedData;
+    
+    // Yeniden arama butonunun data-title ve data-type özniteliklerini güncelle
+    sourceButton.setAttribute('data-title', displayTitle);
+    sourceButton.setAttribute('data-type', contentType);
+    
+    // Başarılı bildirim göster
+    showNotification('Başarılı', 'İçerik başarıyla güncellendi!', 'success');
+    
+    // Diyalogu kapat
+    dialog.remove();
+    
+  } catch (error) {
+    console.error('Sonuç güncelleme hatası:', error);
+    showNotification('Hata', 'İçerik güncellenirken bir hata oluştu: ' + error.message, 'error');
+  }
 }
   

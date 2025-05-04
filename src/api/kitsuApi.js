@@ -44,7 +44,7 @@ async function searchAnime(searchText) {
       
       return {
         id: item.id,
-        title: attrs.titles.en || attrs.titles.en_jp || attrs.canonicalTitle,
+        title: attrs.titles.ja_jp || attrs.titles.en_jp || attrs.canonicalTitle || attrs.titles.en,
         original_title: attrs.titles.ja_jp,
         type: 'anime',
         year: attrs.startDate ? new Date(attrs.startDate).getFullYear() : null,
@@ -100,7 +100,7 @@ async function batchSearchAnime(searchTexts) {
             
             return {
               id: item.id,
-              title: attrs.titles.en || attrs.titles.en_jp || attrs.canonicalTitle,
+              title: attrs.titles.ja_jp || attrs.titles.en_jp || attrs.canonicalTitle || attrs.titles.en,
               original_title: attrs.titles.ja_jp,
               type: 'anime',
               year: attrs.startDate ? new Date(attrs.startDate).getFullYear() : null,
@@ -190,7 +190,7 @@ async function getAnimeDetails(animeId) {
     // Kitsu verilerini uygulama formatına dönüştür
     return {
       id: anime.id,
-      title: attrs.titles.en || attrs.titles.en_jp || attrs.canonicalTitle,
+      title: attrs.titles.ja_jp || attrs.titles.en_jp || attrs.canonicalTitle || attrs.titles.en,
       original_title: attrs.titles.ja_jp,
       native_title: attrs.titles.ja_jp,
       overview: attrs.synopsis,
