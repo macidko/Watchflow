@@ -1,6 +1,6 @@
 {
   "name": "watchflow",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Film, dizi ve anime takip uygulaması",
   "main": "src/main/main.js",
   "scripts": {

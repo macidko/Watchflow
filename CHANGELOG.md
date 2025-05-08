@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.2](https://github.com/macidko/Watchflow/compare/v0.5.1...v0.5.2) (2025-05-08)
+
+
+### Features
+
+* **ui:** Added quick action button for media cards and made styling updates. Added functionality to add items from search results to the watchlist. Card styles have been modernized and visual improvements have been made in the CSS file. ([f1794b7](https://github.com/macidko/Watchflow/commit/f1794b7250b7b33af97872930bfb8822a437139f))
+
 ### [0.5.1](https://github.com/macidko/Watchflow/compare/v0.5.0...v0.5.1) (2025-05-04)
 
 ## [0.5.0](https://github.com/macidko/Watchflow/compare/v0.4.2...v0.5.0) (2025-05-03)
