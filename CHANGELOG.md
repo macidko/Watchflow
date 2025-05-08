@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.3](https://github.com/macidko/Watchflow/compare/v0.5.2...v0.5.3) (2025-05-08)
+
+
+### Styling
+
+* **ui:** css optimization ([46eedcc](https://github.com/macidko/Watchflow/commit/46eedcc626c1cd6b7a8542c53c76eb6c77dac43e))
+
 ### [0.5.2](https://github.com/macidko/Watchflow/compare/v0.5.1...v0.5.2) (2025-05-08)
 
 
