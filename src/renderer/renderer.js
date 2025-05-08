@@ -90,7 +90,7 @@ async function loadWatchlist() {
     console.log(`Watchlist dizi sayısı: ${watchlist.tv ? watchlist.tv.length : 0}`);
     console.log(`Watchlist anime sayısı: ${watchlist.anime ? watchlist.anime.length : 0}`);
     
-    // Kategoriler boş dizi değilse sadece bunları temizle
+    // Kategoriler boş diziyi değilse sadece bunları temizle
     if (Array.isArray(watchlist.movie) && watchlist.movie.length === 0) {
       const moviesContainer = document.getElementById('movies-page');
       if (moviesContainer) {
@@ -259,10 +259,23 @@ function fillSlider(container, items, mediaType, sliderId) {
              alt="${item.title}" onerror="this.src='${placeholderImage}'">
         <div class="media-card-content">
           <div class="media-card-title" title="${item.title}">${item.title}</div>
-          <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
-          ${item.totalSeasons ? 
-            `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
+          <div class="media-card-info">
+            <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
+            ${item.totalSeasons ? 
+              `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
+          </div>
         </div>
+      </div>
+      <div class="media-card-quick-action" data-id="${item.id}" data-type="${mediaType}">
+        <span class="quick-action-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 20h.01"></path>
+            <path d="M7 20v-4"></path>
+            <path d="M12 20v-8"></path>
+            <path d="M17 20V8"></path>
+            <path d="M22 4v16"></path>
+          </svg>
+        </span>
       </div>
     `;
     
@@ -272,6 +285,16 @@ function fillSlider(container, items, mediaType, sliderId) {
       ratingAddButton.addEventListener('click', (e) => {
         e.stopPropagation(); // Kart tıklamasını engelle
         showRatingPopup(item, mediaType, ratingAddButton);
+      });
+    }
+    
+    // Hızlı aksiyon butonuna tıklama olayı ekle
+    const quickActionButton = card.querySelector('.media-card-quick-action');
+    if (quickActionButton) {
+      quickActionButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Kart tıklamasını engelle
+        console.log('Hızlı aksiyon butonu tıklandı:', item.id, mediaType);
+        showStatusPopup(item, mediaType, quickActionButton);
       });
     }
     
@@ -500,7 +523,7 @@ async function showMediaDetails(item, mediaType) {
   // Popup'ı sayfaya ekle
   document.body.appendChild(popupOverlay);
   
-  // Popupı görünür hale getirirken scrollu yukarı al
+  // Popup'ı görünür hale getirirken scrollu yukarı al
   popupOverlay.scrollTop = 0;
   
   // İlerleme çubuğunun genişliğini JavaScript ile ayarla (inline style kullanmadan)
@@ -1299,6 +1322,39 @@ function displayResults(results, searchType) {
   });
 }
 
+// Arama sonuçlarından izleme listesine öğe ekle
+function addToWatchlistFromSearch(e) {
+  // Butonu al
+  const button = e.currentTarget;
+  
+  // Dataset'ten öğe bilgilerini al
+  const id = button.getAttribute('data-id');
+  const title = button.getAttribute('data-title');
+  const type = button.getAttribute('data-type');
+  const year = button.getAttribute('data-year');
+  const imageUrl = button.getAttribute('data-image');
+  const status = button.getAttribute('data-status');
+  
+  if (!id || !title || !type || !status) {
+    showNotification('Hata', 'Eksik bilgiler: Tüm alanların doldurulduğundan emin olun.', 'error');
+    return;
+  }
+  
+  // İzleme listesine eklenecek öğeyi hazırla
+  const item = {
+    id: id,
+    title: title,
+    type: type,
+    year: year || '',
+    imageUrl: imageUrl,
+    status: status,
+    addedAt: new Date().toISOString()
+  };
+  
+  // İzleme listesine ekle
+  addToWatchlist(item, button);
+}
+
 // İzleme listesine öğe ekle
 async function addToWatchlist(item, button) {
   try {
@@ -1869,10 +1925,23 @@ function fillCustomSlider(slider, watchlist) {
              alt="${item.title}" onerror="this.src='${placeholderImage}'">
         <div class="media-card-content">
           <div class="media-card-title" title="${item.title}">${item.title}</div>
-          <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
-          ${item.totalSeasons ? 
-            `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
+          <div class="media-card-info">
+            <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
+            ${item.totalSeasons ? 
+              `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
+          </div>
         </div>
+      </div>
+      <div class="media-card-quick-action" data-id="${item.id}" data-type="${item.mediaType}">
+        <span class="quick-action-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 20h.01"></path>
+            <path d="M7 20v-4"></path>
+            <path d="M12 20v-8"></path>
+            <path d="M17 20V8"></path>
+            <path d="M22 4v16"></path>
+          </svg>
+        </span>
       </div>
     `;
     
@@ -1882,6 +1951,15 @@ function fillCustomSlider(slider, watchlist) {
       ratingAddButton.addEventListener('click', (e) => {
         e.stopPropagation(); // Kart tıklamasını engelle
         showRatingPopup(item, item.mediaType, ratingAddButton);
+      });
+    }
+    
+    // Hızlı aksiyon butonuna tıklama olayı ekle
+    const quickActionButton = card.querySelector('.media-card-quick-action');
+    if (quickActionButton) {
+      quickActionButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Kart tıklamasını engelle
+        showStatusPopup(item, item.mediaType, quickActionButton);
       });
     }
     
@@ -4183,5 +4261,163 @@ function replaceSearchResult(sourceButton, newResult, contentType, dialog) {
     console.error('Sonuç güncelleme hatası:', error);
     showNotification('Hata', 'İçerik güncellenirken bir hata oluştu: ' + error.message, 'error');
   }
+}
+
+// Durum değiştirme popup'ını göster
+function showStatusPopup(item, mediaType, button) {
+  // Eğer popup zaten varsa kaldır
+  const existingPopup = document.querySelector('.status-popup');
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+
+  // Mevcut watchlist'i al
+  const watchlist = window.currentWatchlist;
+  if (!watchlist || !watchlist.sliders || !watchlist.sliders[mediaType]) {
+    showNotification('Hata', 'Slider bilgileri bulunamadı', 'error');
+    return;
+  }
+
+  // Popup elementi oluştur
+  const popup = document.createElement('div');
+  popup.className = 'status-popup';
+  
+  // Popup içeriği - başlığı kaldırdım
+  popup.innerHTML = `
+    <div class="status-popup-list"></div>
+  `;
+  
+  const popupList = popup.querySelector('.status-popup-list');
+  
+  // Sliderları index'e göre sırala
+  const sliders = [...watchlist.sliders[mediaType]].sort((a, b) => a.index - b.index);
+  
+  // Gruplandırma için kategoriler
+  const categories = {};
+  
+  // Her slider için listeye ekle
+  sliders.forEach(slider => {
+    // Slider'ı kategorisine göre grupla
+    if (!categories[slider.category]) {
+      categories[slider.category] = [];
+    }
+    categories[slider.category].push(slider);
+  });
+  
+  // Her kategori için
+  Object.entries(categories).forEach(([category, categorySliders]) => {
+    // Kategori başlığı ekle (varsa)
+    if (category && category !== 'undefined' && category !== 'null') {
+      const categoryTitle = document.createElement('div');
+      categoryTitle.className = 'status-popup-category';
+      categoryTitle.textContent = category;
+      popupList.appendChild(categoryTitle);
+    }
+    
+    // Bu kategorideki sliderları ekle
+    categorySliders.forEach(slider => {
+      const listItem = document.createElement('div');
+      listItem.className = 'status-popup-item';
+      
+      // Eğer içerik bu slider'da ise active class ekle
+      if (item.status === slider.name) {
+        listItem.classList.add('active');
+      }
+      
+      listItem.innerHTML = `
+        <span class="status-popup-item-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 20h.01"></path>
+            <path d="M7 20v-4"></path>
+            <path d="M12 20v-8"></path>
+            <path d="M17 20V8"></path>
+            <path d="M22 4v16"></path>
+          </svg>
+        </span>
+        ${slider.name}
+      `;
+      
+      // Slider'a tıklama olayı ekle
+      listItem.addEventListener('click', async () => {
+        try {
+          // Eğer içerik zaten bu slider'da ise işlem yapma
+          if (item.status === slider.name) {
+            popup.remove();
+            return;
+          }
+          
+          // Mevcut watchlist'i al
+          const currentWatchlist = await window.watchflowAPI.getWatchlist();
+          
+          // İçeriği bul ve durumunu güncelle
+          const itemIndex = currentWatchlist[mediaType].findIndex(i => i.id === item.id);
+          
+          if (itemIndex !== -1) {
+            // İçeriğin durumunu güncelle
+            currentWatchlist[mediaType][itemIndex].status = slider.name;
+            
+            // Watchlist'i güncelle
+            const result = await window.watchflowAPI.updateWatchlist(currentWatchlist);
+            
+            if (result.success) {
+              showNotification('Başarılı', `İçerik "${slider.name}" listesine taşındı`, 'success');
+              
+              // Watchlist'i yeniden yükle
+              await loadWatchlist();
+            } else {
+              showNotification('Hata', 'Durum güncellenirken bir hata oluştu', 'error');
+            }
+          } else {
+            showNotification('Hata', 'İçerik bulunamadı', 'error');
+          }
+        } catch (error) {
+          console.error('Durum güncellenirken hata:', error);
+          showNotification('Hata', 'Durum güncellenirken bir hata oluştu: ' + error.message, 'error');
+        } finally {
+          // Popup'ı kapat
+          popup.remove();
+        }
+      });
+      
+      popupList.appendChild(listItem);
+    });
+  });
+  
+  // Popup'ı butona göre konumlandır ve DOM'a ekle
+  document.body.appendChild(popup);
+  
+  // Pozisyonu ayarla
+  const buttonRect = button.getBoundingClientRect();
+  const cardRect = button.closest('.media-card').getBoundingClientRect();
+  const popupRect = popup.getBoundingClientRect();
+  
+  // Popup'ı kart ortasına hizala
+  popup.style.bottom = window.innerHeight - buttonRect.bottom + 'px';
+  popup.style.right = window.innerWidth - cardRect.left - (cardRect.width / 2) - (popupRect.width / 2 + 4) + 'px';
+  
+  // Ekran sınırlarını kontrol et
+  const rightEdge = parseFloat(popup.style.right);
+  if (rightEdge < 10) {
+    popup.style.right = '10px'; // Sağ kenardan minimum 10px uzak olsun
+  }
+  
+  // Popup'ı aktif et (animasyon için setTimeout kullan)
+  setTimeout(() => {
+    popup.classList.add('active');
+  }, 10);
+  
+  // Popup dışına tıklandığında kapat
+  document.addEventListener('click', function closePopup(e) {
+    if (!popup.contains(e.target) && e.target !== button) {
+      popup.classList.remove('active');
+      
+      // Animasyonun bitmesini bekle ve kaldır
+      setTimeout(() => {
+        popup.remove();
+      }, 300);
+      
+      document.removeEventListener('click', closePopup);
+    }
+  });
 }
   

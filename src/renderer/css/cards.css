@@ -37,7 +37,7 @@
 
 .slider-content {
   display: flex;
-  gap: 20px;
+  gap: 15px;
   padding-bottom: 15px;
   transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
@@ -58,7 +58,7 @@
   transform: translateY(-50%);
   width: 36px;
   height: 36px;
-  background-color: #444;
+  background-color: rgba(30, 30, 30, 0.7);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -68,7 +68,7 @@
   cursor: pointer;
   z-index: 50;
   opacity: 0.85;
-  transition: background-color 0.2s, transform 0.2s;
+  transition: all 0.2s ease;
   border: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -109,7 +109,6 @@
 
 .slider-nav:active {
   transform: translateY(-50%) scale(0.95);
-  background-color: var(--hover-color);
 }
 
 .slider-nav-left {
@@ -165,219 +164,136 @@
   border: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
-/* Medya Kart Stili */
+/* Yeni Medya Kart Stili - Modern ve Minimalist */
 .media-card {
   position: relative;
   min-width: 160px;
   width: 160px;
-  height: 225px;
-  background-color: #333;
-  border-radius: 8px;
+  height: 240px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   cursor: pointer;
-  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
+  background-color: #1a1a1a;
   z-index: 1;
 }
 
 .media-card:hover {
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 6px 6px rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   z-index: 2;
 }
 
-/* Wrapper div for scaling */
 .media-card-inner {
   position: relative;
   width: 100%;
   height: 100%;
-  transform-origin: center center;
-  transform: scale(1);
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   overflow: hidden;
+  background-color: #1a1a1a;
 }
 
-.media-card:hover .media-card-inner {
-  transform: scale(1.05);
-}
-
-/* Tüm slayt içeriğine hover yapıldığında, hover OLMAYAN kartların küçülmesi */
-.slider-content:hover .media-card:not(:hover) {
-  transform: scale(0.93);
-  filter: brightness(0.85);
-  background-color: transparent;
-}
-
-.slider-content:hover .media-card:not(:hover) .media-card-inner {
-  transform: scale(1);
-  filter: brightness(0.85);
-  background-color: transparent;
-}
-
-.media-card:active {
-  transform: scale(0.98);
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.25);
-  transition: all 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.media-card:active .media-card-inner {
-  transform: scale(1);
-  transition: all 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
+/* Afiş/Görsel */
 .media-card-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: all 0.5s ease;
-  display: block;
-  filter: brightness(0.95);
-  position: relative;
-  z-index: 1;
-}
-
-.media-card:hover .media-card-image {
-  transform: scale(1.08);
-  filter: brightness(1.05) contrast(1.05);
-}
-
-/* Gradient kaplamayı içeren element */
-.media-card-inner::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 4px;
-  height: 0;
-  background: linear-gradient(to top, #ff4500, #ff8c00);
-  transition: height 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  z-index: 5;
-  border-radius: 0 2px 0 0;
-  opacity: 0;
-  box-shadow: 0 0 8px rgba(255, 69, 0, 0.5);
-}
-
-.media-card:hover .media-card-inner::before {
-  height: 35%;
-  opacity: 1;
-}
-
-/* Ana gradient elementi */
-.media-card-inner::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    to top, 
-    rgba(0, 0, 0, 0.95) 0%, 
-    rgba(0, 0, 0, 0.7) 30%,
-    rgba(0, 0, 0, 0.4) 50%,
-    rgba(0, 0, 0, 0) 70%
-  );
-  pointer-events: none;
-  z-index: 2;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
   opacity: 0.95;
 }
 
-.media-card:hover .media-card-inner::after {
+.media-card:hover .media-card-image {
   opacity: 1;
 }
 
-.media-card-content {
+/* Overlay - Mat efekt */
+.media-card-inner::before {
+  content: '';
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 16px 14px;
-  z-index: 3;
-  transition: all 0.3s ease;
-  transform: translateY(0);
+  height: 100%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.6) 40%,
+    rgba(0, 0, 0, 0.2) 80%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  z-index: 2;
 }
 
-.media-card:hover .media-card-content {
-  transform: translateY(-8px);
-  padding-left: 18px;
-}
-
-.media-card-title {
-  font-weight: 600;
-  margin-bottom: 8px;
-  font-size: 0.95rem;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 0.3px;
-  transition: all 0.3s ease;
-  transform-origin: left;
-  position: relative;
-  padding-bottom: 4px;
-}
-
-.media-card:hover .media-card-title {
-  transform: scale(1.05);
-  color: #ff7e4f;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* Başlık altındaki çizgi */
-.media-card-title::after {
+/* Vurgu Çizgisi */
+.media-card::after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 0;
   width: 0;
-  height: 2px;
-  background-color: #ff4500;
-  transition: width 0.3s ease 0.1s;
-  opacity: 0;
+  height: 3px;
+  background: var(--accent-color);
+  z-index: 10;
+  transition: width 0.3s ease;
 }
 
-.media-card:hover .media-card-title::after {
-  width: 40%;
-  opacity: 1;
+.media-card:hover::after {
+  width: 100%;
+}
+
+/* Bilgi kısmı (başlık, yıl, vs) */
+.media-card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.media-card-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 5px;
+  letter-spacing: 0.4px;
+}
+
+.media-card-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .media-card-year {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  transform-origin: left;
+  font-weight: 400;
+}
+
+/* Sezon Bilgisi */
+.media-card-seasons {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
-  opacity: 0.8;
+  gap: 3px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
-.media-card:hover .media-card-year {
-  color: rgba(255, 255, 255, 1);
-  transform: translateX(6px);
-  opacity: 1;
+.seasons-icon {
+  font-style: normal;
+  color: var(--accent-color);
+  font-size: 0.8rem;
 }
 
-/* Yıl yanında simge */
-.media-card-year::before {
-  content: '•';
-  display: inline-block;
-  margin-right: 6px;
-  color: #ff4500;
-  opacity: 0;
-  transform: scale(0);
-  transition: all 0.3s ease;
-}
-
-.media-card:hover .media-card-year::before {
-  opacity: 1;
-  transform: scale(1);
-}
-
+/* Puanlama Badge'leri */
 .media-card-ratings {
   position: absolute;
   top: 10px;
@@ -385,135 +301,173 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  z-index: 6;
-  opacity: 0.85;
-  transition: opacity 0.3s ease;
-}
-
-.media-card:hover .media-card-ratings {
-  opacity: 1;
+  z-index: 5;
 }
 
 .media-card-rating {
-  padding: 2px 6px;
-  border-radius: var(--border-radius-sm);
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 3px 6px;
+  border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: white;
-  backdrop-filter: blur(3px);
+  color: #fff;
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease, transform 0.2s ease;
 }
 
 .media-card-rating.platform {
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
 .media-card-rating.user {
-  background-color: rgba(255, 69, 0, 0.6);
-}
-
-.media-card:hover .media-card-rating {
-  transform: translateY(2px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  background-color: rgba(var(--accent-color-rgb), 0.8);
 }
 
 .media-card-rating .star-icon {
   color: #ffc107;
-  font-size: 0.8rem;
-  margin-right: 3px;
+  margin-right: 4px;
 }
 
+/* Puan Ekleme Butonu */
 .media-card-rating-add {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: var(--border-radius-sm);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(2px);
-  z-index: 6;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  opacity: 0;
-  transform: translateY(-5px);
-}
-
-.media-card:hover .media-card-rating-add {
-  opacity: 1;
-  transform: translateY(0);
+  z-index: 5;
+  background-color: rgba(0, 0, 0, 0.6);
+  transition: background-color 0.3s ease;
 }
 
 .media-card-rating-add:hover {
-  background: rgba(255, 69, 0, 0.8);
-  transform: scale(1.1);
+  background-color: var(--accent-color);
 }
 
 .add-rating-icon {
+  color: #fff;
   font-size: 1rem;
-  font-weight: bold;
 }
 
-/* Sezon bilgisi stilleri */
-.media-card-seasons {
+/* Durum/Aksiyon Butonu */
+.media-card-quick-action {
   position: absolute;
-  bottom: 10px;
   right: 10px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  font-size: 0.75rem;
-  padding: 2px 6px;
-  border-radius: var(--border-radius-sm);
+  bottom: 60px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 3px;
-  backdrop-filter: blur(2px);
-  transition: all 0.3s ease;
-  opacity: 0.8;
-  z-index: 6;
+  justify-content: center;
+  z-index: 5;
+  background-color: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.3s ease, background-color 0.3s ease;
 }
 
-.media-card:hover .media-card-seasons {
+.media-card:hover .media-card-quick-action {
   opacity: 1;
-  background: rgba(0, 0, 0, 0.8);
 }
 
-/* Yeni slider ekleme butonu */
-.add-slider-btn {
-  background-color: var(--secondary-bg);
-  color: var(--primary-text);
-  border: 1px solid var(--accent-color);
-  padding: 8px 15px;
-  border-radius: var(--border-radius-sm);
-  font-size: 14px;
+.media-card-quick-action:hover {
+  background-color: var(--accent-color);
+}
+
+.quick-action-icon {
+  color: #fff;
+  font-size: 1rem;
+}
+
+/* Statü Popup Menüsü */
+.status-popup {
+  position: fixed;
+  min-width: 160px;
+  background-color: #202020;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.status-popup.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.status-popup-list {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+}
+
+.status-popup-item {
+  padding: 10px 16px;
+  color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
-  transition: var(--transition-standard);
+  transition: all 0.15s ease;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 0;
+  position: relative;
 }
 
-.add-slider-btn:hover {
+.status-popup-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.status-popup-item.active {
   background-color: var(--accent-color);
   color: white;
 }
 
-/* Boş slider mesajı stili */
+.status-popup-item.active::before {
+  content: "✓";
+  position: absolute;
+  right: 16px;
+  font-size: 0.9rem;
+}
+
+.status-popup-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-color);
+}
+
+.status-popup-item.active .status-popup-item-icon {
+  color: white;
+}
+
+/* Kategori ayırıcı */
+.status-popup-category {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.5px;
+}
+
+/* Boş slider mesajı */
 .empty-slider-message {
   width: 100%;
-  padding: 40px 20px;
+  padding: 20px;
   text-align: center;
   color: var(--secondary-text);
   font-style: italic;
-  font-size: 0.9rem;
-  background-color: rgba(255, 255, 255, 0.03);
-  border-radius: var(--border-radius-md);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
