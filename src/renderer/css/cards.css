@@ -170,17 +170,18 @@
   min-width: 160px;
   width: 160px;
   height: 240px;
-  border-radius: 12px;
+  border-radius: var(--border-radius-md);
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: box-shadow 0.3s ease;
-  background-color: #1a1a1a;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition-standard);
+  background-color: var(--card-bg);
   z-index: 1;
 }
 
 .media-card:hover {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+  transform: translateY(-4px);
   z-index: 2;
 }
 
@@ -189,7 +190,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #1a1a1a;
+  background-color: var(--card-bg);
 }
 
 /* Afiş/Görsel */
@@ -197,12 +198,13 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: all 0.3s ease;
+  transition: var(--transition-standard);
   opacity: 0.95;
 }
 
 .media-card:hover .media-card-image {
   opacity: 1;
+  transform: scale(1.02);
 }
 
 /* Overlay - Mat efekt */
@@ -215,12 +217,18 @@
   height: 100%;
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(0, 0, 0, 0.6) 40%,
-    rgba(0, 0, 0, 0.2) 80%,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.7) 30%,
+    rgba(0, 0, 0, 0.4) 60%,
     rgba(0, 0, 0, 0) 100%
   );
   z-index: 2;
+  opacity: 0.9;
+  transition: var(--transition-standard);
+}
+
+.media-card:hover .media-card-inner::before {
+  opacity: 1;
 }
 
 /* Vurgu Çizgisi */
@@ -251,17 +259,23 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  transition: var(--transition-standard);
+}
+
+.media-card:hover .media-card-content {
+  transform: translateY(-3px);
 }
 
 .media-card-title {
   font-weight: 600;
   font-size: 1rem;
-  color: #fff;
+  color: var(--primary-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 5px;
   letter-spacing: 0.4px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .media-card-info {
@@ -272,15 +286,16 @@
 }
 
 .media-card-year {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--secondary-text);
   font-size: 0.8rem;
   font-weight: 400;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* Sezon Bilgisi */
 .media-card-seasons {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--primary-text);
   display: flex;
   align-items: center;
   gap: 3px;
@@ -310,9 +325,14 @@
   border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--primary-text);
   display: flex;
   align-items: center;
+  transition: var(--transition-standard);
+}
+
+.media-card:hover .media-card-rating {
+  transform: translateX(-3px);
 }
 
 .media-card-rating.platform {
@@ -324,7 +344,7 @@
 }
 
 .media-card-rating .star-icon {
-  color: #ffc107;
+  color: var(--star-color);
   margin-right: 4px;
 }
 
@@ -341,15 +361,21 @@
   justify-content: center;
   z-index: 5;
   background-color: rgba(0, 0, 0, 0.6);
-  transition: background-color 0.3s ease;
+  transition: var(--transition-standard);
+  opacity: 0.7;
+}
+
+.media-card:hover .media-card-rating-add {
+  opacity: 1;
 }
 
 .media-card-rating-add:hover {
   background-color: var(--accent-color);
+  transform: scale(1.1);
 }
 
 .add-rating-icon {
-  color: #fff;
+  color: var(--primary-text);
   font-size: 1rem;
 }
 
@@ -367,7 +393,7 @@
   z-index: 5;
   background-color: rgba(0, 0, 0, 0.6);
   opacity: 0;
-  transition: opacity 0.3s ease, background-color 0.3s ease;
+  transition: var(--transition-standard);
 }
 
 .media-card:hover .media-card-quick-action {
@@ -376,10 +402,11 @@
 
 .media-card-quick-action:hover {
   background-color: var(--accent-color);
+  transform: scale(1.1);
 }
 
 .quick-action-icon {
-  color: #fff;
+  color: var(--primary-text);
   font-size: 1rem;
 }
 
@@ -387,16 +414,17 @@
 .status-popup {
   position: fixed;
   min-width: 160px;
-  background-color: #202020;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  background-color: rgba(26, 26, 26, 0.95);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--popup-shadow);
   overflow: hidden;
   z-index: 1000;
   opacity: 0;
   transform: translateY(10px) scale(0.95);
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: var(--transition-standard);
+  border: 1px solid var(--border-color);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   max-height: 300px;
   overflow-y: auto;
 }
@@ -414,9 +442,9 @@
 
 .status-popup-item {
   padding: 10px 16px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--primary-text);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-standard);
   font-size: 0.95rem;
   display: flex;
   align-items: center;
@@ -457,7 +485,7 @@
   padding: 6px 12px;
   font-size: 0.75rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--secondary-text);
   background-color: rgba(0, 0, 0, 0.2);
   letter-spacing: 0.5px;
 }
