@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.4](https://github.com/macidko/Watchflow/compare/v0.5.3...v0.5.4) (2025-05-09)
+
+
+### Bug Fixes
+
+* **watchlist:** Updated scoring system and added error handling for bulk additions. ([2a84076](https://github.com/macidko/Watchflow/commit/2a840766ab8d9256515b8ad399e087e19c3e6536))
+
 ### [0.5.3](https://github.com/macidko/Watchflow/compare/v0.5.2...v0.5.3) (2025-05-08)
 
 
