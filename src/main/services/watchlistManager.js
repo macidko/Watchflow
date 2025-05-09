@@ -385,9 +385,10 @@ const addToWatchlist = async (item) => {
       dateAdded: item.dateAdded || new Date().toISOString()
     };
     
-    // Rating bilgisi varsa ekle
-    if (item.rating) {
+    // Rating bilgisi varsa ekle (0 değeri de geçerli bir puan olduğu için 0 kontrolü de ekledik)
+    if (item.rating !== undefined && item.rating !== null) {
       itemToSave.rating = item.rating;
+      console.log(`${item.title} içeriğine ${item.rating} puanı ekleniyor`);
     }
     
     // Dizi ve anime için sezon bilgilerini ekle
@@ -442,21 +443,29 @@ const bulkAddToWatchlist = async (items) => {
     let errorCount = 0;
     let errorMessages = [];
     
+    console.log(`Toplu ekleme başlatılıyor: ${items.length} içerik eklenecek`);
+    
     // Her bir öğe için addToWatchlist fonksiyonunu çağır
     for (const item of items) {
       try {
+        console.log(`İçerik işleniyor: "${item.title}" (${item.type}), ID: ${item.id}, Puan: ${item.rating}`);
         const result = await addToWatchlist(item);
         if (result.success) {
           successCount++;
+          console.log(`İçerik başarıyla eklendi: "${item.title}"`);
         } else {
           errorCount++;
           errorMessages.push(`${item.title}: ${result.error}`);
+          console.error(`İçerik eklenemedi: "${item.title}" - Hata: ${result.error}`);
         }
       } catch (err) {
         errorCount++;
         errorMessages.push(`${item.title || 'Bilinmeyen içerik'}: ${err.message}`);
+        console.error(`İçerik eklenirken istisna oluştu: "${item.title || 'Bilinmeyen içerik'}" - Hata: ${err.message}`);
       }
     }
+    
+    console.log(`Toplu ekleme tamamlandı: ${successCount} başarılı, ${errorCount} başarısız`);
     
     return {
       success: true,

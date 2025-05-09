@@ -1374,8 +1374,8 @@ async function addToWatchlist(item, button) {
         }
         
         if (ratingData) {
-          // TMDB için vote_average, Jikan için score kullanılır
-          item.rating = ratingData.vote_average || ratingData.score || null;
+          // TMDB için voteAverage, Jikan için score kullanılır
+          item.rating = ratingData.voteAverage || ratingData.score || null;
         }
       } catch (error) {
         console.warn('Puan bilgisi alınamadı:', error);
@@ -3726,10 +3726,13 @@ async function addSelectedContents() {
                  (resultItem.poster_path && `https://image.tmdb.org/t/p/w500${resultItem.poster_path}`),
         year: resultItem.year || 
              (resultItem.release_date ? resultItem.release_date.substring(0, 4) : ''),
-        rating: resultItem.vote_average || resultItem.score || 0,
+        rating: resultItem.voteAverage || resultItem.score || 0,
         watchedEpisodes: [],
         totalSeasons: resultItem.totalSeasons || (resultItem.number_of_seasons || 0)
       };
+      
+      // Puanı kontrol edelim ve console'a yazdıralım (debug için)
+      console.log(`${displayTitle} içeriğinin puanı: ${watchStatus.rating}`);
       
       // Sonuçta sezon bilgisi varsa kullan, yoksa basit bir sezon bilgisi oluştur
       if (mediaType === 'tv' || mediaType === 'anime') {
@@ -3847,34 +3850,14 @@ async function addSelectedContents() {
   const statsDiv = document.getElementById('bulkAddStats');
   if (statsDiv) {
     statsDiv.innerHTML = `
-      <p>Toplam seçilen: ${totalSelected}</p>
-      <p>Başarıyla eklenen: ${successCount}</p>
-      <p>Hata oluşan: ${errorCount}</p>
+      <p>Toplam seçili: ${totalSelected}</p>
+      <p>Başarılı: ${successCount}</p>
+      <p>Başarısız: ${errorCount}</p>
+      ${errorCount > 0 ? '<div class="bulk-error-list"><h4>Hatalar:</h4><ul>' + 
+        errorMessages.map(msg => `<li>${msg}</li>`).join('') + 
+        '</ul></div>' : ''}
     `;
   }
-  
-  // Hata mesajları
-  if (errorCount > 0) {
-    const errorDiv = document.getElementById('bulkAddErrorMessage');
-    const errorDetailsDiv = document.getElementById('bulkAddErrorDetails');
-    
-    if (errorDiv) errorDiv.classList.remove('hidden');
-    
-    if (errorDetailsDiv) {
-      errorDetailsDiv.innerHTML = errorMessages.map(msg => `<p>${msg}</p>`).join('');
-    }
-  }
-  
-  // Bildirim
-  if (errorCount === 0) {
-    showNotification('Başarılı', 'Tüm içerikler başarıyla eklendi!', 'success');
-  } else {
-    showNotification('Uyarı', `${successCount} içerik eklendi, ${errorCount} içerik eklenemedi.`, 'warning');
-  }
-  
-  // Aktif sekmeyi yeniden göster (sayfayı yenileme)
-  const activeTabId = document.querySelector('.main-nav a.active').getAttribute('data-page');
-  showPage(activeTabId);
 }
 
 /**
