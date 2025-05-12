@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.0](https://github.com/macidko/Watchflow/compare/v0.5.4...v0.6.0) (2025-05-12)
+
+
+### Features
+
+* **ui:** Add "See All" modal, related anime addition, and auto-episode marking ([77af137](https://github.com/macidko/Watchflow/commit/77af137d1b2e8ec636291629779ab23f0fb2d2a3))
+
 ### [0.5.4](https://github.com/macidko/Watchflow/compare/v0.5.3...v0.5.4) (2025-05-09)
 
 
