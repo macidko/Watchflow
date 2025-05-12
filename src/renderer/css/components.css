@@ -469,4 +469,25 @@
     opacity: 0;
     transform: scale(0.9);
   }
+}
+
+/* Yedekleme Bilgi Mesajı */
+.backup-info-message {
+  background-color: rgba(52, 152, 219, 0.1);
+  border-left: 4px solid #3498db;
+  border-radius: var(--border-radius-sm);
+  padding: 15px;
+  margin-bottom: 20px;
+  color: var(--primary-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.backup-info-message p {
+  margin: 0 0 10px 0;
+}
+
+.backup-info-message p:last-child {
+  margin-bottom: 0;
+  font-weight: 500;
 } 

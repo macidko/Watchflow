@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const status = await window.watchflowAPI.checkServerStatus();
     console.log('API durumu:', status);
     
+    // Tümünü Gör özelliği için CSS stil ekle
+    addViewAllStyles();
+    
     // Uygulama sürümünü göster
     loadAppVersion();
     
@@ -36,12 +39,285 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Çark ikonları için tıklama olaylarını ayarla
     setupSettingsIcons();
     
+    // Yedekleme kontrolü yap
+    checkBackupReminder();
     
   } catch (error) {
     console.error('API bağlantı hatası:', error);
     showError('API bağlantısı kurulamadı. ' + error.message);
   }
 });
+
+// Tümünü Gör CSS stillerini ekle
+function addViewAllStyles() {
+  // Stil etiketi oluştur
+  const styleElement = document.createElement('style');
+  styleElement.id = 'view-all-styles';
+  
+  // Zaten eklenmiş mi kontrol et
+  if (document.getElementById('view-all-styles')) {
+    console.log('Tiller zaten eklenmiş, tekrar eklenmeyecek');
+    return;
+  }
+  
+  // Stilleri tümünü gör içeriğine ekle
+  styleElement.textContent = `
+    /* Slider başlığı yanında Tümünü Gör butonu */
+    .view-all-btn {
+      background-color: rgba(255, 69, 0, 0.8);
+      border: none;
+      border-radius: 4px;
+      color: #ffffff;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 5px 12px;
+      position: relative;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    
+    .view-all-btn:hover {
+      background-color: #ff4500;
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(255, 69, 0, 0.3);
+    }
+    
+    /* Tümünü Gör Overlay */
+    .view-all-overlay {
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      left: 0;
+      position: fixed;
+      right: 0;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .view-all-container {
+      background-color: #171717;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
+      max-width: 1200px;
+      width: 90%;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      animation: popIn 0.4s ease;
+    }
+    
+    @keyframes popIn {
+      0% {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    /* Header - başlık */
+    .view-all-header {
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 20px;
+      position: relative;
+      background-color: #1e1e1e;
+    }
+    
+    .view-all-header h2 {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: 0.3px;
+    }
+    
+    .view-all-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      border-radius: 50%;
+      color: #bbb;
+      cursor: pointer;
+      font-size: 20px;
+      height: 30px;
+      width: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .view-all-close:hover {
+      background-color: rgba(255, 69, 0, 0.5);
+      color: #fff;
+      transform: rotate(90deg);
+    }
+    
+    /* Filtreler bölümü */
+    .view-all-filters {
+      display: flex;
+      padding: 12px 20px;
+      background-color: #222;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .view-all-search {
+      position: relative;
+      flex: 1;
+      max-width: 300px;
+    }
+    
+    .view-all-search-input {
+      background-color: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      padding: 8px 14px 8px 36px;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+    
+    .view-all-search-input:focus {
+      border-color: #ff4500;
+      background-color: rgba(255, 255, 255, 0.08);
+      outline: none;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+      pointer-events: none;
+    }
+    
+    .view-all-sort {
+      position: relative;
+    }
+    
+    .view-all-sort-select {
+      appearance: none;
+      background-color: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: #ddd;
+      font-size: 14px;
+      padding: 8px 14px;
+      padding-right: 30px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .view-all-sort-select:focus {
+      border-color: #ff4500;
+      background-color: rgba(255, 255, 255, 0.08);
+      outline: none;
+    }
+    
+    .view-all-sort::after {
+      content: "▼";
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+      font-size: 10px;
+      pointer-events: none;
+    }
+    
+    /* İçerik alanı */
+    .view-all-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      scrollbar-width: thin;
+      scrollbar-color: #555 #222;
+    }
+    
+    .view-all-content::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .view-all-content::-webkit-scrollbar-track {
+      background: #222;
+    }
+    
+    .view-all-content::-webkit-scrollbar-thumb {
+      background-color: #555;
+      border-radius: 4px;
+    }
+    
+    /* Grid düzeni */
+    .view-all-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+    
+    /* Modal içinde media-card stilleri */
+    .view-all-grid .media-card {
+      height: 100%;
+      margin: 0;
+      transform-origin: center;
+    }
+    
+    .view-all-grid .media-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+      z-index: 5;
+    }
+    
+    .view-all-grid .media-card-image {
+      aspect-ratio: 2/3;
+      object-fit: cover;
+    }
+    
+    .view-all-grid .media-card-title {
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+    
+    .view-all-grid .media-card-info {
+      font-size: 11px;
+    }
+    
+    .view-all-grid .media-card-quick-action {
+      opacity: 0;
+    }
+    
+    .view-all-grid .media-card:hover .media-card-quick-action {
+      opacity: 1;
+    }
+    
+    .view-all-empty {
+      color: #999;
+      font-size: 16px;
+      margin-top: 30px;
+      text-align: center;
+      padding: 40px;
+      background-color: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+    }
+  `;
+  
+  // Style elementini head'e ekle
+  document.head.appendChild(styleElement);
+  console.log('Tümünü Gör stilleri başarıyla eklendi');
+}
 
 // Uygulama sürümünü package.json'dan oku ve göster
 async function loadAppVersion() {
@@ -174,14 +450,77 @@ function renderWatchlistItems(mediaType, items) {
     // Varolan slider container'larını kullan
     if (normalizedSliderName.includes("izleniyor") && watchingContainer && filteredItems.length > 0) {
       console.log(`${slider.name} için "izleniyor" slider'ına içerikler ekleniyor`);
+      
+      // Slider başlığını seç
+      const sliderSection = watchingContainer.closest('.slider-section');
+      if (sliderSection) {
+        const headerElement = sliderSection.querySelector('.slider-header');
+        if (headerElement && !headerElement.querySelector('.view-all-btn')) {
+          const viewAllBtn = document.createElement('button');
+          viewAllBtn.className = 'view-all-btn';
+          viewAllBtn.textContent = 'Tümünü Gör';
+          viewAllBtn.setAttribute('data-slider-name', slider.name);
+          viewAllBtn.setAttribute('data-media-type', mediaType);
+          headerElement.appendChild(viewAllBtn);
+          
+          // Event listener'ı burada doğrudan ekle
+          viewAllBtn.addEventListener('click', function() {
+            console.log(`Tümünü Gör butonuna tıklandı: ${slider.name}, ${mediaType}`);
+            showAllItems(slider.name, mediaType, filteredItems);
+          });
+        }
+      }
+      
       fillSlider(watchingContainer, filteredItems, mediaType, `${typePrefix}-watching`);
     } 
     else if (normalizedSliderName.includes("izlenecek") && plannedContainer && filteredItems.length > 0) {
       console.log(`${slider.name} için "izlenecek" slider'ına içerikler ekleniyor`);
+      
+      // Slider başlığını seç
+      const sliderSection = plannedContainer.closest('.slider-section');
+      if (sliderSection) {
+        const headerElement = sliderSection.querySelector('.slider-header');
+        if (headerElement && !headerElement.querySelector('.view-all-btn')) {
+          const viewAllBtn = document.createElement('button');
+          viewAllBtn.className = 'view-all-btn';
+          viewAllBtn.textContent = 'Tümünü Gör';
+          viewAllBtn.setAttribute('data-slider-name', slider.name);
+          viewAllBtn.setAttribute('data-media-type', mediaType);
+          headerElement.appendChild(viewAllBtn);
+          
+          // Event listener'ı burada doğrudan ekle
+          viewAllBtn.addEventListener('click', function() {
+            console.log(`Tümünü Gör butonuna tıklandı: ${slider.name}, ${mediaType}`);
+            showAllItems(slider.name, mediaType, filteredItems);
+          });
+        }
+      }
+      
       fillSlider(plannedContainer, filteredItems, mediaType, `${typePrefix}-plan`);
     }
     else if (normalizedSliderName.includes("izlendi") && completedContainer && filteredItems.length > 0) {
       console.log(`${slider.name} için "izlendi" slider'ına içerikler ekleniyor`);
+      
+      // Slider başlığını seç
+      const sliderSection = completedContainer.closest('.slider-section');
+      if (sliderSection) {
+        const headerElement = sliderSection.querySelector('.slider-header');
+        if (headerElement && !headerElement.querySelector('.view-all-btn')) {
+          const viewAllBtn = document.createElement('button');
+          viewAllBtn.className = 'view-all-btn';
+          viewAllBtn.textContent = 'Tümünü Gör';
+          viewAllBtn.setAttribute('data-slider-name', slider.name);
+          viewAllBtn.setAttribute('data-media-type', mediaType);
+          headerElement.appendChild(viewAllBtn);
+          
+          // Event listener'ı burada doğrudan ekle
+          viewAllBtn.addEventListener('click', function() {
+            console.log(`Tümünü Gör butonuna tıklandı: ${slider.name}, ${mediaType}`);
+            showAllItems(slider.name, mediaType, filteredItems);
+          });
+        }
+      }
+      
       fillSlider(completedContainer, filteredItems, mediaType, `${typePrefix}-completed`);
     }
     else {
@@ -217,6 +556,10 @@ function fillSlider(container, items, mediaType, sliderId) {
     // Kart elementi oluştur
     const card = document.createElement('div');
     card.className = 'media-card';
+    card.setAttribute('data-title', item.title.toLowerCase());
+    card.setAttribute('data-year', item.year || '0');
+    card.setAttribute('data-rating', item.rating || item.userRating || '0');
+    card.setAttribute('data-id', item.id); // Benzersiz item id'si ekleyelim
     
     // Puanlama bilgisi
     let ratingsHTML = '';
@@ -564,6 +907,120 @@ async function showMediaDetails(item, mediaType) {
     });
   });
   
+  // İlişkili anime kompakt kartlarına ekleme butonlarını bağla
+  const relatedAnimeAddButtons = popupOverlay.querySelectorAll('.related-anime-add');
+  relatedAnimeAddButtons.forEach(button => {
+    button.addEventListener('click', async (e) => {
+      e.stopPropagation(); // Olay yayılımını durdur
+      
+      try {
+        // Butona tıklanınca önce yükleniyor durumuna geçir
+        button.disabled = true;
+        button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
+        button.classList.add('loading');
+        
+        // Anime kartından verileri al
+        const animeCard = button.closest('.related-anime-compact');
+        const animeId = parseInt(animeCard.getAttribute('data-id'));
+        const animeTitle = animeCard.getAttribute('data-title');
+        let animeImageUrl = animeCard.querySelector('img').src;
+        const animeYear = animeCard.getAttribute('data-year') || '';
+        const animeEpisodes = parseInt(animeCard.getAttribute('data-episodes') || '0');
+        
+        // small görsel URL'ini medium ile değiştir (anilist için)
+        if (animeImageUrl.includes('/small/')) {
+          animeImageUrl = animeImageUrl.replace('/small/', '/medium/');
+          console.log('Görsel URL medium boyutuna yükseltildi:', animeImageUrl);
+        }
+        
+        console.log(`İlişkili anime ekleniyor:`, {
+          id: animeId,
+          title: animeTitle,
+          imageUrl: animeImageUrl,
+          year: animeYear, 
+          episodes: animeEpisodes
+        });
+        
+        // 1. Önce mevcut watchlist'i al
+        const currentWatchlist = await window.watchflowAPI.getWatchlist();
+        
+        // 2. Bu anime zaten eklenmişse hata bildir ve işlemi sonlandır
+        const existingAnime = currentWatchlist.anime.find(a => a.id === animeId);
+        if (existingAnime) {
+          console.log(`Bu anime zaten izleme listesinde: ${animeTitle}`);
+          
+          // Butonu eklendi olarak işaretle
+          button.classList.remove('loading');
+          button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+          button.title = 'İzleme Listesinde Zaten Var';
+          button.classList.add('added');
+          
+          // Bildirim göster
+          showNotification('Bilgi', `"${animeTitle}" zaten izleme listenizde bulunuyor.`, 'info');
+          return;
+        }
+        
+        // 3. API'ye gönderilecek nesne formatını kesin olarak doğru şekilde oluştur
+        const animeItem = {
+          id: animeId,
+          title: animeTitle,
+          imageUrl: animeImageUrl,
+          type: 'anime',
+          status: 'İzlenecek' // Doğrudan izlenecek kategorisine ekle
+        };
+        
+        // Opsiyonel alanları null veya undefined değilse ekle
+        if (animeYear) animeItem.year = animeYear;
+        if (animeEpisodes) animeItem.episodes = animeEpisodes;
+        
+        console.log('API\'ye gönderilecek nesne:', animeItem);
+        
+        // 4. Doğrudan API çağrısı yap - preload üzerinden
+        const result = await window.watchflowAPI.addToWatchlist(animeItem);
+        console.log(`İlişkili anime ekleme sonucu:`, result);
+        
+        // 5. Sonucu işle ve UI'ı güncelle
+        if (result.success) {
+          // Başarı durumunda
+          console.log(`İlişkili anime "${animeTitle}" başarıyla izleme listesine eklendi`);
+          
+          // İzleme listesini yenile
+          await loadWatchlist();
+          
+          // Butonu başarılı durumuna getir
+          button.classList.remove('loading');
+          button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+          button.title = 'İzleme Listesine Eklendi';
+          button.classList.add('added');
+          
+          // Başarı bildirimi göster
+          showNotification('Başarılı', `"${animeTitle}" izleme listesine eklendi.`, 'success');
+        } else {
+          // Hata durumunda
+          console.error(`İlişkili anime izleme listesine eklenirken hata:`, result.error);
+          
+          // Butonu normale döndür
+          button.disabled = false;
+          button.classList.remove('loading');
+          button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
+          
+          // Hata bildirimi göster
+          showNotification('Hata', `"${animeTitle}" izleme listesine eklenirken bir hata oluştu: ${result.error || 'Bilinmeyen hata'}`, 'error');
+        }
+      } catch (error) {
+        console.error('İlişkili anime izleme listesine eklenirken istisna oluştu:', error);
+        
+        // Butonu normale döndür
+        button.disabled = false;
+        button.classList.remove('loading');
+        button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
+        
+        // Hata bildirimi göster
+        showNotification('Hata', 'İlişkili anime izleme listesine eklenirken bir hata oluştu: ' + error.message, 'error');
+      }
+    });
+  });
+  
   // Yıldız derecelendirme sistemine olay ekle
   const ratingStars = popupOverlay.querySelector('.rating-stars');
   if (ratingStars) {
@@ -614,10 +1071,69 @@ async function showMediaDetails(item, mediaType) {
             // Ana nesnedeki değeri güncelle
             item.userRating = rating;
             
-            // Tüm izleme listesini yenile
-            await loadWatchlist();
+            // Bu görevi daha güvenli ve basit bir şekilde yapalım
+            // Eğer açık bir modal varsa, içinde bu içeriğe ait kartı bulup güncelle
+            const viewAllOverlay = document.querySelector('.view-all-overlay');
+            if (viewAllOverlay) {
+              console.log(`Modal içindeki kart güncelleniyor: ID=${item.id}, Rating=${rating}`);
+              
+              // Tüm kartları döngüyle kontrol edelim
+              const cards = viewAllOverlay.querySelectorAll('.media-card');
+              cards.forEach(card => {
+                // Kart içindeki data-id ile item.id eşleşiyor mu diye kontrol et
+                const cardButton = card.querySelector(`.media-card-rating-add[data-id="${item.id}"]`);
+                const quickActionButton = card.querySelector(`.media-card-quick-action[data-id="${item.id}"]`);
+                
+                // Eğer bu kart doğru içeriğe aitse
+                if (cardButton || quickActionButton) {
+                  console.log(`Eşleşen kart bulundu, güncelleniyor`);
+                  
+                  // Puanlama değeri özniteliğini güncelle
+                  card.setAttribute('data-rating', rating.toString());
+                  
+                  // Puan ekleme butonunu kaldır
+                  if (cardButton) {
+                    cardButton.remove();
+                  }
+                  
+                  // Yeni puan göstergesini oluştur veya güncelle
+                  const ratingsContainer = card.querySelector('.media-card-ratings');
+                  if (ratingsContainer) {
+                    // Kullanıcı puanı elementi var mı diye kontrol et
+                    let userRatingElement = ratingsContainer.querySelector('.media-card-rating.user');
+                    
+                    if (userRatingElement) {
+                      // Varsa içeriğini güncelle
+                      userRatingElement.innerHTML = `<span class="star-icon">★</span> ${Number(rating).toFixed(1)}`;
+                    } else {
+                      // Yoksa yeni bir element oluştur
+                      const userRatingHTML = `<div class="media-card-rating user">
+                        <span class="star-icon">★</span> ${Number(rating).toFixed(1)}
+                      </div>`;
+                      ratingsContainer.insertAdjacentHTML('beforeend', userRatingHTML);
+                    }
+                  } else {
+                    // Ratings container yoksa oluştur
+                    const ratingsHTML = `<div class="media-card-ratings">
+                      <div class="media-card-rating user">
+                        <span class="star-icon">★</span> ${Number(rating).toFixed(1)}
+                      </div>
+                    </div>`;
+                    
+                    // Kartın iç kısmının başına ekle
+                    const cardInner = card.querySelector('.media-card-inner');
+                    if (cardInner) {
+                      cardInner.insertAdjacentHTML('afterbegin', ratingsHTML);
+                    }
+                  }
+                }
+              });
+            }
+            
+            // Tüm izleme listesini arka planda güncelle
+            loadWatchlist();
           }
-    } catch (error) {
+        } catch (error) {
           console.error('Puan güncellenirken hata:', error);
           showNotification('Hata', 'Puan güncellenirken bir hata oluştu: ' + error.message, 'error');
         }
@@ -694,6 +1210,47 @@ async function showMediaDetails(item, mediaType) {
       
       // Buton durumunu değiştir
       const isWatched = button.classList.toggle('watched');
+      
+      // Seçilen bölümden önceki/sonraki bölümleri de frontend'de güncelle
+      if (isWatched) {
+        // Bu bölümden önceki tüm bölümleri işaretle
+        episodeButtons.forEach(btn => {
+          const btnSeasonNumber = parseInt(btn.getAttribute('data-season'));
+          const btnEpisodeNumber = parseInt(btn.getAttribute('data-episode'));
+          
+          // Önceki sezonların tüm bölümlerini işaretle
+          if (btnSeasonNumber < seasonNumber) {
+            if (!btn.classList.contains('watched')) {
+              btn.classList.add('watched');
+            }
+          }
+          // Aynı sezondaki önceki bölümleri işaretle
+          else if (btnSeasonNumber === seasonNumber && btnEpisodeNumber < episodeNumber) {
+            if (!btn.classList.contains('watched')) {
+              btn.classList.add('watched');
+            }
+          }
+        });
+      } else {
+        // Bu bölümden sonraki tüm bölümlerin işaretini kaldır
+        episodeButtons.forEach(btn => {
+          const btnSeasonNumber = parseInt(btn.getAttribute('data-season'));
+          const btnEpisodeNumber = parseInt(btn.getAttribute('data-episode'));
+          
+          // Sonraki sezonların tüm bölümlerinin işaretini kaldır
+          if (btnSeasonNumber > seasonNumber) {
+            if (btn.classList.contains('watched')) {
+              btn.classList.remove('watched');
+            }
+          }
+          // Aynı sezondaki sonraki bölümlerin işaretini kaldır
+          else if (btnSeasonNumber === seasonNumber && btnEpisodeNumber > episodeNumber) {
+            if (btn.classList.contains('watched')) {
+              btn.classList.remove('watched');
+            }
+          }
+        });
+      }
       
       // API'ye bilgiyi gönder ve watchlist.json'u güncelle
       try {
@@ -1473,6 +2030,25 @@ function setupSettingsPage() {
   const exportWatchlistBtn = document.getElementById('exportWatchlist');
   const exportMessage = document.getElementById('exportMessage');
   
+  // Yedekleme hatırlatıcısı için bilgi metni ekle
+  const backupInfoContainer = document.getElementById('exportContainer');
+  if (backupInfoContainer) {
+    // Yedekleme bilgi metni
+    const backupInfoElement = document.createElement('div');
+    backupInfoElement.className = 'backup-info-message';
+    backupInfoElement.innerHTML = `
+      <p>Verilerinizi kaybetmemek için düzenli olarak yedekleme yapmanız önerilir. 
+      Yedeklediğiniz dosyayı güvenli bir yerde (harici disk, bulut depolama vb.) saklamanız önemlidir.</p>
+      <p id="lastBackupInfo">Son yedekleme: Yedekleme yapılmamış</p>
+    `;
+    
+    // Bilgi metnini export container'a ekle
+    backupInfoContainer.insertBefore(backupInfoElement, exportWatchlistBtn);
+
+    // Son yedekleme tarihini göster
+    updateLastBackupInfo();
+  }
+  
   // Mevcut API anahtarlarını yükle
   loadApiKeys();
   
@@ -1543,6 +2119,15 @@ function setupSettingsPage() {
       
       if (result.success) {
         showMessage(exportMessage, `İzleme listesi başarıyla dışa aktarıldı: ${result.path}`, 'success');
+        showNotification(
+          'Yedekleme Başarılı', 
+          'Yedekleme başarıyla tamamlandı. Bu dosyayı güvenli bir yerde (harici disk, bulut depolama vb.) saklamanız önerilir.',
+          'success',
+          8000
+        );
+        
+        // Son yedekleme tarihini güncelle
+        updateLastBackupInfo();
         
         // Mesajı belirli bir süre sonra otomatik olarak gizle
         setTimeout(() => {
@@ -1559,6 +2144,27 @@ function setupSettingsPage() {
       exportWatchlistBtn.textContent = 'İzleme Listesini Dışa Aktar';
     }
   });
+}
+
+// Son yedekleme bilgisini güncelle
+async function updateLastBackupInfo() {
+  try {
+    const lastBackupDate = await window.watchflowAPI.getLastBackupDate();
+    const lastBackupInfo = document.getElementById('lastBackupInfo');
+    
+    if (lastBackupInfo) {
+      if (lastBackupDate) {
+        // Tarihi formatlayarak göster
+        const date = new Date(lastBackupDate);
+        const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+        lastBackupInfo.textContent = `Son yedekleme: ${formattedDate}`;
+      } else {
+        lastBackupInfo.textContent = 'Son yedekleme: Yedekleme yapılmamış';
+      }
+    }
+  } catch (error) {
+    console.error('Son yedekleme bilgisi güncellenirken hata:', error);
+  }
 }
 
 // Mevcut API anahtarlarını yükle
@@ -1743,8 +2349,67 @@ function showRatingPopup(item, mediaType, button) {
           // Ana nesnedeki değeri güncelle
           item.userRating = rating;
           
-          // Tüm izleme listesini yenile
-          await loadWatchlist();
+          // Bu görevi daha güvenli ve basit bir şekilde yapalım
+          // Eğer açık bir modal varsa, içinde bu içeriğe ait kartı bulup güncelle
+          const viewAllOverlay = document.querySelector('.view-all-overlay');
+          if (viewAllOverlay) {
+            console.log(`Modal içindeki kart güncelleniyor: ID=${item.id}, Rating=${rating}`);
+            
+            // Tüm kartları döngüyle kontrol edelim
+            const cards = viewAllOverlay.querySelectorAll('.media-card');
+            cards.forEach(card => {
+              // Kart içindeki data-id ile item.id eşleşiyor mu diye kontrol et
+              const cardButton = card.querySelector(`.media-card-rating-add[data-id="${item.id}"]`);
+              const quickActionButton = card.querySelector(`.media-card-quick-action[data-id="${item.id}"]`);
+              
+              // Eğer bu kart doğru içeriğe aitse
+              if (cardButton || quickActionButton) {
+                console.log(`Eşleşen kart bulundu, güncelleniyor`);
+                
+                // Puanlama değeri özniteliğini güncelle
+                card.setAttribute('data-rating', rating.toString());
+                
+                // Puan ekleme butonunu kaldır
+                if (cardButton) {
+                  cardButton.remove();
+                }
+                
+                // Yeni puan göstergesini oluştur veya güncelle
+                const ratingsContainer = card.querySelector('.media-card-ratings');
+                if (ratingsContainer) {
+                  // Kullanıcı puanı elementi var mı diye kontrol et
+                  let userRatingElement = ratingsContainer.querySelector('.media-card-rating.user');
+                  
+                  if (userRatingElement) {
+                    // Varsa içeriğini güncelle
+                    userRatingElement.innerHTML = `<span class="star-icon">★</span> ${Number(rating).toFixed(1)}`;
+                  } else {
+                    // Yoksa yeni bir element oluştur
+                    const userRatingHTML = `<div class="media-card-rating user">
+                      <span class="star-icon">★</span> ${Number(rating).toFixed(1)}
+                    </div>`;
+                    ratingsContainer.insertAdjacentHTML('beforeend', userRatingHTML);
+                  }
+                } else {
+                  // Ratings container yoksa oluştur
+                  const ratingsHTML = `<div class="media-card-ratings">
+                    <div class="media-card-rating user">
+                      <span class="star-icon">★</span> ${Number(rating).toFixed(1)}
+                    </div>
+                  </div>`;
+                  
+                  // Kartın iç kısmının başına ekle
+                  const cardInner = card.querySelector('.media-card-inner');
+                  if (cardInner) {
+                    cardInner.insertAdjacentHTML('afterbegin', ratingsHTML);
+                  }
+                }
+              }
+            });
+          }
+          
+          // Tüm izleme listesini arka planda güncelle
+          loadWatchlist();
         }
       } catch (error) {
         console.error('Puan güncellenirken hata:', error);
@@ -1793,6 +2458,9 @@ function renderCustomSliders(watchlist) {
       
       // Her slider için
       categorySliders.forEach(slider => {
+        // Slider için filtrelenmiş öğeleri al
+        const filteredItems = watchlist[category] ? watchlist[category].filter(item => item.status === slider.name) : [];
+        
         // Özel slider section oluştur
         const sliderSection = document.createElement('div');
         sliderSection.className = 'slider-section';
@@ -1802,19 +2470,34 @@ function renderCustomSliders(watchlist) {
         sliderSection.innerHTML = `
           <div class="slider-header">
             <h3>${slider.name}</h3>
-            </div>
           </div>
           <div class="slider-container">
             <div class="slider-content" id="${slider.id}"></div>
           </div>
         `;
         
+        // Tümünü Gör butonunu ayrıca ekleyelim
+        const headerElement = sliderSection.querySelector('.slider-header');
+        if (headerElement) {
+          const viewAllBtn = document.createElement('button');
+          viewAllBtn.className = 'view-all-btn';
+          viewAllBtn.textContent = 'Tümünü Gör';
+          viewAllBtn.setAttribute('data-slider-name', slider.name);
+          viewAllBtn.setAttribute('data-media-type', category);
+          headerElement.appendChild(viewAllBtn);
+          
+          // Event listener'ı burada doğrudan ekle
+          viewAllBtn.addEventListener('click', function() {
+            console.log(`Tümünü Gör butonuna tıklandı: ${slider.name}, ${category}`);
+            showAllItems(slider.name, category, filteredItems);
+          });
+        }
+        
         // Slider'ı sayfaya ekle
         pageContainer.appendChild(sliderSection);
         
         // Slider için içerik oluşturma
         fillSliderContent(slider.id, category, watchlist);
-        
       });
     }
   });
@@ -3969,8 +4652,17 @@ function generateRelatedAnimeHTML(relatedData) {
   let html = '<div class="related-anime-container">';
   html += '<h3>İlişkili Animeler</h3>';
   
+  // Boş ilişki bölümü sayacı
+  let emptyRelationsCount = 0;
+  
   // Her bir ilişki türü için bir bölüm oluştur
   relatedData.forEach(relation => {
+    // Bu ilişki türünde hiç anime yoksa, gösterme
+    if (!relation.entries || relation.entries.length === 0) {
+      emptyRelationsCount++;
+      return;
+    }
+    
     const relationName = relationTranslations[relation.relation] || relation.relation;
     html += `<div class="related-anime-section">`;
     html += `<h4>${relationName}</h4>`;
@@ -3990,15 +4682,15 @@ function generateRelatedAnimeHTML(relatedData) {
         default: animeType = anime.format || ''; 
       }
       
-      // Anime kartı oluştur
+      // Kompakt anime kartı oluştur
       html += `
-        <div class="related-anime-card" 
+        <div class="related-anime-compact" 
           data-id="${anime.id}" 
-          data-title="${anime.title}" 
+          data-title="${anime.title.replace(/"/g, '&quot;')}" 
           data-year="${anime.year || ''}" 
           data-episodes="${anime.episodes || 0}">
-          <div class="related-anime-image">
-            <img src="${anime.imageUrl || '/assets/no-image.png'}" alt="${anime.title}">
+          <div class="related-anime-thumbnail">
+            <img src="${anime.imageUrl || '/assets/no-image.png'}" alt="${anime.title.replace(/"/g, '&quot;')}">
           </div>
           <div class="related-anime-info">
             <div class="related-anime-title">${anime.title}</div>
@@ -4008,12 +4700,22 @@ function generateRelatedAnimeHTML(relatedData) {
               ${anime.episodes ? `<span class="related-anime-episodes">${anime.episodes} Bölüm</span>` : ''}
             </div>
           </div>
+          <div class="related-anime-actions">
+            <button class="related-anime-add" title="İzleme Listesine Ekle">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+            </button>
+          </div>
         </div>
       `;
     });
     
     html += `</div></div>`;
   });
+  
+  // Eğer hiç ilişki bulunamadıysa, bilgi mesajı göster
+  if (emptyRelationsCount === relatedData.length) {
+    html += `<div class="empty-related-message">Bu anime için ilişkili içerik bulunamadı.</div>`;
+  }
   
   html += '</div>';
   return html;
@@ -4401,6 +5103,342 @@ function showStatusPopup(item, mediaType, button) {
       
       document.removeEventListener('click', closePopup);
     }
+  });
+}
+
+// Son yedekleme tarihini kontrol et ve gerekirse hatırlatma göster
+async function checkBackupReminder() {
+  try {
+    const lastBackupDate = await window.watchflowAPI.getLastBackupDate();
+    
+    if (!lastBackupDate) {
+      // Hiç yedekleme yapılmamışsa, hatırlatma göster
+      showNotification(
+        'Yedekleme Hatırlatıcısı', 
+        'Verilerinizi kaybetmemek için düzenli olarak yedekleme yapmanızı öneririz.',
+        'info',
+        8000
+      );
+      return;
+    }
+    
+    // Son yedekleme tarihini kontrol et
+    const lastBackup = new Date(lastBackupDate);
+    const now = new Date();
+    const diffDays = Math.floor((now - lastBackup) / (1000 * 60 * 60 * 24));
+    
+    // 30 günden fazla zaman geçmişse hatırlatma göster
+    if (diffDays > 30) {
+      showNotification(
+        'Yedekleme Hatırlatıcısı', 
+        `Son yedeklemenizin üzerinden ${diffDays} gün geçti. Verilerinizi yedeklemeyi unutmayın.`,
+        'warning',
+        10000
+      );
+    }
+  } catch (error) {
+    console.error('Yedekleme kontrolü yapılırken hata:', error);
+  }
+}
+
+// Belirli bir kategorideki tüm içerikleri göster
+function showAllItems(sliderName, mediaType, items) {
+  console.log(`showAllItems fonksiyonu çağrıldı: ${sliderName}, ${mediaType}, ${items.length} içerik`);
+  
+  // Mevcut overlay'i kontrol et ve kaldır
+  const existingOverlay = document.querySelector('.view-all-overlay');
+  if (existingOverlay) {
+    console.log('Varolan overlay kaldırılıyor');
+    existingOverlay.remove();
+  }
+  
+  // İçerik başlıklarını belirle
+  const mediaTypeTitle = mediaType === 'movie' ? 'Film' : mediaType === 'tv' ? 'Dizi' : 'Anime';
+  
+  // Overlay oluştur
+  const overlay = document.createElement('div');
+  overlay.className = 'view-all-overlay';
+  
+  // Overlay içeriği
+  overlay.innerHTML = `
+    <div class="view-all-container">
+      <div class="view-all-header">
+        <h2>${mediaTypeTitle}: ${sliderName}</h2>
+        <button class="view-all-close">&times;</button>
+      </div>
+      <div class="view-all-filters">
+        <div class="view-all-search">
+          <input type="text" class="view-all-search-input" placeholder="İçerik ara...">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <div class="view-all-sort">
+          <select class="view-all-sort-select">
+            <option value="title-asc">İsim (A-Z)</option>
+            <option value="title-desc">İsim (Z-A)</option>
+            <option value="year-desc">Yıl (Yeni-Eski)</option>
+            <option value="year-asc">Yıl (Eski-Yeni)</option>
+            <option value="rating-desc">Puan (Yüksek-Düşük)</option>
+            <option value="rating-asc">Puan (Düşük-Yüksek)</option>
+          </select>
+        </div>
+      </div>
+      <div class="view-all-content">
+        <div class="view-all-grid"></div>
+      </div>
+    </div>
+  `;
+  
+  console.log('Overlay oluşturuldu');
+  
+  // Body'e ekle
+  document.body.appendChild(overlay);
+  console.log('Overlay body\'e eklendi');
+  
+  // Grid container
+  const grid = overlay.querySelector('.view-all-grid');
+  
+  // İçerikleri render et
+  renderViewAllItems(grid, items, mediaType);
+  
+  // Arama input'u için event dinleyicisi
+  const searchInput = overlay.querySelector('.view-all-search-input');
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+    filterViewAllItems(grid, items, mediaType, query);
+  });
+  
+  // Sıralama için event dinleyicisi
+  const sortSelect = overlay.querySelector('.view-all-sort-select');
+  sortSelect.addEventListener('change', () => {
+    const sortValue = sortSelect.value;
+    sortViewAllItems(grid, items, mediaType, sortValue);
+  });
+  
+  // Kapatma butonu için event
+  const closeBtn = overlay.querySelector('.view-all-close');
+  closeBtn.addEventListener('click', () => {
+    console.log('Overlay kapatılıyor');
+    overlay.remove();
+  });
+  
+  // Esc tuşu ile kapatma
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      console.log('ESC tuşu ile overlay kapatılıyor');
+      overlay.remove();
+      document.removeEventListener('keydown', handleKeyDown);
+    }
+  };
+  
+  document.addEventListener('keydown', handleKeyDown);
+  
+  // Overlay dışı tıklamayla kapatma
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      console.log('Overlay dışına tıklama ile kapatılıyor');
+      overlay.remove();
+      document.removeEventListener('keydown', handleKeyDown);
+    }
+  });
+}
+
+// Grid görünümünde içerikleri render et
+function renderViewAllItems(container, items, mediaType) {
+  console.log(`renderViewAllItems fonksiyonu çağrıldı: ${items.length} içerik`);
+  
+  // Container'ı temizle
+  container.innerHTML = '';
+  
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div class="view-all-empty">Bu kategoride içerik bulunamadı.</div>';
+    return;
+  }
+  
+  // Her içerik için bir kart oluştur
+  items.forEach(item => {
+    // Kart elementi oluştur
+    const card = document.createElement('div');
+    card.className = 'media-card';
+    card.setAttribute('data-title', item.title.toLowerCase());
+    card.setAttribute('data-year', item.year || '0');
+    card.setAttribute('data-rating', item.rating || item.userRating || '0');
+    
+    // Puanlama bilgisi
+    let ratingsHTML = '';
+    
+    if (item.rating || item.userRating) {
+      ratingsHTML = `<div class="media-card-ratings">`;
+      
+      if (item.rating) {
+        ratingsHTML += `<div class="media-card-rating platform">
+          <span class="star-icon">★</span> ${Number(item.rating).toFixed(1)}
+        </div>`;
+      }
+      
+      if (item.userRating) {
+        ratingsHTML += `<div class="media-card-rating user">
+          <span class="star-icon">★</span> ${Number(item.userRating).toFixed(1)}
+        </div>`;
+      }
+      
+      ratingsHTML += `</div>`;
+    }
+    
+    // Puan ekleme butonu
+    let ratingAddHTML = '';
+    if (!item.userRating) {
+      ratingAddHTML = `<div class="media-card-rating-add" data-id="${item.id}" data-type="${mediaType}">
+        <span class="add-rating-icon">+</span>
+      </div>`;
+    }
+    
+    // Varsayılan resim
+    const placeholderImage = '../assets/no-image.jpg';
+    
+    // İzleme durumu bilgisi
+    const statusLabel = item.status ? `<div class="media-card-status">${item.status}</div>` : '';
+    
+    // Kart içeriği
+    card.innerHTML = `
+      <div class="media-card-inner">
+        ${ratingsHTML}
+        ${ratingAddHTML}
+        <img src="${item.imageUrl || placeholderImage}" class="media-card-image" 
+             alt="${item.title}" onerror="this.src='${placeholderImage}'">
+        ${statusLabel}
+        <div class="media-card-content">
+          <div class="media-card-title" title="${item.title}">${item.title}</div>
+          <div class="media-card-info">
+            <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
+            ${item.totalSeasons ? 
+              `<div class="media-card-seasons"><span class="seasons-icon">📺</span>${item.totalSeasons}</div>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="media-card-quick-action" data-id="${item.id}" data-type="${mediaType}" title="Durumu Değiştir">
+        <span class="quick-action-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 20h.01"></path>
+            <path d="M7 20v-4"></path>
+            <path d="M12 20v-8"></path>
+            <path d="M17 20V8"></path>
+            <path d="M22 4v16"></path>
+          </svg>
+        </span>
+      </div>
+    `;
+    
+    // Puan ekleme butonuna tıklama olayı ekle
+    const ratingAddButton = card.querySelector('.media-card-rating-add');
+    if (ratingAddButton) {
+      ratingAddButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Kart tıklamasını engelle
+        showRatingPopup(item, mediaType, ratingAddButton);
+      });
+    }
+    
+    // Hızlı aksiyon butonuna tıklama olayı ekle
+    const quickActionButton = card.querySelector('.media-card-quick-action');
+    if (quickActionButton) {
+      quickActionButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Kart tıklamasını engelle
+        showStatusPopup(item, mediaType, quickActionButton);
+      });
+    }
+    
+    // Karta tıklama olayı ekle
+    card.addEventListener('click', () => {
+      showMediaDetails(item, mediaType);
+    });
+    
+    // Kartı container'a ekle
+    container.appendChild(card);
+  });
+}
+
+// İçerikleri filtrele
+function filterViewAllItems(container, items, mediaType, query) {
+  // Tüm kartları seç
+  const cards = container.querySelectorAll('.media-card');
+  
+  // Önce mevcut hata mesajını varsa kaldır
+  const existingErrorMessage = container.querySelector('.view-all-empty');
+  if (existingErrorMessage) {
+    existingErrorMessage.remove();
+  }
+  
+  if (!query) {
+    // Filtre yoksa tümünü göster
+    cards.forEach(card => {
+      card.style.display = 'block';
+    });
+    return;
+  }
+  
+  // Görünür kart sayacı
+  let visibleCount = 0;
+  
+  // Her kart için
+  cards.forEach(card => {
+    const cardTitle = card.getAttribute('data-title') || '';
+    
+    // Başlıkta arama terimi varsa göster, yoksa gizle
+    if (cardTitle && cardTitle.includes(query)) {
+      card.style.display = 'block';
+      visibleCount++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+  
+  // Eğer hiç görünür kart yoksa, mesaj göster
+  if (visibleCount === 0) {
+    const emptyMessage = document.createElement('div');
+    emptyMessage.className = 'view-all-empty';
+    emptyMessage.textContent = `"${query}" araması için sonuç bulunamadı.`;
+    container.appendChild(emptyMessage);
+  }
+}
+
+// İçerikleri sırala
+function sortViewAllItems(container, items, mediaType, sortValue) {
+  const cards = Array.from(container.querySelectorAll('.media-card'));
+  
+  // Sıralama kriteri
+  let sortFunction;
+  
+  switch (sortValue) {
+    case 'title-asc':
+      sortFunction = (a, b) => a.getAttribute('data-title').localeCompare(b.getAttribute('data-title'));
+      break;
+    case 'title-desc':
+      sortFunction = (a, b) => b.getAttribute('data-title').localeCompare(a.getAttribute('data-title'));
+      break;
+    case 'year-desc':
+      sortFunction = (a, b) => parseInt(b.getAttribute('data-year') || 0) - parseInt(a.getAttribute('data-year') || 0);
+      break;
+    case 'year-asc':
+      sortFunction = (a, b) => parseInt(a.getAttribute('data-year') || 0) - parseInt(b.getAttribute('data-year') || 0);
+      break;
+    case 'rating-desc':
+      sortFunction = (a, b) => parseFloat(b.getAttribute('data-rating') || 0) - parseFloat(a.getAttribute('data-rating') || 0);
+      break;
+    case 'rating-asc':
+      sortFunction = (a, b) => parseFloat(a.getAttribute('data-rating') || 0) - parseFloat(b.getAttribute('data-rating') || 0);
+      break;
+    default:
+      sortFunction = (a, b) => a.getAttribute('data-title').localeCompare(b.getAttribute('data-title'));
+  }
+  
+  // Kartları sırala
+  cards.sort(sortFunction);
+  
+  // Sıralanmış kartları ekle
+  cards.forEach(card => {
+    container.appendChild(card);
   });
 }
   

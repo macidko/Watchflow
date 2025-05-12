@@ -14,6 +14,14 @@ const getWatchlistPath = () => {
     : path.join(app.getPath('userData'), 'watchlist.json');
 };
 
+// Son yedekleme tarihini saklamak için dosya yolu
+const getBackupInfoPath = () => {
+  const isDevelopment = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
+  return isDevelopment 
+    ? path.join(__dirname, '../../../src/data/backup_info.json')
+    : path.join(app.getPath('userData'), 'backup_info.json');
+};
+
 // İzleme listesi dosyasının varlığını kontrol et, yoksa oluştur
 const ensureWatchlistExists = async () => {
   try {
@@ -515,8 +523,33 @@ const updateEpisodeStatus = async (data) => {
     
     // Eğer izlendi işaretlendiyse, array'e ekle (eğer yoksa)
     if (isWatched) {
+      // Bu bölümü ekle
       if (!watchlist[category][itemIndex].watchedEpisodes.includes(episodeId)) {
         watchlist[category][itemIndex].watchedEpisodes.push(episodeId);
+      }
+      
+      // Bu bölümden önceki tüm bölümleri de ekle
+      if (watchlist[category][itemIndex].seasons) {
+        for (const season of watchlist[category][itemIndex].seasons) {
+          // Eğer sezon numarası seçili sezondan küçükse, bu sezonun tüm bölümlerini ekle
+          if (season.seasonNumber < seasonNumber) {
+            for (let i = 1; i <= season.episodeCount; i++) {
+              const prevEpisodeId = `s${season.seasonNumber}e${i}`;
+              if (!watchlist[category][itemIndex].watchedEpisodes.includes(prevEpisodeId)) {
+                watchlist[category][itemIndex].watchedEpisodes.push(prevEpisodeId);
+              }
+            }
+          }
+          // Eğer aynı sezondaysak, seçili bölüme kadar olan bölümleri ekle
+          else if (season.seasonNumber === seasonNumber) {
+            for (let i = 1; i < episodeNumber; i++) {
+              const prevEpisodeId = `s${seasonNumber}e${i}`;
+              if (!watchlist[category][itemIndex].watchedEpisodes.includes(prevEpisodeId)) {
+                watchlist[category][itemIndex].watchedEpisodes.push(prevEpisodeId);
+              }
+            }
+          }
+        }
       }
     } 
     // Eğer izlenmedi işaretlendiyse ve array'de varsa, çıkar
@@ -524,6 +557,33 @@ const updateEpisodeStatus = async (data) => {
       const epIndex = watchlist[category][itemIndex].watchedEpisodes.indexOf(episodeId);
       if (epIndex !== -1) {
         watchlist[category][itemIndex].watchedEpisodes.splice(epIndex, 1);
+      }
+      
+      // Bu bölümden sonraki tüm bölümleri de işareti kaldır
+      // Çünkü bu bölümü izlemediyse sonrakileri de izlememiş olmalı
+      if (watchlist[category][itemIndex].seasons) {
+        for (const season of watchlist[category][itemIndex].seasons) {
+          // Eğer sezon numarası seçili sezondan büyükse, bu sezonun tüm bölümlerinin işaretini kaldır
+          if (season.seasonNumber > seasonNumber) {
+            for (let i = 1; i <= season.episodeCount; i++) {
+              const nextEpisodeId = `s${season.seasonNumber}e${i}`;
+              const nextEpIndex = watchlist[category][itemIndex].watchedEpisodes.indexOf(nextEpisodeId);
+              if (nextEpIndex !== -1) {
+                watchlist[category][itemIndex].watchedEpisodes.splice(nextEpIndex, 1);
+              }
+            }
+          }
+          // Eğer aynı sezondaysak, seçili bölümden sonraki bölümlerin işaretini kaldır
+          else if (season.seasonNumber === seasonNumber) {
+            for (let i = episodeNumber + 1; i <= season.episodeCount; i++) {
+              const nextEpisodeId = `s${seasonNumber}e${i}`;
+              const nextEpIndex = watchlist[category][itemIndex].watchedEpisodes.indexOf(nextEpisodeId);
+              if (nextEpIndex !== -1) {
+                watchlist[category][itemIndex].watchedEpisodes.splice(nextEpIndex, 1);
+              }
+            }
+          }
+        }
       }
     }
     
@@ -668,6 +728,9 @@ const exportWatchlist = async (targetPath) => {
     // Hedef dosyaya kopyala
     await fs.writeFile(targetPath, watchlistData, 'utf8');
     
+    // Son yedekleme tarihini güncelle
+    await setLastBackupDate();
+    
     console.log(`İzleme listesi dışa aktarıldı: ${targetPath}`);
     return { success: true, path: targetPath };
   } catch (error) {
@@ -688,6 +751,54 @@ const updateWatchlist = async (watchlist) => {
   }
 };
 
+// Son yedekleme tarihini al
+const getLastBackupDate = async () => {
+  try {
+    const backupInfoPath = getBackupInfoPath();
+    
+    try {
+      await fs.access(backupInfoPath);
+    } catch (error) {
+      // Dosya yoksa, boş bir bilgi dosyası oluştur
+      await fs.writeFile(backupInfoPath, JSON.stringify({ lastBackupDate: null }), 'utf8');
+      return null;
+    }
+    
+    // Dosyayı oku
+    const backupInfo = JSON.parse(await fs.readFile(backupInfoPath, 'utf8'));
+    return backupInfo.lastBackupDate;
+  } catch (error) {
+    console.error('Son yedekleme tarihi alınırken hata:', error);
+    return null;
+  }
+};
+
+// Son yedekleme tarihini güncelle
+const setLastBackupDate = async (date = new Date().toISOString()) => {
+  try {
+    const backupInfoPath = getBackupInfoPath();
+    
+    // Dosya yoksa, yeni bir dosya oluştur
+    let backupInfo = { lastBackupDate: date };
+    
+    try {
+      await fs.access(backupInfoPath);
+      // Dosya varsa, içeriği oku ve güncelle
+      backupInfo = JSON.parse(await fs.readFile(backupInfoPath, 'utf8'));
+      backupInfo.lastBackupDate = date;
+    } catch (error) {
+      // Dosya yoksa, devam et ve yeni dosya oluştur
+    }
+    
+    // Dosyayı güncelle
+    await fs.writeFile(backupInfoPath, JSON.stringify(backupInfo, null, 2), 'utf8');
+    return { success: true, lastBackupDate: date };
+  } catch (error) {
+    console.error('Son yedekleme tarihi güncellenirken hata:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Modülü dışa aktar
 module.exports = {
   getWatchlistPath,
@@ -700,5 +811,7 @@ module.exports = {
   removeFromWatchlist,
   markAsWatched,
   exportWatchlist,
-  updateWatchlist
+  updateWatchlist,
+  getLastBackupDate,
+  setLastBackupDate
 }; 

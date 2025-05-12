@@ -2,8 +2,8 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' https: data:">
-  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' https: data:">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:">
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:">
   <title>Watchflow</title>
   <link rel="stylesheet" href="css/index.css">
 </head>
@@ -124,6 +124,36 @@
             <h2>Filmler</h2>
             <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
           </div>
+          
+          <!-- İzleniyor Slider -->
+          <div class="slider-section">
+            <div class="slider-header">
+              <h3>İzleniyor</h3>
+            </div>
+            <div class="slider-container">
+              <div class="slider-content" id="movies-watching"></div>
+            </div>
+          </div>
+          
+          <!-- İzlenecek Slider -->
+          <div class="slider-section">
+            <div class="slider-header">
+              <h3>İzlenecek</h3>
+            </div>
+            <div class="slider-container">
+              <div class="slider-content" id="movies-plan"></div>
+            </div>
+          </div>
+          
+          <!-- İzlendi Slider -->
+          <div class="slider-section">
+            <div class="slider-header">
+              <h3>İzlendi</h3>
+            </div>
+            <div class="slider-container">
+              <div class="slider-content" id="movies-completed"></div>
+            </div>
+          </div>
         </div>
         
         <!-- Dizi İçeriği -->
@@ -132,6 +162,36 @@
             <h2>Diziler</h2>
             <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
           </div>
+          
+          <!-- İzleniyor Slider -->
+          <div class="slider-section">
+            <div class="slider-header">
+              <h3>İzleniyor</h3>
+            </div>
+            <div class="slider-container">
+              <div class="slider-content" id="series-watching"></div>
+            </div>
+          </div>
+          
+          <!-- İzlenecek Slider -->
+          <div class="slider-section">
+            <div class="slider-header">
+              <h3>İzlenecek</h3>
+            </div>
+            <div class="slider-container">
+              <div class="slider-content" id="series-plan"></div>
+            </div>
+          </div>
+          
+          <!-- İzlendi Slider -->
+          <div class="slider-section">
+            <div class="slider-header">
+              <h3>İzlendi</h3>
+            </div>
+            <div class="slider-container">
+              <div class="slider-content" id="series-completed"></div>
+            </div>
+          </div>
         </div>
         
         <!-- Anime İçeriği -->
@@ -139,6 +199,36 @@
           <div class="section-title-row">
             <h2>Animeler</h2>
             <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
+          </div>
+          
+          <!-- İzleniyor Slider -->
+          <div class="slider-section">
+            <div class="slider-header">
+              <h3>İzleniyor</h3>
+            </div>
+            <div class="slider-container">
+              <div class="slider-content" id="anime-watching"></div>
+            </div>
+          </div>
+          
+          <!-- İzlenecek Slider -->
+          <div class="slider-section">
+            <div class="slider-header">
+              <h3>İzlenecek</h3>
+            </div>
+            <div class="slider-container">
+              <div class="slider-content" id="anime-plan"></div>
+            </div>
+          </div>
+          
+          <!-- İzlendi Slider -->
+          <div class="slider-section">
+            <div class="slider-header">
+              <h3>İzlendi</h3>
+            </div>
+            <div class="slider-container">
+              <div class="slider-content" id="anime-completed"></div>
+            </div>
           </div>
         </div>
         

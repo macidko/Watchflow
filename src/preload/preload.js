@@ -246,6 +246,16 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
     }
   },
   
+  // Son yedekleme tarihini al
+  getLastBackupDate: async () => {
+    try {
+      return await ipcRenderer.invoke('get-last-backup-date');
+    } catch (error) {
+      console.error('Son yedekleme tarihi alınırken hata:', error);
+      return null;
+    }
+  },
+  
   // Dosya kaydetme dialog göster
   showSaveDialog: async (options) => {
     try {

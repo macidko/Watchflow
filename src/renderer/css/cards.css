@@ -21,8 +21,6 @@
   color: var(--accent-color);
   margin-bottom: 20px;
   font-size: 1.2rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 10px;
   position: relative;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -497,5 +495,24 @@
   text-align: center;
   color: var(--secondary-text);
   font-style: italic;
+}
+
+/* Slider header kısmı */
+.slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 5px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.slider-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent-color);
+  margin: 0;
+  letter-spacing: 0.5px;
 }
 

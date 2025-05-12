@@ -338,6 +338,16 @@ const setupIpcHandlers = (ipcMain) => {
     }
   });
   
+  // Son yedekleme tarihini al
+  ipcMain.handle('get-last-backup-date', async (event) => {
+    try {
+      return await watchlistManager.getLastBackupDate();
+    } catch (error) {
+      console.error('Son yedekleme tarihi alınırken hata:', error);
+      return null;
+    }
+  });
+  
   // ======= Detay İşlemleri =======
   
   // Film/TV detaylarını getir
