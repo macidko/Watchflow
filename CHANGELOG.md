@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.0](https://github.com/macidko/Watchflow/compare/v0.6.0...v0.7.0) (2025-05-15)
+
+
+### Features
+
+* **ui:** homepage sliders ([24d37ae](https://github.com/macidko/Watchflow/commit/24d37ae6be9bead1b7c9a1ca167cb02fb04730d4))
+
 ## [0.6.0](https://github.com/macidko/Watchflow/compare/v0.5.4...v0.6.0) (2025-05-12)
 
 
