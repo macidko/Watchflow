@@ -2437,6 +2437,7 @@ function showRatingPopup(item, mediaType, button) {
 function renderCustomSliders(watchlist) {
   // Özel sliderlar için container alacağımız sayfaları ve kategorileri eşleştirelim
   const pageCategories = {
+    'home-page': 'homepage',
     'movies-page': 'movie',
     'series-page': 'tv',
     'anime-page': 'anime'
@@ -2459,7 +2460,24 @@ function renderCustomSliders(watchlist) {
       // Her slider için
       categorySliders.forEach(slider => {
         // Slider için filtrelenmiş öğeleri al
-        const filteredItems = watchlist[category] ? watchlist[category].filter(item => item.status === slider.name) : [];
+        let filteredItems = [];
+        
+        if (category === 'homepage') {
+          // Anasayfa sliderları için filtreleme mantığı
+          if (slider.name === 'İzlenen Animeler') {
+            // Anime içeriklerinden izlenen olanları filtrele
+            filteredItems = watchlist['anime'] ? watchlist['anime'].filter(item => item.status === 'İzleniyor') : [];
+          } else if (slider.name === 'İzlenen Diziler') {
+            // Dizi içeriklerinden izlenen olanları filtrele
+            filteredItems = watchlist['tv'] ? watchlist['tv'].filter(item => item.status === 'İzleniyor') : [];
+          } else if (slider.name === 'İzlenecek Filmler') {
+            // Film içeriklerinden izlenecek olanları filtrele
+            filteredItems = watchlist['movie'] ? watchlist['movie'].filter(item => item.status === 'İzlenecek') : [];
+          }
+        } else {
+          // Diğer sayfalardaki sliderlar için
+          filteredItems = watchlist[category] ? watchlist[category].filter(item => item.status === slider.name) : [];
+        }
         
         // Özel slider section oluştur
         const sliderSection = document.createElement('div');
@@ -2483,21 +2501,58 @@ function renderCustomSliders(watchlist) {
           viewAllBtn.className = 'view-all-btn';
           viewAllBtn.textContent = 'Tümünü Gör';
           viewAllBtn.setAttribute('data-slider-name', slider.name);
-          viewAllBtn.setAttribute('data-media-type', category);
+          
+          // Homepage için media type'ı belirle
+          let mediaType = category;
+          if (category === 'homepage') {
+            if (slider.name === 'İzlenen Animeler') {
+              mediaType = 'anime';
+            } else if (slider.name === 'İzlenen Diziler') {
+              mediaType = 'tv';
+            } else if (slider.name === 'İzlenecek Filmler') {
+              mediaType = 'movie';
+            }
+          }
+          
+          viewAllBtn.setAttribute('data-media-type', mediaType);
           headerElement.appendChild(viewAllBtn);
           
           // Event listener'ı burada doğrudan ekle
           viewAllBtn.addEventListener('click', function() {
-            console.log(`Tümünü Gör butonuna tıklandı: ${slider.name}, ${category}`);
-            showAllItems(slider.name, category, filteredItems);
+            console.log(`Tümünü Gör butonuna tıklandı: ${slider.name}, ${mediaType}`);
+            showAllItems(slider.name, mediaType, filteredItems);
           });
         }
         
         // Slider'ı sayfaya ekle
         pageContainer.appendChild(sliderSection);
         
-        // Slider için içerik oluşturma
-        fillSliderContent(slider.id, category, watchlist);
+        // Homepage sliderları için farklı doldurma mantığı
+        if (category === 'homepage') {
+          const sliderContent = document.getElementById(slider.id);
+          if (sliderContent) {
+            // Eğer filtrelenmiş içerikler boşsa, bir mesaj göster
+            if (filteredItems.length === 0) {
+              sliderContent.innerHTML = '<div class="empty-slider-message">Bu kategoride henüz içerik bulunmuyor</div>';
+            } else {
+              // Homepage sliderı için uygun media type'ı belirle
+              let mediaType = 'movie'; // varsayılan
+              if (slider.name === 'İzlenen Animeler') {
+                mediaType = 'anime';
+              } else if (slider.name === 'İzlenen Diziler') {
+                mediaType = 'tv';
+              } else if (slider.name === 'İzlenecek Filmler') {
+                mediaType = 'movie';
+              }
+              
+              // Slider içeriğini doldur
+              fillSlider(sliderContent, filteredItems, mediaType, slider.id);
+            }
+          }
+        } else {
+          // Normal kategori sayfaları için mevcut doldurma yöntemini kullan
+          fillSliderContent(slider.id, category, watchlist);
+        }
       });
     }
   });

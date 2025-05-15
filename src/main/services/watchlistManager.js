@@ -64,6 +64,23 @@ const ensureWatchlistExists = async () => {
         // Sliders yapısını kontrol et
         if (!watchlist.sliders) {
           watchlist.sliders = {
+            homepage: [
+              {
+                id: `homepage-slider-${Date.now()}-1`,
+                name: "İzlenen Animeler",
+                index: 0
+              },
+              {
+                id: `homepage-slider-${Date.now()}-2`,
+                name: "İzlenen Diziler",
+                index: 1
+              },
+              {
+                id: `homepage-slider-${Date.now()}-3`,
+                name: "İzlenecek Filmler",
+                index: 2
+              }
+            ],
             movie: [
               {
                 id: `movie-slider-${Date.now()}-1`,
@@ -122,6 +139,23 @@ const ensureWatchlistExists = async () => {
         else if (Array.isArray(watchlist.sliders)) {
           // Eski yapıyı yeni yapıya dönüştür
           watchlist.sliders = {
+            homepage: [
+              {
+                id: `homepage-slider-${Date.now()}-1`,
+                name: "İzlenen Animeler",
+                index: 0
+              },
+              {
+                id: `homepage-slider-${Date.now()}-2`,
+                name: "İzlenen Diziler",
+                index: 1
+              },
+              {
+                id: `homepage-slider-${Date.now()}-3`,
+                name: "İzlenecek Filmler",
+                index: 2
+              }
+            ],
             movie: [
               {
                 id: `movie-slider-${Date.now()}-1`,
@@ -179,9 +213,30 @@ const ensureWatchlistExists = async () => {
         }
         else {
           // Sliders içindeki kategori alanlarını kontrol et
-          requiredCategories.forEach(category => {
+          const requiredSliderCategories = [...requiredCategories, 'homepage'];
+          requiredSliderCategories.forEach(category => {
             if (!watchlist.sliders[category]) {
-              watchlist.sliders[category] = [];
+              if (category === 'homepage') {
+                watchlist.sliders[category] = [
+                  {
+                    id: `homepage-slider-${Date.now()}-1`,
+                    name: "İzlenen Animeler",
+                    index: 0
+                  },
+                  {
+                    id: `homepage-slider-${Date.now()}-2`,
+                    name: "İzlenen Diziler",
+                    index: 1
+                  },
+                  {
+                    id: `homepage-slider-${Date.now()}-3`,
+                    name: "İzlenecek Filmler",
+                    index: 2
+                  }
+                ];
+              } else {
+                watchlist.sliders[category] = [];
+              }
               isModified = true;
               console.log(`sliders.${category} kategorisi eksikti, oluşturuldu`);
             }
@@ -201,6 +256,23 @@ const ensureWatchlistExists = async () => {
           tv: [],
           anime: [],
           sliders: {
+            homepage: [
+              {
+                id: `homepage-slider-${Date.now()}-1`,
+                name: "İzlenen Animeler",
+                index: 0
+              },
+              {
+                id: `homepage-slider-${Date.now()}-2`,
+                name: "İzlenen Diziler",
+                index: 1
+              },
+              {
+                id: `homepage-slider-${Date.now()}-3`,
+                name: "İzlenecek Filmler",
+                index: 2
+              }
+            ],
             movie: [
               {
                 id: `movie-slider-${Date.now()}-1`,
@@ -265,6 +337,23 @@ const ensureWatchlistExists = async () => {
         tv: [],
         anime: [],
         sliders: {
+          homepage: [
+            {
+              id: `homepage-slider-${Date.now()}-1`,
+              name: "İzlenen Animeler",
+              index: 0
+            },
+            {
+              id: `homepage-slider-${Date.now()}-2`,
+              name: "İzlenen Diziler",
+              index: 1
+            },
+            {
+              id: `homepage-slider-${Date.now()}-3`,
+              name: "İzlenecek Filmler",
+              index: 2
+            }
+          ],
           movie: [
             {
               id: `movie-slider-${Date.now()}-1`,

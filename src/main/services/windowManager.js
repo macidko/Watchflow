@@ -32,7 +32,7 @@ function createMainWindow(options = {}) {
   mainWindow.loadFile(path.join(__dirname, '../../renderer/index.html'));
 
   // DevTools'u aç (geliştirme sırasında)
-  if (process.env.NODE_ENV === 'development' || process.argv.includes('--dev')) {
+  if (process.argv.includes('--dev')) {
     mainWindow.webContents.openDevTools();
   }
 
@@ -73,7 +73,7 @@ function createSettingsWindow(options = {}) {
   settingsWindow.loadFile(path.join(__dirname, '../../renderer/settings.html'));
   
   // DevTools'u aç (geliştirme sırasında)
-  if (process.env.NODE_ENV === 'development' || process.argv.includes('--dev')) {
+  if (process.argv.includes('--dev')) {
     settingsWindow.webContents.openDevTools();
   }
   
