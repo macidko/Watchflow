@@ -1,8 +1,20 @@
 // Electron API'lerini yükle
 const { contextBridge, ipcRenderer, shell } = require('electron');
+const config = require('../config/config.js');
+const fs = require('fs');
+const path = require('path');
 
 // Uygulama API'sini tanımla - Renderer sürecine güvenli bir şekilde expose ediyoruz
 contextBridge.exposeInMainWorld('watchflowAPI', {
+  // Config işlevlerini doğrudan expose et (tüm config nesnesi yerine)
+  getLanguage: () => {
+    return config.getLanguage();
+  },
+  
+  setLanguage: (language) => {
+    return config.setLanguage(language);
+  },
+  
   // API sunucusu bağlantı durumunu kontrol et
   checkServerStatus: async () => {
     try {
@@ -12,6 +24,50 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
       throw new Error('API kontrol edilemedi');
     }
   },
+  
+  // Çeviri dosyasını al
+  getTranslations: async (language) => {
+    try {
+      return await ipcRenderer.invoke('get-translations', language);
+    } catch (error) {
+      console.error('Çeviri dosyası alınırken hata:', error);
+      throw error;
+    }
+  },
+  
+  // Kullanılabilir dilleri listele
+  listLanguages: async () => {
+    try {
+      return await ipcRenderer.invoke('list-languages');
+    } catch (error) {
+      console.error('Dil listesi alınırken hata:', error);
+      throw error;
+    }
+  },
+  
+  // Kullanılabilir dilleri doğrudan dosya sisteminden listele
+  listAvailableLanguages: () => {
+    try {
+      const langDir = path.join(__dirname, '../lang');
+      const files = fs.readdirSync(langDir);
+      
+      // JSON uzantılı dil dosyalarını bul
+      const languages = [];
+      files.forEach(file => {
+        if (file.endsWith('.json')) {
+          languages.push(file.replace('.json', ''));
+        }
+      });
+      
+      return languages;
+    } catch (error) {
+      console.error('Dil dosyaları listelenirken hata:', error);
+      // Hata durumunda varsayılan dilleri dön
+      return ['tr', 'en'];
+    }
+  },
+  
+  // Not: Dil tercihleri artık config.js tarafından yönetiliyor
   
   // Uygulama sürümünü al
   getAppVersion: async () => {

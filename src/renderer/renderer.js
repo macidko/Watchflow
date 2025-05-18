@@ -3,6 +3,211 @@
 
 console.log('Renderer.js yüklendi');
 
+// i18n (Dil desteği) değişkenleri ve fonksiyonları
+let currentLanguage = window.watchflowAPI.getLanguage() || 'en'; // Varsayılan dil
+let translations = {}; // Tüm dil çevirileri
+
+// Çeviri fonksiyonu - verilen anahtara göre çeviriyi döner
+function t(key, params = {}) {
+  // Nokta notasyonuyla alt anahtarlara erişim (örn: "settings.title")
+  const keys = key.split('.');
+  let translation = translations;
+  
+  // Dil dosyasında anahtarı bul
+  for (const k of keys) {
+    translation = translation?.[k];
+    if (!translation) break;
+  }
+  
+  // Çeviri bulunamadıysa anahtarı döndür
+  if (!translation) {
+    console.warn(`Çeviri bulunamadı: ${key}`);
+    return key;
+  }
+  
+  // String değilse (muhtemelen bir nesne), anahtarı döndür
+  if (typeof translation !== 'string') {
+    return key;
+  }
+  
+  // Parametreleri değiştir (örn: {{name}} -> John)
+  return translation.replace(/\{\{(\w+)\}\}/g, (_, paramKey) => {
+    return params[paramKey] !== undefined ? params[paramKey] : `{{${paramKey}}}`;
+  });
+}
+
+// Dil dosyalarını yükle
+async function loadTranslations(language) {
+  try {
+    const langData = await window.watchflowAPI.getTranslations(language);
+    translations = langData;
+    currentLanguage = language;
+    console.log(`${language} dil dosyası yüklendi`);
+    
+    // Dil tercihini kaydet
+    window.watchflowAPI.setLanguage(language);
+    
+    // UI elemanlarını çevirilerle güncelle
+    updateUITranslations();
+    
+    // Sayfa yeniden yüklenmediyse mevcut dinamik içeriği güncelle
+    await refreshContentWithNewLanguage();
+  } catch (error) {
+    console.error(`Dil dosyası yüklenirken bir hata oluştu (${language}):`, error);
+    // Varsayılan dile geri dön
+    if (language !== 'tr') {
+      await loadTranslations('tr');
+    }
+  }
+}
+
+// Dil değiştiğinde mevcut içeriği yeniden yükle
+async function refreshContentWithNewLanguage() {
+  try {
+    // Açık olan sayfayı belirle
+    const currentPageElement = document.querySelector('.page-section.active');
+    if (!currentPageElement) return;
+    
+    const pageId = currentPageElement.id;
+    
+    // Watchlist verilerini güncelle
+    await loadWatchlist();
+    
+    // Gerekirse modal ve popup içeriklerini güncelle
+    if (document.querySelector('.settings-popup-overlay:not(.hidden)')) {
+      // Açık popup varsa güncelleyelim
+      updateOpenedPopups();
+    }
+  } catch (error) {
+    console.error('Dil değişikliği sırasında içerik güncellenirken hata:', error);
+  }
+}
+
+// Açık modal ve popup içeriklerini güncelle
+function updateOpenedPopups() {
+  // Bütün modalleri ve popupları güncelle
+  updateUITranslations();
+  
+  // Spesifik popuplar için ek işlemler gerekirse burada yapılabilir
+  const settingsPopup = document.getElementById('settingsPopupOverlay');
+  const bulkAddPopup = document.getElementById('bulkAddPopupOverlay');
+  
+  if (settingsPopup && !settingsPopup.classList.contains('hidden')) {
+    // Sekme ayarları popupı için özel güncellemeler
+  }
+  
+  if (bulkAddPopup && !bulkAddPopup.classList.contains('hidden')) {
+    // Toplu içerik ekleme popupı için özel güncellemeler
+  }
+}
+
+// Watchlist durumlarını çevirmek için fonksiyon
+function translateWatchlistStatus(status, direction = 'dbToUi') {
+  if (direction === 'dbToUi') {
+    // Veritabanındaki değeri UI için çevir
+    if (status === "İzlenecek") return t('watchlist.status.toWatch');
+    if (status === "İzleniyor") return t('watchlist.status.watching');
+    if (status === "İzlendi") return t('watchlist.status.watched');
+  } else {
+    // UI'daki değeri veritabanı için çevir
+    const watchingStatus = t('watchlist.status.watching');
+    const plannedStatus = t('watchlist.status.toWatch');
+    const completedStatus = t('watchlist.status.watched');
+    
+    if (status === watchingStatus || status === "Watching") return "İzleniyor";
+    if (status === plannedStatus || status === "Plan to Watch") return "İzlenecek";
+    if (status === completedStatus || status === "Completed") return "İzlendi";
+  }
+  
+  // Eğer tanımlanmayan bir durum varsa, olduğu gibi döndür
+  return status;
+}
+
+// Slider başlıklarının çeviri anahtarını belirleme fonksiyonu
+function getSliderTranslationKey(sliderName, category) {
+  // Anasayfa için özel slider başlıkları
+  if (category === 'homepage') {
+    if (sliderName === 'İzlenen Animeler' || sliderName === t('watchlist.homepageWatchingAnime')) 
+      return 'watchlist.homepageWatchingAnime';
+    if (sliderName === 'İzlenen Diziler' || sliderName === t('watchlist.homepageWatchingTV')) 
+      return 'watchlist.homepageWatchingTV';
+    if (sliderName === 'İzlenecek Filmler' || sliderName === t('watchlist.homepagePlannedMovies')) 
+      return 'watchlist.homepagePlannedMovies';
+  }
+  
+  // Standart izleme durumları
+  if (sliderName === 'İzleniyor' || sliderName === t('watchlist.watchingStatus')) 
+    return 'watchlist.watchingStatus';
+  if (sliderName === 'İzlenecek' || sliderName === t('watchlist.plannedStatus')) 
+    return 'watchlist.plannedStatus';
+  if (sliderName === 'İzlendi' || sliderName === t('watchlist.completedStatus')) 
+    return 'watchlist.completedStatus';
+  
+  // Özel listeler
+  if (sliderName === 'Favori Yönetmenler' || sliderName === t('watchlist.customLists.favoriteDirectors')) 
+    return 'watchlist.customLists.favoriteDirectors';
+  if (sliderName === 'Özel Liste' || sliderName === t('watchlist.customLists.customList')) 
+    return 'watchlist.customLists.customList';
+  
+  // Anahtar bulunamadıysa, null döndür
+  return null;
+}
+
+// Statik UI elemanlarını çevirilerle güncelle
+function updateUITranslations() {
+  // Uygulama bilgileri bölümünü güncelle
+  const appInfoTitle = document.getElementById('app-info-title');
+  const versionLabel = document.getElementById('version-label');
+  const developerLabel = document.getElementById('developer-label');
+  
+  // Bu elementler artık data-i18n attribute'ları ile işleniyor, manuel güncelleme gerekmiyor
+  if (appInfoTitle && !appInfoTitle.hasAttribute('data-i18n')) appInfoTitle.textContent = t('settings.appInfoTitle');
+  if (versionLabel) versionLabel.textContent = t('settings.versionLabel');
+  if (developerLabel) developerLabel.textContent = t('settings.developerLabel');
+
+  // data-i18n özniteliğine sahip tüm elementleri bul ve çevir
+  const elementsWithI18n = document.querySelectorAll('[data-i18n]');
+  elementsWithI18n.forEach(element => {
+    const key = element.getAttribute('data-i18n');
+    if (key) {
+      element.textContent = t(key);
+    }
+  });
+
+  // data-i18n-placeholder özniteliğine sahip tüm input elementlerini bul ve placeholder'ları çevir
+  const inputsWithI18nPlaceholder = document.querySelectorAll('[data-i18n-placeholder]');
+  inputsWithI18nPlaceholder.forEach(input => {
+    const key = input.getAttribute('data-i18n-placeholder');
+    if (key) {
+      input.placeholder = t(key);
+    }
+  });
+
+  // Durumu Değiştir butonları
+  const quickActionButtons = document.querySelectorAll('.media-card-quick-action');
+  quickActionButtons.forEach(button => {
+    button.title = t('general.changeStatus');
+  });
+  
+  // Kaldır butonları
+  const removeButtons = document.querySelectorAll('.popup-btn-remove');
+  removeButtons.forEach(button => {
+    button.textContent = t('general.remove');
+  });
+
+  // Sayfaları gizlenmiş olan tümünü gör butonları
+  updateViewAllBtnText();
+  // Bilinmeyen metinlerini güncelle
+  updateCardYearText();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // DOMContentLoaded olayında bir kez çağır
+  setTimeout(() => {
+    updateUITranslations();
+  }, 1000);
+});
+
 // Arayüz elemanlarını seçelim
 const searchInput = document.getElementById('searchInput');
 const addSearchButton = document.getElementById('searchButton');
@@ -18,6 +223,12 @@ const pageSections = document.querySelectorAll('.page-section');
 // Sayfa yüklendiğinde API bağlantısını kontrol et ve watchlist verilerini yükle
 document.addEventListener('DOMContentLoaded', async () => {
   try {
+    // Config'den dil tercihini al
+    const savedLanguage = window.watchflowAPI.getLanguage();
+    
+    // Dil dosyasını yükle
+    await loadTranslations(savedLanguage);
+    
     const status = await window.watchflowAPI.checkServerStatus();
     console.log('API durumu:', status);
     
@@ -44,7 +255,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
   } catch (error) {
     console.error('API bağlantı hatası:', error);
-    showError('API bağlantısı kurulamadı. ' + error.message);
+    showError(t('errors.apiConnectionError') + ' ' + error.message);
   }
 });
 
@@ -56,7 +267,7 @@ function addViewAllStyles() {
   
   // Zaten eklenmiş mi kontrol et
   if (document.getElementById('view-all-styles')) {
-    console.log('Tiller zaten eklenmiş, tekrar eklenmeyecek');
+    console.log(t('general.stylesAlreadyAdded'));
     return;
   }
   
@@ -366,13 +577,18 @@ async function loadWatchlist() {
     console.log(`Watchlist dizi sayısı: ${watchlist.tv ? watchlist.tv.length : 0}`);
     console.log(`Watchlist anime sayısı: ${watchlist.anime ? watchlist.anime.length : 0}`);
     
+    // Sayfayı yüklendikten sonra çevirileri güncelle
+    setTimeout(() => {
+      updateUITranslations();
+    }, 500);
+    
     // Kategoriler boş diziyi değilse sadece bunları temizle
     if (Array.isArray(watchlist.movie) && watchlist.movie.length === 0) {
       const moviesContainer = document.getElementById('movies-page');
       if (moviesContainer) {
         const sliders = moviesContainer.querySelectorAll('.slider-content');
         sliders.forEach(slider => {
-          slider.innerHTML = '<div class="empty-slider-message">Bu kategoride henüz içerik bulunmuyor</div>';
+          slider.innerHTML = `<div class="empty-slider-message">${t('watchlist.emptyCategory')}</div>`;
         });
       }
     }
@@ -395,10 +611,13 @@ async function loadWatchlist() {
       renderWatchlistItems('anime', watchlist.anime);
     }
     
+    // Tüm çevirileri güncelle
+    updateUITranslations();
+    
     console.log('İzleme listesi başarıyla yüklendi');
   } catch (error) {
     console.error('İzleme listesi yüklenirken hata oluştu:', error);
-    showError('İzleme listesi yüklenirken bir hata oluştu: ' + error.message);
+    showError(t('errors.loadWatchlistError') + ' ' + error.message);
   }
 }
 
@@ -458,7 +677,7 @@ function renderWatchlistItems(mediaType, items) {
         if (headerElement && !headerElement.querySelector('.view-all-btn')) {
           const viewAllBtn = document.createElement('button');
           viewAllBtn.className = 'view-all-btn';
-          viewAllBtn.textContent = 'Tümünü Gör';
+          viewAllBtn.textContent = t('general.viewAll');
           viewAllBtn.setAttribute('data-slider-name', slider.name);
           viewAllBtn.setAttribute('data-media-type', mediaType);
           headerElement.appendChild(viewAllBtn);
@@ -483,7 +702,7 @@ function renderWatchlistItems(mediaType, items) {
         if (headerElement && !headerElement.querySelector('.view-all-btn')) {
           const viewAllBtn = document.createElement('button');
           viewAllBtn.className = 'view-all-btn';
-          viewAllBtn.textContent = 'Tümünü Gör';
+          viewAllBtn.textContent = t('general.viewAll');
           viewAllBtn.setAttribute('data-slider-name', slider.name);
           viewAllBtn.setAttribute('data-media-type', mediaType);
           headerElement.appendChild(viewAllBtn);
@@ -508,7 +727,7 @@ function renderWatchlistItems(mediaType, items) {
         if (headerElement && !headerElement.querySelector('.view-all-btn')) {
           const viewAllBtn = document.createElement('button');
           viewAllBtn.className = 'view-all-btn';
-          viewAllBtn.textContent = 'Tümünü Gör';
+          viewAllBtn.textContent = t('general.viewAll');
           viewAllBtn.setAttribute('data-slider-name', slider.name);
           viewAllBtn.setAttribute('data-media-type', mediaType);
           headerElement.appendChild(viewAllBtn);
@@ -603,7 +822,7 @@ function fillSlider(container, items, mediaType, sliderId) {
         <div class="media-card-content">
           <div class="media-card-title" title="${item.title}">${item.title}</div>
           <div class="media-card-info">
-            <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
+            <div class="media-card-year">${item.year || t('general.unknown')}</div>
             ${item.totalSeasons ? 
               `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
           </div>
@@ -837,7 +1056,7 @@ async function showMediaDetails(item, mediaType) {
       <div class="media-popup-body">
         <div class="rating-container">
           <div class="user-rating">
-            <span class="rating-label">Senin Puanın:</span>
+            <span class="rating-label" data-i18n="popup.yourRating">Senin Puanın:</span>
             <div class="rating-stars" data-media-id="${item.id}" data-media-type="${mediaType}">
               ${generateStarRating(item.userRating || 0)}
             </div>
@@ -848,7 +1067,7 @@ async function showMediaDetails(item, mediaType) {
           <div class="progress-bar-container">
             <div class="progress-bar" id="progress-bar"></div>
           </div>
-          <div class="progress-text">${progressPercent}% tamamlandı (${watchedCount}/${totalEpisodes} bölüm)</div>
+          <div class="progress-text">${t('general.progressText', { progress: progressPercent, watched: watchedCount, total: totalEpisodes })}</div>
         </div>
         
         ${generateSeasonsHTML(item, watchedEpisodes)}
@@ -856,8 +1075,8 @@ async function showMediaDetails(item, mediaType) {
         ${mediaType === 'anime' && relatedAnimeHTML ? relatedAnimeHTML : ''}
         
         <div class="popup-actions">
-          <button class="popup-btn popup-btn-remove" data-id="${item.id}" data-type="${mediaType}">KALDIR</button>
-          <button class="popup-btn popup-btn-mark-watched" data-id="${item.id}" data-type="${mediaType}">İZLENDİ OLARAK İŞARETLE</button>
+          <button class="popup-btn popup-btn-remove" data-id="${item.id}" data-type="${mediaType}" data-i18n="general.remove">KALDIR</button>
+          <button class="popup-btn popup-btn-mark-watched" data-id="${item.id}" data-type="${mediaType}">${t('popup.markAsWatched').toUpperCase()}</button>
         </div>
       </div>
     </div>
@@ -902,7 +1121,7 @@ async function showMediaDetails(item, mediaType) {
         showMediaDetails(animeItem, 'anime');
       } catch (error) {
         console.error('İlişkili anime detayları gösterilirken hata:', error);
-        showNotification('Hata', 'İlişkili anime detayları gösterilirken bir hata oluştu', 'error');
+        showNotification(t('notifications.errorTitle'), t('errors.relatedAnimeDetailsError'), 'error');
       }
     });
   });
@@ -952,11 +1171,11 @@ async function showMediaDetails(item, mediaType) {
           // Butonu eklendi olarak işaretle
           button.classList.remove('loading');
           button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
-          button.title = 'İzleme Listesinde Zaten Var';
+          button.title = t('watchlist.alreadyInWatchlist');
           button.classList.add('added');
           
           // Bildirim göster
-          showNotification('Bilgi', `"${animeTitle}" zaten izleme listenizde bulunuyor.`, 'info');
+          showNotification(t('notifications.infoTitle'), `"${animeTitle}"${t('notifications.relatedAnimeAlreadyExists')}`, 'info');
           return;
         }
         
@@ -966,7 +1185,7 @@ async function showMediaDetails(item, mediaType) {
           title: animeTitle,
           imageUrl: animeImageUrl,
           type: 'anime',
-          status: 'İzlenecek' // Doğrudan izlenecek kategorisine ekle
+          status: t('watchlist.plannedStatus') // Doğrudan izlenecek kategorisine ekle
         };
         
         // Opsiyonel alanları null veya undefined değilse ekle
@@ -990,11 +1209,11 @@ async function showMediaDetails(item, mediaType) {
           // Butonu başarılı durumuna getir
           button.classList.remove('loading');
           button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
-          button.title = 'İzleme Listesine Eklendi';
+          button.title = t('watchlist.addToWatchlistButton');
           button.classList.add('added');
           
           // Başarı bildirimi göster
-          showNotification('Başarılı', `"${animeTitle}" izleme listesine eklendi.`, 'success');
+          showNotification(t('notifications.successTitle'), `"${animeTitle}"${t('notifications.relatedAnimeAddedSuccess')}`, 'success');
         } else {
           // Hata durumunda
           console.error(`İlişkili anime izleme listesine eklenirken hata:`, result.error);
@@ -1005,7 +1224,7 @@ async function showMediaDetails(item, mediaType) {
           button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
           
           // Hata bildirimi göster
-          showNotification('Hata', `"${animeTitle}" izleme listesine eklenirken bir hata oluştu: ${result.error || 'Bilinmeyen hata'}`, 'error');
+          showNotification(t('notifications.errorTitle'), `"${animeTitle}"${t('errors.addRelatedAnimeError')} ${result.error || t('general.unknown')}`, 'error');
         }
       } catch (error) {
         console.error('İlişkili anime izleme listesine eklenirken istisna oluştu:', error);
@@ -1016,7 +1235,7 @@ async function showMediaDetails(item, mediaType) {
         button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
         
         // Hata bildirimi göster
-        showNotification('Hata', 'İlişkili anime izleme listesine eklenirken bir hata oluştu: ' + error.message, 'error');
+        showNotification(t('notifications.errorTitle'), t('errors.addRelatedAnimeError') + ' ' + error.message, 'error');
       }
     });
   });
@@ -1135,7 +1354,7 @@ async function showMediaDetails(item, mediaType) {
           }
         } catch (error) {
           console.error('Puan güncellenirken hata:', error);
-          showNotification('Hata', 'Puan güncellenirken bir hata oluştu: ' + error.message, 'error');
+          showNotification(t('notifications.errorTitle'), t('errors.updateRatingError') + ' ' + error.message, 'error');
         }
       });
     });
@@ -1168,7 +1387,7 @@ async function showMediaDetails(item, mediaType) {
     
     // Eksik mediaType olmadığından emin ol
     if (!finalMediaType) {
-      showNotification('Hata', 'Medya türü belirlenemedi. Lütfen tekrar deneyin.', 'error');
+      showNotification(t('notifications.errorTitle'), t('errors.missingMediaType'), 'error');
       return;
     }
     
@@ -1190,7 +1409,7 @@ async function showMediaDetails(item, mediaType) {
     
     // Eksik mediaType olmadığından emin ol
     if (!finalMediaType) {
-      showNotification('Hata', 'Medya türü belirlenemedi. Lütfen tekrar deneyin.', 'error');
+      showNotification(t('notifications.errorTitle'), t('errors.missingMediaType'), 'error');
       return;
     }
     
@@ -1301,7 +1520,7 @@ function generateSeasonsHTML(item, watchedEpisodes) {
     // Sezon başlığı ve ilerleme
     seasonsHTML += `
       <div class="season-container">
-        <div class="season-title">Sezon ${seasonNumber}</div>
+        <div class="season-title">${t('popup.seasonPrefix')} ${seasonNumber}</div>
         <div class="season-progress">${watchedInSeason}/${episodeCount}</div>
       </div>
       <div class="episodes-grid">
@@ -1356,7 +1575,7 @@ function updateProgressBar(popupElement, item) {
   // İlerleme metnini güncelle
   const progressText = popupElement.querySelector('.progress-text');
   if (progressText) {
-    progressText.textContent = `${progressPercent}% tamamlandı (${watchedCount}/${totalEpisodes} bölüm)`;
+    progressText.textContent = t('general.progressText', { progress: progressPercent, watched: watchedCount, total: totalEpisodes });
   }
   
   // Sezon ilerleme bilgilerini güncelle
@@ -1372,7 +1591,7 @@ function updateProgressBar(popupElement, item) {
       const seasonContainers = popupElement.querySelectorAll('.season-container');
       seasonContainers.forEach(container => {
         const titleEl = container.querySelector('.season-title');
-        if (titleEl && titleEl.textContent.includes(`Sezon ${seasonNumber}`)) {
+        if (titleEl && titleEl.textContent.includes(`${t('popup.seasonPrefix')} ${seasonNumber}`)) {
           const progressEl = container.querySelector('.season-progress');
           if (progressEl) {
             progressEl.textContent = `${watchedInSeason}/${episodeCount}`;
@@ -1402,8 +1621,8 @@ function showConfirmation(title, message, onConfirm, onCancel = null) {
       <div class="confirmation-title">${title}</div>
       <div class="confirmation-message">${message}</div>
       <div class="confirmation-actions">
-        <button class="confirmation-btn confirmation-btn-cancel">İptal</button>
-        <button class="confirmation-btn confirmation-btn-confirm">Onayla</button>
+        <button class="confirmation-btn confirmation-btn-cancel">${t('general.cancel')}</button>
+        <button class="confirmation-btn confirmation-btn-confirm">${t('general.confirm')}</button>
       </div>
     </div>
   `;
@@ -1466,31 +1685,31 @@ function showConfirmation(title, message, onConfirm, onCancel = null) {
 async function removeFromWatchlist(id, mediaType) {
   try {
     if (!mediaType) {
-      throw new Error('Medya türü belirtilmedi (mediaType: undefined)');
+      throw new Error(t('errors.missingMediaType'));
     }
     if (!id) {
-      throw new Error('İçerik ID bilgisi eksik');
+      throw new Error(t('errors.missingContentId'));
     }
     
     showConfirmation(
-      'İçeriği Kaldır', 
-      'Bu içeriği izleme listenizden kaldırmak istediğinize emin misiniz?',
+      t('popup.removeContentTitle'), 
+      t('popup.removeContentMessage'),
       async () => {
         try {
           const result = await window.watchflowAPI.removeFromWatchlist(parseInt(id), mediaType);
           if (result.success) {
-            showNotification('Başarılı', 'İçerik başarıyla kaldırıldı.', 'success');
+            showNotification(t('notifications.successTitle'), t('notifications.contentRemovalSuccess'), 'success');
             loadWatchlist();
           } else {
-            throw new Error(result.error || 'Bilinmeyen bir hata oluştu');
+            throw new Error(result.error || t('errors.updateErrorGeneric'));
           }
         } catch (error) {
-          showNotification('Hata', 'İçerik kaldırılırken bir hata oluştu: ' + error.message, 'error');
+          showNotification(t('notifications.errorTitle'), t('errors.contentUpdateErrorPrefix') + error.message, 'error');
         }
       }
     );
   } catch (error) {
-    showNotification('Hata', 'İçerik kaldırılırken bir hata oluştu: ' + error.message, 'error');
+    showNotification(t('notifications.errorTitle'), t('errors.contentUpdateErrorPrefix') + error.message, 'error');
   }
 }
 
@@ -1499,11 +1718,11 @@ async function markAsWatched(id, mediaType, originalType) {
   try {
     const watchlist = await window.watchflowAPI.getWatchlist();
     if (!watchlist[mediaType]) {
-      throw new Error(`${mediaType} kategorisinde içerik bulunamadı`);
+      throw new Error(t('errors.categoryNotFound', { category: mediaType }));
     }
     const contentIndex = watchlist[mediaType].findIndex(item => item.id.toString() === id.toString());
     if (contentIndex === -1) {
-      throw new Error(`ID=${id} ile eşleşen içerik bulunamadı`);
+      throw new Error(t('errors.contentNotFoundById', { id: id }));
     }
     const currentItem = watchlist[mediaType][contentIndex];
     const currentStatus = currentItem.status;
@@ -1526,17 +1745,17 @@ async function markAsWatched(id, mediaType, originalType) {
     if (!watchedSlider) {
       const newSlider = {
         id: `${mediaType}-slider-${Date.now()}`,
-        name: "İzlendi",
+        name: t('watchlist.completedStatus'),
         index: watchlist.sliders[mediaType].length
       };
       watchlist.sliders[mediaType].push(newSlider);
       watchedSlider = newSlider;
     }
     if (currentStatus !== watchedSlider.name) {
-      const confirmMessage = `"${currentItem.title}" adlı içeriği "${watchedSlider.name}" olarak işaretlemek istediğinize emin misiniz?`;
+      const confirmMessage = t('confirmation.markAsWatchedMessage', { title: currentItem.title, status: watchedSlider.name });
       
       showConfirmation(
-        'İzlendi Olarak İşaretle', 
+        t('popup.markAsWatched'), 
         confirmMessage,
         async () => {
           try {
@@ -1561,23 +1780,23 @@ async function markAsWatched(id, mediaType, originalType) {
             }
             const result = await window.watchflowAPI.updateWatchlist(watchlist);
             if (result.success) {
-              showNotification('Başarılı', 'İçerik izlendi olarak işaretlendi.', 'success');
+              showNotification(t('notifications.successTitle'), t('notifications.contentMarkedAsWatched'), 'success');
               await loadWatchlist();
               const activeTabId = document.querySelector('.main-nav a.active').getAttribute('data-page');
               showPage(activeTabId);
             } else {
-              throw new Error(result.error || 'Güncelleme sırasında bir hata oluştu');
+              throw new Error(result.error || t('errors.updateErrorGeneric'));
             }
           } catch (error) {
-            showNotification('Hata', 'İçerik işaretlenirken bir hata oluştu: ' + error.message, 'error');
+            showNotification(t('notifications.errorTitle'), t('errors.markContentErrorPrefix') + error.message, 'error');
           }
         }
       );
     } else {
-      showNotification('Bilgi', `"${currentItem.title}" zaten ${watchedSlider.name} olarak işaretlenmiş.`, 'info');
+      showNotification(t('notifications.infoTitle'), t('notifications.contentAlreadyMarked', { title: currentItem.title, status: watchedSlider.name }), 'info');
     }
   } catch (error) {
-    showNotification('Hata', 'İçerik işaretlenirken bir hata oluştu: ' + error.message, 'error');
+    showNotification(t('notifications.errorTitle'), t('errors.markContentErrorPrefix') + error.message, 'error');
   }
 }
 
@@ -1712,7 +1931,7 @@ function showError(message) {
     openSearchDropdown();
   }
   // Kullanıcıya bildirim olarak da göster
-  showNotification('Hata', message, 'error');
+  showNotification(t('notifications.errorTitle'), message, 'error');
 }
 
 // Arama işlevi
@@ -1721,7 +1940,7 @@ async function performSearch() {
   const query = searchInput.value.trim();
   
   if (!query) {
-    showNotification('Uyarı', 'Lütfen arama sorgusu girin!', 'warning');
+    showNotification(t('notifications.infoTitle'), t('notifications.searchWarningNoQuery'), 'warning');
     return;
   }
   
@@ -1751,7 +1970,7 @@ async function performSearch() {
     displayResults(results, searchType);
   } catch (error) {
     console.error('Arama sırasında hata:', error);
-    dropdownSearchResults.innerHTML = `<div class="error-message">Arama sırasında bir hata oluştu: ${error.message}</div>`;
+    dropdownSearchResults.innerHTML = `<div class="error-message">${t('errors.searchError')} ${error.message}</div>`;
   } finally {
     // Arama butonunu sıfırla
     searchActionButton.disabled = false;
@@ -1775,14 +1994,14 @@ function displayResults(results, searchType) {
   
   // Sonuç yoksa mesaj göster
   if (!results || results.length === 0) {
-    dropdownSearchResults.innerHTML = '<p class="no-results">Sonuç bulunamadı.</p>';
+    dropdownSearchResults.innerHTML = `<p class="no-results">${t('search.noSearchResults')}</p>`;
     return;
   }
   
   // Sonuç sayısını gösteren başlık ekle
   const resultCount = document.createElement('h2');
   resultCount.className = 'result-count';
-  resultCount.textContent = `${results.length} sonuç bulundu`;
+  resultCount.textContent = t('search.resultsCount', { count: results.length });
   dropdownSearchResults.appendChild(resultCount);
   
   // Sonuçlar için container oluştur
@@ -1807,7 +2026,7 @@ function displayResults(results, searchType) {
   // İçerik kartlarını oluştur
   results.forEach(item => {
     // Varsayılan resim - local dosya yolunu kullan
-    const placeholderImage = './assets/images/placeholder.jpg';
+    const placeholderImage = '../assets/no-image.jpg';
     const imageUrl = item.imageUrl || placeholderImage;
     
     // Anime için orijinal başlığı kullan, diğer içerikler için normal başlık
@@ -1843,12 +2062,12 @@ function displayResults(results, searchType) {
       </div>
       <div class="search-result-item-right">
         <select class="status-select" data-id="${item.id}">
-          <option value="" disabled selected>Kategori Seç</option>
+          <option value="" disabled selected>${t('search.categorySelectPlaceholder')}</option>
           ${statusOptionsHtml}
         </select>
         <button class="search-add-button" disabled data-id="${item.id}" data-title="${displayTitle}" 
           data-type="${searchType}" data-year="${item.year || ''}" data-image="${imageUrl}">
-          ${isInWatchlist ? 'Güncelle' : 'Ekle'}
+          ${isInWatchlist ? t('search.updateButton') : t('search.addButton')}
         </button>
       </div>
     `;
@@ -1893,7 +2112,7 @@ function addToWatchlistFromSearch(e) {
   const status = button.getAttribute('data-status');
   
   if (!id || !title || !type || !status) {
-    showNotification('Hata', 'Eksik bilgiler: Tüm alanların doldurulduğundan emin olun.', 'error');
+    showNotification(t('notifications.errorTitle'), t('errors.missingSearchInfo'), 'error');
     return;
   }
   
@@ -1918,7 +2137,7 @@ async function addToWatchlist(item, button) {
     // Butonun önceki metnini sakla ve devre dışı bırak
     const originalText = button.textContent.trim();
     button.disabled = true;
-    button.textContent = 'Ekleniyor...';
+    button.textContent = t('search.addingButton');
 
     // Puan bilgisini API'den al
     if (!item.rating && item.id) {
@@ -2026,6 +2245,65 @@ function setupSettingsPage() {
   const saveApiKeysBtn = document.getElementById('saveApiKeys');
   const apiKeysMessage = document.getElementById('apiKeysMessage');
   
+  // Dil ayarları için UI referansları
+  const languageSelect = document.getElementById('languageSelect');
+  const languageMessage = document.getElementById('languageMessage');
+  
+  // Dil seçeneklerini yükle
+  async function loadLanguageOptions() {
+    try {
+      // Dilleri doğrudan preload.js aracılığıyla al
+      const languages = window.watchflowAPI.listAvailableLanguages();
+      
+      // Şu anki dil tercihini al
+      const currentLanguage = window.watchflowAPI.getLanguage() || 'tr';
+      
+      // Select elementini temizle
+      languageSelect.innerHTML = '';
+      
+      // Her dil için bir option ekle
+      languages.forEach(lang => {
+        const option = document.createElement('option');
+        option.value = lang;
+        option.textContent = t(`settings.languagesList.${lang}`);
+        
+        // Şu anki dili seçili yap
+        if (lang === currentLanguage) {
+          option.selected = true;
+        }
+        
+        languageSelect.appendChild(option);
+      });
+      
+      // Dil değiştiğinde
+      languageSelect.addEventListener('change', async () => {
+        const selectedLanguage = languageSelect.value;
+        
+        try {
+          // Yeni dili yükle (bu işlem config.setLanguage() işlemini içinde yapacak)
+          await loadTranslations(selectedLanguage);
+          
+          // Başarı mesajı göster
+          showMessage(languageMessage, t('settings.languageChangeSuccess'), 'success');
+          
+          // Belirli bir süre sonra mesajı gizle
+          setTimeout(() => {
+            languageMessage.style.display = 'none';
+          }, 3000);
+        } catch (error) {
+          console.error('Dil değiştirilirken hata:', error);
+          showMessage(languageMessage, `${t('notifications.errorTitle')}: ${error.message}`, 'error');
+        }
+      });
+    } catch (error) {
+      console.error('Dil seçenekleri yüklenirken hata:', error);
+      showMessage(languageMessage, `${t('notifications.errorTitle')}: ${error.message}`, 'error');
+    }
+  }
+  
+  // Dil seçeneklerini yükle
+  loadLanguageOptions();
+  
   // Watchlist dışa aktarma için UI referansları
   const exportWatchlistBtn = document.getElementById('exportWatchlist');
   const exportMessage = document.getElementById('exportMessage');
@@ -2037,9 +2315,8 @@ function setupSettingsPage() {
     const backupInfoElement = document.createElement('div');
     backupInfoElement.className = 'backup-info-message';
     backupInfoElement.innerHTML = `
-      <p>Verilerinizi kaybetmemek için düzenli olarak yedekleme yapmanız önerilir. 
-      Yedeklediğiniz dosyayı güvenli bir yerde (harici disk, bulut depolama vb.) saklamanız önemlidir.</p>
-      <p id="lastBackupInfo">Son yedekleme: Yedekleme yapılmamış</p>
+      <p>${t('settings.backupReminderText')}</p>
+      <p id="lastBackupInfo">${t('settings.lastBackupInfo', { date: t('settings.noBackupYet') })}</p>
     `;
     
     // Bilgi metnini export container'a ekle
@@ -2061,7 +2338,7 @@ function setupSettingsPage() {
       const tmdbKey = tmdbApiKeyInput.value.trim();
       
       if (!tmdbKey) {
-        showMessage(apiKeysMessage, 'Lütfen TMDB API anahtarını girin.', 'error');
+        showMessage(apiKeysMessage, t('errors.missingOrInvalidData'), 'error');
         return;
       }
       
@@ -2079,7 +2356,7 @@ function setupSettingsPage() {
         saveApiKeysBtn.textContent = 'API Anahtarını Kaydet';
         
         // Sonra başarı mesajını göster (gecikme olmadan doğru sıralama)
-        showMessage(apiKeysMessage, 'API anahtarı başarıyla kaydedildi!', 'success');
+        showMessage(apiKeysMessage, t('notifications.operationSuccess'), 'success');
         
         // Mesajı ve butonu normal haline getir
         setTimeout(() => {
@@ -2091,7 +2368,7 @@ function setupSettingsPage() {
       }
     } catch (error) {
       console.error('API anahtarı kaydedilirken hata:', error);
-      showMessage(apiKeysMessage, `Hata: ${error.message}`, 'error');
+      showMessage(apiKeysMessage, `${t('notifications.errorTitle')}: ${error.message}`, 'error');
       saveApiKeysBtn.disabled = false;
       saveApiKeysBtn.textContent = 'API Anahtarını Kaydet';
     }
@@ -2118,10 +2395,10 @@ function setupSettingsPage() {
       const result = await window.watchflowAPI.exportWatchlist(filePath);
       
       if (result.success) {
-        showMessage(exportMessage, `İzleme listesi başarıyla dışa aktarıldı: ${result.path}`, 'success');
+        showMessage(exportMessage, t('settings.exportSuccessMessage', { path: result.path }), 'success');
         showNotification(
-          'Yedekleme Başarılı', 
-          'Yedekleme başarıyla tamamlandı. Bu dosyayı güvenli bir yerde (harici disk, bulut depolama vb.) saklamanız önerilir.',
+          t('notifications.backupSuccessTitle'), 
+          t('notifications.backupSuccessMessage'),
           'success',
           8000
         );
@@ -2138,7 +2415,7 @@ function setupSettingsPage() {
       }
     } catch (error) {
       console.error('İzleme listesi dışa aktarılırken hata:', error);
-      showMessage(exportMessage, `Hata: ${error.message}`, 'error');
+      showMessage(exportMessage, `${t('notifications.errorTitle')}: ${error.message}`, 'error');
     } finally {
       exportWatchlistBtn.disabled = false;
       exportWatchlistBtn.textContent = 'İzleme Listesini Dışa Aktar';
@@ -2157,9 +2434,9 @@ async function updateLastBackupInfo() {
         // Tarihi formatlayarak göster
         const date = new Date(lastBackupDate);
         const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-        lastBackupInfo.textContent = `Son yedekleme: ${formattedDate}`;
+        lastBackupInfo.textContent = t('settings.lastBackupInfo', { date: formattedDate });
       } else {
-        lastBackupInfo.textContent = 'Son yedekleme: Yedekleme yapılmamış';
+        lastBackupInfo.textContent = t('settings.lastBackupInfo', { date: t('settings.noBackupYet') });
       }
     }
   } catch (error) {
@@ -2413,7 +2690,7 @@ function showRatingPopup(item, mediaType, button) {
         }
       } catch (error) {
         console.error('Puan güncellenirken hata:', error);
-        showNotification('Hata', 'Puan güncellenirken bir hata oluştu: ' + error.message, 'error');
+        showNotification(t('notifications.errorTitle'), t('errors.updateRatingError') + ' ' + error.message, 'error');
       }
     });
   });
@@ -2464,15 +2741,15 @@ function renderCustomSliders(watchlist) {
         
         if (category === 'homepage') {
           // Anasayfa sliderları için filtreleme mantığı
-          if (slider.name === 'İzlenen Animeler') {
+          if (slider.name === t('watchlist.homepageWatchingAnime')) {
             // Anime içeriklerinden izlenen olanları filtrele
-            filteredItems = watchlist['anime'] ? watchlist['anime'].filter(item => item.status === 'İzleniyor') : [];
-          } else if (slider.name === 'İzlenen Diziler') {
+            filteredItems = watchlist['anime'] ? watchlist['anime'].filter(item => item.status === t('watchlist.watchingStatus')) : [];
+          } else if (slider.name === t('watchlist.homepageWatchingTV')) {
             // Dizi içeriklerinden izlenen olanları filtrele
-            filteredItems = watchlist['tv'] ? watchlist['tv'].filter(item => item.status === 'İzleniyor') : [];
-          } else if (slider.name === 'İzlenecek Filmler') {
+            filteredItems = watchlist['tv'] ? watchlist['tv'].filter(item => item.status === t('watchlist.watchingStatus')) : [];
+          } else if (slider.name === t('watchlist.homepagePlannedMovies')) {
             // Film içeriklerinden izlenecek olanları filtrele
-            filteredItems = watchlist['movie'] ? watchlist['movie'].filter(item => item.status === 'İzlenecek') : [];
+            filteredItems = watchlist['movie'] ? watchlist['movie'].filter(item => item.status === t('watchlist.plannedStatus')) : [];
           }
         } else {
           // Diğer sayfalardaki sliderlar için
@@ -2485,9 +2762,11 @@ function renderCustomSliders(watchlist) {
         sliderSection.setAttribute('data-slider-id', slider.id);
         
         // Slider başlığını ve düzenleme butonunu ekle
+        const sliderLocaleKey = getSliderTranslationKey(slider.name, category);
+        const dataI18nAttr = sliderLocaleKey ? `data-i18n="${sliderLocaleKey}"` : '';
         sliderSection.innerHTML = `
           <div class="slider-header">
-            <h3>${slider.name}</h3>
+            <h3 ${dataI18nAttr}>${slider.name}</h3>
           </div>
           <div class="slider-container">
             <div class="slider-content" id="${slider.id}"></div>
@@ -2499,17 +2778,17 @@ function renderCustomSliders(watchlist) {
         if (headerElement) {
           const viewAllBtn = document.createElement('button');
           viewAllBtn.className = 'view-all-btn';
-          viewAllBtn.textContent = 'Tümünü Gör';
+          viewAllBtn.textContent = t('general.viewAll');
           viewAllBtn.setAttribute('data-slider-name', slider.name);
           
           // Homepage için media type'ı belirle
           let mediaType = category;
           if (category === 'homepage') {
-            if (slider.name === 'İzlenen Animeler') {
+            if (slider.name === t('watchlist.homepageWatchingAnime')) {
               mediaType = 'anime';
-            } else if (slider.name === 'İzlenen Diziler') {
+            } else if (slider.name === t('watchlist.homepageWatchingTV')) {
               mediaType = 'tv';
-            } else if (slider.name === 'İzlenecek Filmler') {
+            } else if (slider.name === t('watchlist.homepagePlannedMovies')) {
               mediaType = 'movie';
             }
           }
@@ -2533,15 +2812,15 @@ function renderCustomSliders(watchlist) {
           if (sliderContent) {
             // Eğer filtrelenmiş içerikler boşsa, bir mesaj göster
             if (filteredItems.length === 0) {
-              sliderContent.innerHTML = '<div class="empty-slider-message">Bu kategoride henüz içerik bulunmuyor</div>';
+              sliderContent.innerHTML = `<div class="empty-slider-message">${t('watchlist.emptyCategory')}</div>`;
             } else {
               // Homepage sliderı için uygun media type'ı belirle
               let mediaType = 'movie'; // varsayılan
-              if (slider.name === 'İzlenen Animeler') {
+              if (slider.name === t('watchlist.homepageWatchingAnime')) {
                 mediaType = 'anime';
-              } else if (slider.name === 'İzlenen Diziler') {
+              } else if (slider.name === t('watchlist.homepageWatchingTV')) {
                 mediaType = 'tv';
-              } else if (slider.name === 'İzlenecek Filmler') {
+              } else if (slider.name === t('watchlist.homepagePlannedMovies')) {
                 mediaType = 'movie';
               }
               
@@ -2575,7 +2854,7 @@ function fillSliderContent(sliderId, category, watchlist) {
   
   // Eğer filtrelenmiş içerikler boşsa, bir mesaj göster
   if (filteredItems.length === 0) {
-    container.innerHTML = '<div class="empty-slider-message">Bu kategoride henüz içerik bulunmuyor</div>';
+    container.innerHTML = `<div class="empty-slider-message">${t('watchlist.emptyCategory')}</div>`;
     return;
   }
   
@@ -2612,7 +2891,7 @@ function fillCustomSlider(slider, watchlist) {
   
   // Öğe yoksa mesaj göster
   if (items.length === 0) {
-    sliderContainer.innerHTML = '<div class="empty-slider-message">Bu slider için öğe bulunamadı.</div>';
+    sliderContainer.innerHTML = `<div class="empty-slider-message">${t('watchlist.emptySliderMessage')}</div>`;
     return;
   }
   
@@ -2664,7 +2943,7 @@ function fillCustomSlider(slider, watchlist) {
         <div class="media-card-content">
           <div class="media-card-title" title="${item.title}">${item.title}</div>
           <div class="media-card-info">
-            <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
+            <div class="media-card-year">${item.year || t('general.unknown')}</div>
             ${item.totalSeasons ? 
               `<div class="media-card-seasons"><i class="seasons-icon">📺</i>${item.totalSeasons}</div>` : ''}
           </div>
@@ -2794,7 +3073,7 @@ function showSliderEditPopup(slider) {
     const name = document.getElementById('slider-name').value.trim();
     
     if (!name) {
-      showNotification('Uyarı', 'Lütfen slider için bir ad girin!', 'warning');
+      showNotification(t('notifications.infoTitle'), t('notifications.sliderNameRequired'), 'warning');
       return;
     }
     
@@ -2804,7 +3083,7 @@ function showSliderEditPopup(slider) {
         ...slider,
         name
       });
-      showNotification('Başarılı', 'Slider başarıyla güncellendi!', 'success');
+      showNotification(t('notifications.successTitle'), t('notifications.sliderUpdateSuccess'), 'success');
     } else {
       // Yeni kategori oluştur
       await createCustomSlider({
@@ -2817,7 +3096,7 @@ function showSliderEditPopup(slider) {
           anime: []
         }
       });
-      showNotification('Başarılı', 'Yeni kategori başarıyla oluşturuldu!', 'success');
+      showNotification(t('notifications.successTitle'), t('notifications.sliderCreateSuccess'), 'success');
     }
     
     // Popup'ı kapat
@@ -2877,7 +3156,7 @@ function displaySliderItems(slider) {
             </div>
             <div class="slider-item-info">
               <div class="slider-item-title">${item.title}</div>
-              <div class="slider-item-year">${item.year || 'Bilinmeyen'}</div>
+              <div class="slider-item-year">${item.year || t('general.unknown')}</div>
             </div>
             <button class="slider-item-remove-btn" data-id="${item.id}" data-type="${mediaType}">
               <span>&times;</span>
@@ -2907,7 +3186,7 @@ function displaySliderItems(slider) {
   
   // Eğer öğe yoksa mesaj göster
   if (!hasItems) {
-    container.innerHTML = '<div class="empty-items-message">Bu sliderda henüz içerik bulunmuyor.</div>';
+    container.innerHTML = `<div class="empty-items-message">${t('watchlist.emptyCustomSliderMessage')}</div>`;
   }
 }
 
@@ -2941,22 +3220,22 @@ function showContentSearchPopup(sliderId) {
   popupOverlay.innerHTML = `
     <div class="content-search-popup">
       <div class="content-search-popup-header">
-        <div class="content-search-popup-title">"${sliderName}" İçin İçerik Ekle</div>
+        <div class="content-search-popup-title">${t('search.addContentToSliderTitle', { sliderName: sliderName })}</div>
         <button class="content-search-popup-close">&times;</button>
       </div>
       <div class="content-search-popup-body">
         <div class="search-form">
-          <input type="text" id="content-search-input" class="content-search-input" placeholder="Film, dizi veya anime ara...">
+          <input type="text" id="content-search-input" class="content-search-input" placeholder="${t('general.searchPlaceholder')}">
           
           <div class="search-type-selection">
             <label class="radio-label">
-              <input type="radio" name="contentSearchType" value="movie" checked> Film
+              <input type="radio" name="contentSearchType" value="movie" checked> ${t('general.mediaTypes.movie')}
             </label>
             <label class="radio-label">
-              <input type="radio" name="contentSearchType" value="tv"> Dizi
+              <input type="radio" name="contentSearchType" value="tv"> ${t('general.mediaTypes.tv')}
             </label>
             <label class="radio-label">
-              <input type="radio" name="contentSearchType" value="anime"> Anime
+              <input type="radio" name="contentSearchType" value="anime"> ${t('general.mediaTypes.anime')}
             </label>
           </div>
           
@@ -2965,7 +3244,7 @@ function showContentSearchPopup(sliderId) {
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            Ara
+            ${t('general.searchButton')}
           </button>
         </div>
         
@@ -2975,7 +3254,7 @@ function showContentSearchPopup(sliderId) {
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <p>Eklemek istediğiniz içeriği aramak için yukarıdaki arama kutusunu kullanın</p>
+            <p>${t('search.initialSearchText')}</p>
           </div>
         </div>
       </div>
@@ -3022,7 +3301,7 @@ async function performContentSearch(sliderId) {
   const query = searchInput.value.trim();
   
   if (!query) {
-    showNotification('Uyarı', 'Lütfen arama sorgusu girin!', 'warning');
+          showNotification(t('notifications.warningTitle'), t('notifications.searchQueryRequired'), 'warning');
     return;
   }
   
@@ -3047,7 +3326,7 @@ async function performContentSearch(sliderId) {
     displayContentSearchResults(results, searchType, sliderId);
   } catch (error) {
     console.error('Arama hatası:', error);
-    resultsContainer.innerHTML = `<div class="error-message">Arama sırasında bir hata oluştu: ${error.message}</div>`;
+    resultsContainer.innerHTML = `<div class="error-message">${t('errors.searchError')} ${error.message}</div>`;
   }
 }
 
@@ -3111,7 +3390,7 @@ function displayContentSearchResults(results, searchType, sliderId) {
     const resultItem = document.createElement('div');
     resultItem.className = 'content-search-list-item';
     
-    const imageUrl = item.imageUrl || './assets/images/placeholder.jpg';
+    const imageUrl = item.imageUrl || '../assets/no-image.jpg';
     
     // Anime için orijinal başlığı kullan, diğer içerikler için normal başlık
     const displayTitle = searchType === 'anime' && item.original_title ? item.original_title : item.title;
@@ -3123,10 +3402,10 @@ function displayContentSearchResults(results, searchType, sliderId) {
     // HTML yapısını oluştur
     resultItem.innerHTML = `
       <div class="content-search-item-left">
-        <img class="content-result-image" src="${imageUrl}" alt="${displayTitle}" onerror="this.src='./assets/images/placeholder.jpg'">
+        <img class="content-result-image" src="${imageUrl}" alt="${displayTitle}" onerror="this.src='../assets/no-image.jpg'">
         <div class="content-search-item-info">
           <div class="content-search-item-title">${displayTitle}</div>
-          <div class="content-search-item-year">${item.year || ''}</div>
+          <div class="content-search-item-year">${item.year || t('general.unknown')}</div>
         </div>
       </div>
       <div class="content-search-item-right">
@@ -3162,7 +3441,7 @@ function displayContentSearchResults(results, searchType, sliderId) {
           id: item.id,
           title: item.title,
           type: searchType,
-          year: item.year || '',
+          year: item.year || t('general.unknown'),
           imageUrl: item.imageUrl,
           status: sliderObj.name,
           dateAdded: new Date().toISOString()
@@ -3193,9 +3472,9 @@ async function createCustomSlider(slider) {
     if (result.success) {
       // İzleme listesini yeniden yükle ve sliderları göster
       loadWatchlist();
-      showNotification('Başarılı', 'Slider başarıyla oluşturuldu.', 'success');
+      showNotification(t('notifications.successTitle'), t('notifications.sliderCreateSuccess'), 'success');
     } else {
-      showNotification('Hata', 'Slider oluşturulurken bir hata oluştu: ' + result.error, 'error');
+      showNotification(t('notifications.errorTitle'), t('errors.sliderCreateError') + ' ' + result.error, 'error');
     }
   } catch (error) {
     console.error('Slider oluşturma hatası:', error);
@@ -3335,16 +3614,16 @@ function setupSettingsIcons() {
       
       switch(sectionId) {
         case 'home-page':
-          sectionTitle = 'Anasayfa Kategorileri';
+          sectionTitle = t('settings.homepageCategoriesTitle');
           break;
         case 'movies-page':
-          sectionTitle = 'Film Kategorileri';
+          sectionTitle = t('settings.movieCategoriesTitle');
           break;
         case 'series-page':
-          sectionTitle = 'Dizi Kategorileri';
+          sectionTitle = t('settings.seriesCategoriesTitle');
           break;
         case 'anime-page':
-          sectionTitle = 'Anime Kategorileri';
+          sectionTitle = t('settings.animeCategoriesTitle');
           break;
       }
       
@@ -3423,9 +3702,13 @@ async function loadSliderList(sectionId) {
         newItem.setAttribute('data-slider-id', slider.id);
         newItem.setAttribute('data-index', slider.index);
         
+        // Slider adının çeviri anahtarını al
+        const translationKey = getSliderTranslationKey(slider.name, category);
+        const dataI18nAttr = translationKey ? `data-i18n="${translationKey}"` : '';
+        
         newItem.innerHTML = `
           <div class="slider-item-content">
-            <span class="slider-item-name">${slider.name}</span>
+            <span class="slider-item-name" ${dataI18nAttr}>${translationKey ? t(translationKey) : slider.name}</span>
             <div class="slider-item-actions">
               <button class="slider-action-btn delete-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3455,9 +3738,13 @@ async function loadSliderList(sectionId) {
         if (deleteBtn) {
           deleteBtn.addEventListener('click', function(e) {
             e.stopPropagation();
+            // Slider adının çeviri anahtarını al
+            const translationKey = getSliderTranslationKey(slider.name, category);
+            const displayName = translationKey ? t(translationKey) : slider.name;
+            
             showConfirmation(
-              'Slider\'ı Sil',
-              `"${slider.name}" slider'ını silmek istediğinize emin misiniz?`,
+              t('confirmation.deleteSliderTitle'),
+              t('confirmation.deleteSliderMessage', { sliderName: displayName }),
               () => deleteCustomSlider(slider.id)
             );
           });
@@ -3658,17 +3945,17 @@ function showAddSliderModal(sectionId) {
   modalOverlay.innerHTML = `
     <div class="add-slider-modal">
       <div class="add-slider-modal-header">
-        <h3>Yeni Slider Ekle</h3>
+        <h3 data-i18n="settings.addSliderModal.title">Yeni Slider Ekle</h3>
         <button class="add-slider-modal-close">&times;</button>
       </div>
       <div class="add-slider-modal-body">
         <div class="form-group">
-          <label for="new-slider-name">Slider Adı</label>
-          <input type="text" id="new-slider-name" class="slider-edit-input" placeholder="Slider adı girin">
+          <label for="new-slider-name" data-i18n="settings.sliderEdit.nameLabel">Slider Adı</label>
+            <input type="text" id="new-slider-name" class="slider-edit-input" placeholder="Slider adı girin" data-i18n-placeholder="settings.sliderEdit.namePlaceholder">
         </div>
         <div class="add-slider-modal-actions">
-          <button id="cancel-add-slider" class="slider-edit-cancel-btn">İptal</button>
-          <button id="confirm-add-slider" class="slider-edit-save-btn">Ekle</button>
+          <button id="cancel-add-slider" class="slider-edit-cancel-btn" data-i18n="general.cancel">İptal</button>
+            <button id="confirm-add-slider" class="slider-edit-save-btn" data-i18n="settings.sliderEdit.createButton">Ekle</button>
         </div>
       </div>
     </div>
@@ -3702,7 +3989,7 @@ function showAddSliderModal(sectionId) {
     const sliderName = document.getElementById('new-slider-name').value.trim();
     
     if (!sliderName) {
-      showNotification('Uyarı', 'Lütfen bir slider adı girin!', 'warning');
+      showNotification(t('notifications.infoTitle'), t('settings.sliderEdit.emptyNameError'), 'warning');
       return;
     }
     
@@ -3723,7 +4010,7 @@ function showAddSliderModal(sectionId) {
       const sliderName = nameInput.value.trim();
       
       if (!sliderName) {
-        showNotification('Uyarı', 'Lütfen bir slider adı girin!', 'warning');
+        showNotification(t('notifications.infoTitle'), t('settings.sliderEdit.emptyNameError'), 'warning');
         return;
       }
       
@@ -3866,7 +4153,7 @@ async function searchContentsFromText() {
   
   const text = textarea.value.trim();
   if (!text) {
-    showNotification('Uyarı', 'Lütfen içerik listesi girin.', 'warning');
+    showNotification(t('notifications.warningTitle'), t('search.bulkAdd.emptyListError'), 'warning');
     return;
   }
   
@@ -3877,7 +4164,7 @@ async function searchContentsFromText() {
   const lines = text.split('\n').filter(line => line.trim());
   
   if (lines.length === 0) {
-    showNotification('Uyarı', 'Geçerli içerik bulunamadı.', 'warning');
+    showNotification(t('notifications.warningTitle'), t('search.bulkAdd.noValidContentError'), 'warning');
     return;
   }
   
@@ -4004,8 +4291,8 @@ async function performBulkSearch(contents) {
       
       ${contents.filter(c => c.type === 'anime').length > 0 ? `
       <div class="loading-info">
-        <p><strong>Not:</strong> Anime aramaları için toplu arama kullanılıyor.</p>
-        <p>Bu, işlemi hızlandıracak ve API rate limit sorunlarını azaltacaktır.</p>
+        <p><strong>${t('search.bulkAdd.noteTitle')}</strong> ${t('search.bulkAdd.animeBatchNote1')}</p>
+        <p>${t('search.bulkAdd.animeBatchNote2')}</p>
       </div>` : ''}
     </div>
   `;
@@ -4131,9 +4418,9 @@ async function performBulkSearch(contents) {
     displayBulkSearchResults(searchResults, resultsContainer);
     
     if (searchResults.length > 0) {
-      showNotification('Başarılı', `İçerik arama işlemi tamamlandı! ${searchResults.length} içerik bulundu.`, 'success');
+      showNotification(t('notifications.successTitle'), t('notifications.bulkSearchSuccessMessage', { count: searchResults.length }), 'success');
     } else {
-      showNotification('Uyarı', 'Hiçbir içerik bulunamadı. Lütfen girdiğiniz verileri kontrol edin.', 'warning');
+      showNotification(t('notifications.infoTitle'), t('notifications.bulkSearchNoResultsWarning'), 'warning');
     }
     
     // Özet bilgileri konsola yazdır
@@ -4145,7 +4432,7 @@ async function performBulkSearch(contents) {
       
   } catch (error) {
     console.error('İçerik arama işlemi sırasında hata:', error);
-    showNotification('Hata', 'İçerik arama işlemi sırasında bir hata oluştu.', 'error');
+    showNotification(t('notifications.errorTitle'), t('notifications.bulkSearchError'), 'error');
     
     // Hata durumunda da sonuçları göster (varsa)
     if (searchResults.length > 0) {
@@ -4307,12 +4594,12 @@ function displayBulkSearchResults(results, container) {
         statusOptions += `<option value="${slider.name}">${slider.name}</option>`;
       });
     } else {
-      // Watchlist yapısı bulunamadığında veya kategoriler yoksa varsayılan kategorileri kullan
-      statusOptions = `
-        <option value="İzlendi">İzlendi</option>
-        <option value="İzleniyor">İzleniyor</option>
-        <option value="İzlenecek" selected>İzlenecek</option>
-      `;
+          // Watchlist yapısı bulunamadığında veya kategoriler yoksa varsayılan kategorileri kullan
+    statusOptions = `
+      <option value="İzlendi" data-i18n="watchlist.status.watched">${t('watchlist.status.watched')}</option>
+      <option value="İzleniyor" data-i18n="watchlist.status.watching">${t('watchlist.status.watching')}</option>
+      <option value="İzlenecek" selected data-i18n="watchlist.status.toWatch">${t('watchlist.status.toWatch')}</option>
+    `;
     }
     
     // JSON'u base64 olarak encode edelim - bu şekilde tırnak işaretlerinden kaynaklanabilecek hataları önlemiş oluruz
@@ -4334,7 +4621,7 @@ function displayBulkSearchResults(results, container) {
           <h4 class="bulk-item-title">${displayTitle} ${year ? `(${year})` : ''}</h4>
           <div class="bulk-item-type">${translateType(mediaType)}</div>
           <div class="bulk-item-status">
-            <label>Durum: 
+            <label data-i18n="bulk.statusLabel">Durum: 
               <select class="bulk-item-status-select" data-media-type="${mediaType}">
                 ${statusOptions}
               </select>
@@ -4346,7 +4633,7 @@ function displayBulkSearchResults(results, container) {
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
-              Yeniden Ara
+              ${t('search.researchDialog.title')}
             </button>
           </div>
         </div>
@@ -4373,9 +4660,9 @@ function displayBulkSearchResults(results, container) {
 // Tür çevirisi
 function translateType(type) {
   switch(type) {
-    case 'movie': return 'Film';
-    case 'tv': return 'Dizi';
-    case 'anime': return 'Anime';
+    case 'movie': return t('general.mediaTypes.movie');
+    case 'tv': return t('general.mediaTypes.tv');
+    case 'anime': return t('general.mediaTypes.anime');
     default: return type;
   }
 }
@@ -4394,7 +4681,7 @@ async function addSelectedContents() {
   const totalSelected = checkboxes.length;
   
   if (totalSelected === 0) {
-    showNotification('Uyarı', 'Lütfen eklemek için en az bir içerik seçin.', 'warning');
+    showNotification(t('notifications.infoTitle'), t('notifications.bulkAdd.selectAtLeastOne'), 'warning');
     return;
   }
   
@@ -4407,7 +4694,7 @@ async function addSelectedContents() {
   resultsContainer.innerHTML = `
     <div class="loading-indicator">
       <div class="loader"></div>
-      <p>Seçilen içerikler ekleniyor...</p>
+      <p>${t('search.bulkAdd.addingSelectedButton')}</p>
       <div class="loading-progress-container">
         <div class="loading-progress-bar" id="addProgressBar"></div>
         <div class="loading-progress-text" id="addProgressText">İşleniyor: 0/${totalSelected}</div>
@@ -4420,7 +4707,7 @@ async function addSelectedContents() {
   const progressText = document.getElementById('addProgressText');
   
   // Yükleniyor mesajı
-  showNotification('Bilgi', 'Seçilen içerikler ekleniyor...', 'info');
+  showNotification(t('notifications.infoTitle'), t('search.bulkAdd.addingSelectedButton'), 'info');
   
   // İstatistikler
   let successCount = 0;
@@ -4441,11 +4728,13 @@ async function addSelectedContents() {
       
       // İçerik adını al ve ilerleme metnini güncelle
       const itemTitle = resultItem.title || "İçerik";
-      progressText.textContent = `İşleniyor: ${counter+1}/${totalSelected} - "${itemTitle}"`;
+      progressText.textContent = t('search.bulkAdd.processingText', { processed: counter+1, total: totalSelected, title: itemTitle });
       
       // Kullanıcının seçtiği kategoriyi (slider) al
       const statusSelect = bulkItem.querySelector('.bulk-item-status-select');
-      const status = statusSelect ? statusSelect.value : 'İzlenecek'; // Varsayılan olarak "İzlenecek"
+      const selectedStatus = statusSelect ? statusSelect.value : 'İzlenecek'; // Varsayılan olarak "İzlenecek"
+      // Kullanıcı ara yüzdeki değeri veritabanı için doğru formata çevirelim
+      const status = translateWatchlistStatus(selectedStatus, 'uiToDb');
       
       // İçerik türünü al
       const mediaType = bulkItem.dataset.type || resultItem.type;
@@ -4561,7 +4850,7 @@ async function addSelectedContents() {
       console.error('İçerik eklenirken hata:', error);
       // İçerik bilgisini al
       const item = checkbox.closest('.bulk-result-item');
-      const title = item ? item.querySelector('.bulk-item-title')?.textContent : 'Bilinmeyen içerik';
+      const title = item ? item.querySelector('.bulk-item-title')?.textContent : t('search.bulkAdd.unknownContent');
       errorCount++;
       errorMessages.push(`${title}: ${error.message}`);
       
@@ -4603,71 +4892,87 @@ async function addSelectedContents() {
  * Kullanım: showNotification('Başlık', 'Mesaj', 'success'); // 'info', 'success', 'warning', 'error'
  */
 function showNotification(title, message, type = 'info', duration = 5000) {
-  const notificationContainer = document.getElementById('notificationContainer');
-  
-  // Bildirim ID'si
-  const notificationId = 'notification_' + Date.now();
-  
-  // İkon 
-  let icon = '';
-  switch (type) {
-    case 'success':
-      icon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
-      break;
-    case 'warning':
-      icon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
-      break;
-    case 'error':
-      icon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
-      break;
-    case 'info':
-    default:
-      icon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
-      break;
+  // Başlık ve mesaj için dil kontrolü yap
+  // Eğer başlık doğrudan hardcoded bir değerse, uygun çeviri anahtarını kullan
+  if (title === 'Başarılı') title = t('notifications.successTitle');
+  else if (title === 'Hata') title = t('notifications.errorTitle');
+  else if (title === 'Uyarı') title = t('notifications.warningTitle');
+  else if (title === 'Bilgi') title = t('notifications.infoTitle');
+
+  // Mesaj için hardcoded kontroller
+  // Slider ile ilgili mesajlar
+  if (message === 'Slider başarıyla oluşturuldu.') message = t('notifications.sliderCreateSuccess');
+  else if (message === 'Slider başarıyla güncellendi.') message = t('notifications.sliderUpdateSuccess');
+  else if (message === 'Slider başarıyla silindi!') message = t('notifications.sliderDeleteSuccess');
+  else if (message === 'Slider oluşturulurken bir hata oluştu.') message = t('errors.sliderCreateError');
+  else if (message === 'Slider güncellenirken bir hata oluştu.') message = t('errors.sliderUpdateError');
+  else if (message === 'Slider silinirken bir hata oluştu.') message = t('errors.sliderDeleteError');
+  else if (message === 'Slider yapısı bulunamadı!') message = t('errors.sliderStructureNotFound');
+  else if (message === 'Silinecek slider bulunamadı!') message = t('errors.sliderNotFoundToDelete');
+  else if (message.includes('Slider oluşturulurken bir hata oluştu:')) {
+    message = t('errors.sliderCreateError') + message.split('Slider oluşturulurken bir hata oluştu:')[1];
+  }
+  else if (message.includes('Slider güncellenirken bir hata oluştu:')) {
+    message = t('errors.sliderUpdateError') + message.split('Slider güncellenirken bir hata oluştu:')[1];
   }
   
-  // Bildirim HTML'i
-  const notificationHTML = `
-    <div id="${notificationId}" class="notification ${type}">
+  // Öğe ekleme/silme ile ilgili mesajlar
+  else if (message === 'Öğe slider\'a eklendi.') message = t('notifications.itemAddedToSlider');
+  else if (message === 'Öğe slider\'dan kaldırıldı.') message = t('notifications.removeItemSuccess');
+  else if (message === 'Öğe eklenirken bir hata oluştu.') message = t('errors.itemAddError');
+  else if (message === 'Öğe kaldırılırken bir hata oluştu.') message = t('errors.itemRemoveError');
+  else if (message.includes('Öğe eklenirken bir hata oluştu:')) {
+    message = t('errors.itemAddError') + message.split('Öğe eklenirken bir hata oluştu:')[1];
+  }
+  else if (message.includes('Öğe kaldırılırken bir hata oluştu:')) {
+    message = t('errors.itemRemoveError') + message.split('Öğe kaldırılırken bir hata oluştu:')[1];
+  }
+  
+  // Arama ile ilgili mesajlar
+  else if (message === 'Lütfen arama sorgusu girin!') message = t('notifications.searchQueryRequired');
+  else if (message === 'Geçersiz sayfa kategorisi!') message = t('notifications.invalidPageCategory');
+  else if (message === 'Aranacak geçerli içerik bulunamadı!') message = t('notifications.noValidContent');
+  else if (message === 'Slider sıralaması güncellenirken bir hata oluştu.') message = t('notifications.sliderOrderUpdateError');
+  
+  try {
+    // Bildirim element'i oluştur
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    
+    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : type === 'warning' ? '⚠' : 'ℹ';
+    
+    notification.innerHTML = `
       <div class="notification-icon">${icon}</div>
       <div class="notification-content">
         <div class="notification-title">${title}</div>
         <div class="notification-message">${message}</div>
       </div>
       <button class="notification-close">×</button>
-      <div class="notification-progress"></div>
-    </div>
-  `;
-  
-  // Bildirimi ekle
-  notificationContainer.insertAdjacentHTML('afterbegin', notificationHTML);
-  
-  // Bildirimi bul
-  const notification = document.getElementById(notificationId);
-  
-  // Progress bar animasyonu
-  const progressBar = notification.querySelector('.notification-progress');
-  progressBar.style.width = '100%';
-  progressBar.style.transition = `width ${duration}ms linear`;
-  
-  // Progress bar animasyonunu başlat
-  setTimeout(() => {
-    progressBar.style.width = '0%';
-  }, 10);
-  
-  // Kapanış butonu
-  const closeButton = notification.querySelector('.notification-close');
-  closeButton.addEventListener('click', () => {
-    closeNotification(notification);
-  });
-  
-  // Otomatik kapanma
-  setTimeout(() => {
-    closeNotification(notification);
-  }, duration);
-  
-  // Bildirimi döndür
-  return notification;
+    `;
+    
+    // Bildirim container'ı bul veya oluştur
+    let notificationContainer = document.getElementById('notificationContainer');
+    if (!notificationContainer) {
+      notificationContainer = document.createElement('div');
+      notificationContainer.id = 'notificationContainer';
+      document.body.appendChild(notificationContainer);
+    }
+    
+    // Bildirimi container'a ekle
+    notificationContainer.appendChild(notification);
+    
+    // Kapatma butonuna tıklama olayı ekle
+    const closeButton = notification.querySelector('.notification-close');
+    closeButton.addEventListener('click', () => closeNotification(notification));
+    
+    // Otomatik kapanma için zamanlayıcı
+    setTimeout(() => {
+      closeNotification(notification);
+    }, duration);
+    
+  } catch (error) {
+    console.error('Bildirim gösterilirken bir hata oluştu:', error);
+  }
 }
 
 function closeNotification(notification) {
@@ -4688,24 +4993,24 @@ function generateRelatedAnimeHTML(relatedData) {
     return '';
   }
   
-  // İlişki türlerini Türkçe'ye çevir
-  const relationTranslations = {
-    'SEQUEL': 'Devam Serisi',
-    'PREQUEL': 'Önceki Seri',
-    'SIDE_STORY': 'Yan Hikaye',
-    'PARENT': 'Ana Seri',
-    'SUMMARY': 'Özet',
-    'ALTERNATIVE': 'Alternatif Versiyon',
-    'SPIN_OFF': 'Yan Ürün',
-    'CHARACTER': 'Aynı Karakterler',
-    'OTHER': 'Diğer',
-    'SOURCE': 'Kaynak',
-    'ADAPTATION': 'Uyarlama',
-    'RECOMMENDATION': 'Tavsiye',
+  // İlişki türleri için çevirileri kullan
+  const relationTypes = {
+    'SEQUEL': t('relatedAnime.relationTypes.sequel'),
+    'PREQUEL': t('relatedAnime.relationTypes.prequel'),
+    'SIDE_STORY': t('relatedAnime.relationTypes.sideStory'),
+    'PARENT': t('relatedAnime.relationTypes.parent'),
+    'SUMMARY': t('relatedAnime.relationTypes.summary'),
+    'ALTERNATIVE': t('relatedAnime.relationTypes.alternative'),
+    'SPIN_OFF': t('relatedAnime.relationTypes.spinOff'),
+    'CHARACTER': t('relatedAnime.relationTypes.character'),
+    'OTHER': t('relatedAnime.relationTypes.other'),
+    'SOURCE': t('relatedAnime.relationTypes.source'),
+    'ADAPTATION': t('relatedAnime.relationTypes.adaptation'),
+    'RECOMMENDATION': t('relatedAnime.relationTypes.recommendation'),
   };
   
   let html = '<div class="related-anime-container">';
-  html += '<h3>İlişkili Animeler</h3>';
+  html += `<h3>${t('relatedAnime.title')}</h3>`;
   
   // Boş ilişki bölümü sayacı
   let emptyRelationsCount = 0;
@@ -4718,7 +5023,7 @@ function generateRelatedAnimeHTML(relatedData) {
       return;
     }
     
-    const relationName = relationTranslations[relation.relation] || relation.relation;
+    const relationName = relationTypes[relation.relation] || relation.relation;
     html += `<div class="related-anime-section">`;
     html += `<h4>${relationName}</h4>`;
     html += `<div class="related-anime-list">`;
@@ -4729,11 +5034,11 @@ function generateRelatedAnimeHTML(relatedData) {
       
       // Format türüne göre etiket oluştur
       switch(anime.format) {
-        case 'TV': animeType = 'TV'; break;
-        case 'MOVIE': animeType = 'Film'; break;
-        case 'OVA': animeType = 'OVA'; break;
-        case 'ONA': animeType = 'ONA'; break;
-        case 'SPECIAL': animeType = 'Özel'; break;
+        case 'TV': animeType = t('relatedAnime.formatTypes.tv'); break;
+        case 'MOVIE': animeType = t('relatedAnime.formatTypes.movie'); break;
+        case 'OVA': animeType = t('relatedAnime.formatTypes.ova'); break;
+        case 'ONA': animeType = t('relatedAnime.formatTypes.ona'); break;
+        case 'SPECIAL': animeType = t('relatedAnime.formatTypes.special'); break;
         default: animeType = anime.format || ''; 
       }
       
@@ -4752,11 +5057,11 @@ function generateRelatedAnimeHTML(relatedData) {
             <div class="related-anime-meta">
               ${anime.year ? `<span class="related-anime-year">${anime.year}</span>` : ''}
               ${animeType ? `<span class="related-anime-type">${animeType}</span>` : ''}
-              ${anime.episodes ? `<span class="related-anime-episodes">${anime.episodes} Bölüm</span>` : ''}
+              ${anime.episodes ? `<span class="related-anime-episodes">${anime.episodes} ${t('relatedAnime.seasons')}</span>` : ''}
             </div>
           </div>
           <div class="related-anime-actions">
-            <button class="related-anime-add" title="İzleme Listesine Ekle">
+            <button class="related-anime-add" title="${t('watchlist.addToWatchlistButton')}">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
             </button>
           </div>
@@ -4769,7 +5074,7 @@ function generateRelatedAnimeHTML(relatedData) {
   
   // Eğer hiç ilişki bulunamadıysa, bilgi mesajı göster
   if (emptyRelationsCount === relatedData.length) {
-    html += `<div class="empty-related-message">Bu anime için ilişkili içerik bulunamadı.</div>`;
+    html += `<div class="empty-related-message">${t('relatedAnime.noRelatedFound')}</div>`;
   }
   
   html += '</div>';
@@ -4789,25 +5094,25 @@ function openResearchDialog(initialQuery, contentType, sourceButton) {
     <div class="research-dialog-overlay">
       <div class="research-dialog">
         <div class="research-dialog-header">
-          <h3>İçeriği Yeniden Ara</h3>
+          <h3>${t('search.researchDialog.title')}</h3>
           <button class="research-dialog-close">&times;</button>
         </div>
         <div class="research-dialog-body">
           <div class="research-form">
             <div class="research-input-group">
-              <label for="research-query">İçerik Adı:</label>
+              <label for="research-query">${t('search.researchDialog.contentNameLabel')}</label>
               <input type="text" id="research-query" class="research-query-input" value="${initialQuery}" autofocus>
             </div>
             
             <div class="research-type-selection">
               <label class="radio-label">
-                <input type="radio" name="researchType" value="movie" ${contentType === 'movie' ? 'checked' : ''}> Film
+                <input type="radio" name="researchType" value="movie" ${contentType === 'movie' ? 'checked' : ''}> ${t('general.mediaTypes.movie')}
               </label>
               <label class="radio-label">
-                <input type="radio" name="researchType" value="tv" ${contentType === 'tv' ? 'checked' : ''}> Dizi
+                <input type="radio" name="researchType" value="tv" ${contentType === 'tv' ? 'checked' : ''}> ${t('general.mediaTypes.tv')}
               </label>
               <label class="radio-label">
-                <input type="radio" name="researchType" value="anime" ${contentType === 'anime' ? 'checked' : ''}> Anime
+                <input type="radio" name="researchType" value="anime" ${contentType === 'anime' ? 'checked' : ''}> ${t('general.mediaTypes.anime')}
               </label>
             </div>
           </div>
@@ -4815,14 +5120,14 @@ function openResearchDialog(initialQuery, contentType, sourceButton) {
           <div class="research-results-container">
             <div class="research-loading hidden">
               <div class="loader"></div>
-              <p>Aranıyor...</p>
+              <p>${t('search.searchingLoading')}</p>
             </div>
             <div id="researchResults" class="research-results"></div>
           </div>
         </div>
         <div class="research-dialog-footer">
-          <button class="research-cancel-btn">İptal</button>
-          <button class="research-search-btn">Ara</button>
+          <button class="research-cancel-btn">${t('general.cancel')}</button>
+          <button class="research-search-btn">${t('search.searchButton')}</button>
         </div>
       </div>
     </div>
@@ -4884,7 +5189,7 @@ async function performSingleReSearch(dialog, sourceButton) {
   
   // Validasyon
   if (!query) {
-    showNotification('Uyarı', 'Lütfen arama sorgusu girin!', 'warning');
+    showNotification(t('notifications.infoTitle'), t('notifications.searchWarningNoQuery'), 'warning');
     return;
   }
   
@@ -4908,7 +5213,7 @@ async function performSingleReSearch(dialog, sourceButton) {
     
     // Sonuç yoksa mesaj göster
     if (!results || results.length === 0) {
-      resultsContainer.innerHTML = '<div class="no-results">Sonuç bulunamadı. Lütfen başka bir arama terimi deneyin.</div>';
+      resultsContainer.innerHTML = `<div class="no-results">${t('search.noSearchResults')}</div>`;
       return;
     }
     
@@ -4917,19 +5222,19 @@ async function performSingleReSearch(dialog, sourceButton) {
     
     results.forEach((item, idx) => {
       const year = item.year || '';
-      const imageUrl = item.imageUrl || './assets/images/placeholder.jpg';
+      const imageUrl = item.imageUrl || '../assets/no-image.jpg';
       const displayTitle = contentType === 'anime' && item.original_title ? item.original_title : item.title;
       
       resultsHTML += `
         <div class="research-result-item" data-index="${idx}">
           <div class="research-result-image">
-            <img src="${imageUrl}" alt="${displayTitle}" onerror="this.src='./assets/images/placeholder.jpg'">
+            <img src="${imageUrl}" alt="${displayTitle}" onerror="this.src='../assets/no-image.jpg'">
           </div>
           <div class="research-result-info">
             <div class="research-result-title">${displayTitle} ${year ? `(${year})` : ''}</div>
             <div class="research-result-type">${translateType(contentType)}</div>
           </div>
-          <button class="research-result-select-btn" data-index="${idx}">Seç</button>
+          <button class="research-result-select-btn" data-index="${idx}">${t('general.confirm')}</button>
         </div>
       `;
     });
@@ -4949,7 +5254,7 @@ async function performSingleReSearch(dialog, sourceButton) {
   } catch (error) {
     console.error('Yeniden arama sırasında hata:', error);
     loadingIndicator.classList.add('hidden');
-    resultsContainer.innerHTML = `<div class="error-message">Arama sırasında bir hata oluştu: ${error.message}</div>`;
+    resultsContainer.innerHTML = `<div class="error-message">${t('errors.contentSearchErrorPrefix')} ${error.message}</div>`;
   }
 }
 
@@ -4959,7 +5264,7 @@ function replaceSearchResult(sourceButton, newResult, contentType, dialog) {
     // Kaynak butonunun bulunduğu kart öğesini bul
     const resultItem = sourceButton.closest('.bulk-result-item');
     if (!resultItem) {
-      throw new Error('Sonuç kartı bulunamadı');
+      throw new Error(t('errors.updateResultError'));
     }
     
     // Anime için orijinal başlığı kullan, diğer içerikler için normal başlık
@@ -4972,12 +5277,12 @@ function replaceSearchResult(sourceButton, newResult, contentType, dialog) {
     
     // Öğeleri kontrol et
     if (!titleElement || !imageElement || !dataInput) {
-      throw new Error('Sonuç kartı elemanları bulunamadı');
+      throw new Error(t('errors.updateResultElementsError'));
     }
     
     // Başlık ve görsel güncelle
     titleElement.textContent = displayTitle + (newResult.year ? ` (${newResult.year})` : '');
-    imageElement.src = newResult.imageUrl || './assets/images/placeholder.jpg';
+    imageElement.src = newResult.imageUrl || '../assets/no-image.jpg';
     
     // data-type özniteliğini güncelle
     resultItem.setAttribute('data-type', contentType);
@@ -4992,14 +5297,14 @@ function replaceSearchResult(sourceButton, newResult, contentType, dialog) {
     sourceButton.setAttribute('data-type', contentType);
     
     // Başarılı bildirim göster
-    showNotification('Başarılı', 'İçerik başarıyla güncellendi!', 'success');
+    showNotification(t('notifications.successTitle'), t('notifications.contentUpdateSuccess'), 'success');
     
     // Diyalogu kapat
     dialog.remove();
     
   } catch (error) {
     console.error('Sonuç güncelleme hatası:', error);
-    showNotification('Hata', 'İçerik güncellenirken bir hata oluştu: ' + error.message, 'error');
+    showNotification(t('notifications.errorTitle'), t('errors.contentUpdateErrorPrefix') + ' ' + error.message, 'error');
   }
 }
 
@@ -5014,7 +5319,7 @@ function showStatusPopup(item, mediaType, button) {
   // Mevcut watchlist'i al
   const watchlist = window.currentWatchlist;
   if (!watchlist || !watchlist.sliders || !watchlist.sliders[mediaType]) {
-    showNotification('Hata', 'Slider bilgileri bulunamadı', 'error');
+    showNotification(t('notifications.errorTitle'), t('errors.sliderInfoNotFound'), 'error');
     return;
   }
 
@@ -5064,6 +5369,10 @@ function showStatusPopup(item, mediaType, button) {
         listItem.classList.add('active');
       }
       
+      // Slider adının çeviri anahtarını al
+      const translationKey = getSliderTranslationKey(slider.name, mediaType);
+      const displayName = translationKey ? t(translationKey) : translateWatchlistStatus(slider.name);
+      
       listItem.innerHTML = `
         <span class="status-popup-item-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -5074,7 +5383,7 @@ function showStatusPopup(item, mediaType, button) {
             <path d="M22 4v16"></path>
           </svg>
         </span>
-        ${slider.name}
+        ${displayName}
       `;
       
       // Slider'a tıklama olayı ekle
@@ -5100,19 +5409,19 @@ function showStatusPopup(item, mediaType, button) {
             const result = await window.watchflowAPI.updateWatchlist(currentWatchlist);
             
             if (result.success) {
-              showNotification('Başarılı', `İçerik "${slider.name}" listesine taşındı`, 'success');
+              showNotification(t('notifications.successTitle'), t('watchlist.statusUpdateSuccess', { status: translateWatchlistStatus(slider.name) }), 'success');
               
               // Watchlist'i yeniden yükle
               await loadWatchlist();
             } else {
-              showNotification('Hata', 'Durum güncellenirken bir hata oluştu', 'error');
+              showNotification(t('notifications.errorTitle'), t('errors.statusUpdateError'), 'error');
             }
           } else {
-            showNotification('Hata', 'İçerik bulunamadı', 'error');
+            showNotification(t('notifications.errorTitle'), t('watchlist.contentNotFound'), 'error');
           }
         } catch (error) {
           console.error('Durum güncellenirken hata:', error);
-          showNotification('Hata', 'Durum güncellenirken bir hata oluştu: ' + error.message, 'error');
+          showNotification(t('notifications.errorTitle'), t('errors.statusUpdateError') + ': ' + error.message, 'error');
         } finally {
           // Popup'ı kapat
           popup.remove();
@@ -5208,7 +5517,7 @@ function showAllItems(sliderName, mediaType, items) {
   }
   
   // İçerik başlıklarını belirle
-  const mediaTypeTitle = mediaType === 'movie' ? 'Film' : mediaType === 'tv' ? 'Dizi' : 'Anime';
+  const mediaTypeTitle = mediaType === 'movie' ? t('general.mediaTypes.movie') : mediaType === 'tv' ? t('general.mediaTypes.tv') : t('general.mediaTypes.anime');
   
   // Overlay oluştur
   const overlay = document.createElement('div');
@@ -5218,12 +5527,12 @@ function showAllItems(sliderName, mediaType, items) {
   overlay.innerHTML = `
     <div class="view-all-container">
       <div class="view-all-header">
-        <h2>${mediaTypeTitle}: ${sliderName}</h2>
+        <h2>${t('viewAll.title', { mediaType: mediaTypeTitle, sliderName: translateWatchlistStatus(sliderName) })}</h2>
         <button class="view-all-close">&times;</button>
       </div>
       <div class="view-all-filters">
         <div class="view-all-search">
-          <input type="text" class="view-all-search-input" placeholder="İçerik ara...">
+          <input type="text" class="view-all-search-input" placeholder="${t('general.searchInput')}">
           <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -5231,12 +5540,12 @@ function showAllItems(sliderName, mediaType, items) {
         </div>
         <div class="view-all-sort">
           <select class="view-all-sort-select">
-            <option value="title-asc">İsim (A-Z)</option>
-            <option value="title-desc">İsim (Z-A)</option>
-            <option value="year-desc">Yıl (Yeni-Eski)</option>
-            <option value="year-asc">Yıl (Eski-Yeni)</option>
-            <option value="rating-desc">Puan (Yüksek-Düşük)</option>
-            <option value="rating-asc">Puan (Düşük-Yüksek)</option>
+            <option value="title-asc">${t('general.sortOptions.titleAsc')}</option>
+            <option value="title-desc">${t('general.sortOptions.titleDesc')}</option>
+            <option value="year-desc">${t('general.sortOptions.yearDesc')}</option>
+              <option value="year-asc">${t('general.sortOptions.yearAsc')}</option>
+            <option value="rating-desc">${t('general.sortOptions.ratingDesc')}</option>
+              <option value="rating-asc">${t('general.sortOptions.ratingAsc')}</option>
           </select>
         </div>
       </div>
@@ -5308,7 +5617,7 @@ function renderViewAllItems(container, items, mediaType) {
   container.innerHTML = '';
   
   if (!items || items.length === 0) {
-    container.innerHTML = '<div class="view-all-empty">Bu kategoride içerik bulunamadı.</div>';
+    container.innerHTML = `<div class="view-all-empty">${t('general.noItemsFound')}</div>`;
     return;
   }
   
@@ -5354,7 +5663,7 @@ function renderViewAllItems(container, items, mediaType) {
     const placeholderImage = '../assets/no-image.jpg';
     
     // İzleme durumu bilgisi
-    const statusLabel = item.status ? `<div class="media-card-status">${item.status}</div>` : '';
+    const statusLabel = item.status ? `<div class="media-card-status">${translateWatchlistStatus(item.status)}</div>` : '';
     
     // Kart içeriği
     card.innerHTML = `
@@ -5367,7 +5676,7 @@ function renderViewAllItems(container, items, mediaType) {
         <div class="media-card-content">
           <div class="media-card-title" title="${item.title}">${item.title}</div>
           <div class="media-card-info">
-            <div class="media-card-year">${item.year || 'Bilinmeyen'}</div>
+            <div class="media-card-year">${item.year || t('general.unknown')}</div>
             ${item.totalSeasons ? 
               `<div class="media-card-seasons"><span class="seasons-icon">📺</span>${item.totalSeasons}</div>` : ''}
           </div>
@@ -5496,4 +5805,33 @@ function sortViewAllItems(container, items, mediaType, sortValue) {
     container.appendChild(card);
   });
 }
+
+// Tümünü Gör butonlarını değiştir
+const viewAllBtns = document.querySelectorAll('.view-all-btn');
+viewAllBtns.forEach(btn => {
+  btn.textContent = t('general.viewAll');
+});
+
+// Yeni oluşturulan view-all-btn butonları için
+// renderer.js dosyasındaki tüm "viewAllBtn.textContent = 'Tümünü Gör';" ifadelerini değiştir
+const updateViewAllBtnText = () => {
+  document.querySelectorAll('.view-all-btn').forEach(btn => {
+    btn.textContent = t('general.viewAll');
+  });
+};
+
+// Slider içindeki "Bilinmeyen" metinlerini değiştir
+const updateCardYearText = () => {
+  document.querySelectorAll('.media-card-year').forEach(elem => {
+    if (elem.textContent.trim() === 'Bilinmeyen') {
+      elem.textContent = t('general.unknown');
+    }
+  });
+};
+
+// Periyodik olarak metinleri güncelle
+setInterval(() => {
+  updateViewAllBtnText();
+  updateCardYearText();
+}, 1000);
   

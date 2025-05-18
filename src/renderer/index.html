@@ -48,19 +48,19 @@
       <div class="dropdown-content">
         <!-- İçine arama inputu yerleştirilecek -->
         <div id="searchInputContainer">
-          <input type="text" id="searchInput" placeholder="Film, dizi veya anime ara..." class="search-input">
+          <input type="text" id="searchInput" data-i18n-placeholder="general.searchInput" class="search-input">
         </div>
         <!-- Tür seçimi -->
         <div class="dropdown-type-selection">
           <div class="radio-group">
             <label class="radio-label">
-              <input type="radio" name="searchType" value="movie" checked> Film
+              <input type="radio" name="searchType" value="movie" checked> <span data-i18n="general.mediaTypes.movie">Film</span>
             </label>
             <label class="radio-label">
-              <input type="radio" name="searchType" value="tv"> Dizi
+              <input type="radio" name="searchType" value="tv"> <span data-i18n="general.mediaTypes.tv">Dizi</span>
             </label>
             <label class="radio-label">
-              <input type="radio" name="searchType" value="anime"> Anime
+              <input type="radio" name="searchType" value="anime"> <span data-i18n="general.mediaTypes.anime">Anime</span>
             </label>
           </div>
           <button id="searchActionButton" class="search-button">
@@ -68,7 +68,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            Ara
+            <span data-i18n="general.searchButton">Ara</span>
           </button>
         </div>
         
@@ -79,7 +79,7 @@
     
     <!-- Floating Action Buttons -->
     <div class="fab-container">
-    <button id="searchButton" class="add-search-button">+</button>
+    <button id="searchButton" class="add-search-button" data-i18n="search.addButton">+</button>
       <button id="bulkAddButton" class="add-search-button bulk-fab">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -96,11 +96,11 @@
     <div class="navbar-bottom">
       <nav class="main-nav">
         <ul>
-          <li><a href="#" class="active" data-page="home">Anasayfa</a></li>
-          <li><a href="#" data-page="movies">Film</a></li>
-          <li><a href="#" data-page="series">Dizi</a></li>
-          <li><a href="#" data-page="anime">Anime</a></li>
-          <li><a href="#" data-page="settings">Ayarlar</a></li>
+          <li><a href="#" class="active" data-page="home" data-i18n="navigation.home">Anasayfa</a></li>
+          <li><a href="#" data-page="movies" data-i18n="navigation.movies">Film</a></li>
+          <li><a href="#" data-page="series" data-i18n="navigation.series">Dizi</a></li>
+          <li><a href="#" data-page="anime" data-i18n="navigation.anime">Anime</a></li>
+          <li><a href="#" data-page="settings" data-i18n="navigation.settings">Ayarlar</a></li>
         </ul>
       </nav>
     </div>
@@ -112,14 +112,14 @@
         <!-- Anasayfa İçeriği -->
         <div class="page-section active" id="home-page">
           <div class="section-title-row">
-            <h2>Anasayfa</h2>
+            <h2 data-i18n="navigation.home">Anasayfa</h2>
             <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
           </div>
           
           <!-- İzlenen Animeler Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzlenen Animeler</h3>
+              <h3 data-i18n="watchlist.homepageWatchingAnime">İzlenen Animeler</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="homepage-slider-1747087729891-1"></div>
@@ -129,7 +129,7 @@
           <!-- İzlenen Diziler Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzlenen Diziler</h3>
+              <h3 data-i18n="watchlist.homepageWatchingTV">İzlenen Diziler</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="homepage-slider-1747087729891-2"></div>
@@ -139,7 +139,7 @@
           <!-- İzlenecek Filmler Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzlenecek Filmler</h3>
+              <h3 data-i18n="watchlist.homepagePlannedMovies">İzlenecek Filmler</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="homepage-slider-1747087729891-3"></div>
@@ -150,14 +150,14 @@
         <!-- Film İçeriği -->
         <div class="page-section" id="movies-page">
           <div class="section-title-row">
-            <h2>Filmler</h2>
+            <h2 data-i18n="watchlist.movieCategory">Filmler</h2>
             <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
           </div>
           
           <!-- İzleniyor Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzleniyor</h3>
+              <h3 data-i18n="watchlist.watchingStatus">İzleniyor</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="movies-watching"></div>
@@ -167,7 +167,7 @@
           <!-- İzlenecek Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzlenecek</h3>
+              <h3 data-i18n="watchlist.plannedStatus">İzlenecek</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="movies-plan"></div>
@@ -177,7 +177,7 @@
           <!-- İzlendi Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzlendi</h3>
+              <h3 data-i18n="watchlist.completedStatus">İzlendi</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="movies-completed"></div>
@@ -188,14 +188,14 @@
         <!-- Dizi İçeriği -->
         <div class="page-section" id="series-page">
           <div class="section-title-row">
-            <h2>Diziler</h2>
+            <h2 data-i18n="watchlist.tvCategory">Diziler</h2>
             <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
           </div>
           
           <!-- İzleniyor Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzleniyor</h3>
+              <h3 data-i18n="watchlist.watchingStatus">İzleniyor</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="series-watching"></div>
@@ -205,7 +205,7 @@
           <!-- İzlenecek Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzlenecek</h3>
+              <h3 data-i18n="watchlist.plannedStatus">İzlenecek</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="series-plan"></div>
@@ -215,7 +215,7 @@
           <!-- İzlendi Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzlendi</h3>
+              <h3 data-i18n="watchlist.completedStatus">İzlendi</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="series-completed"></div>
@@ -226,14 +226,14 @@
         <!-- Anime İçeriği -->
         <div class="page-section" id="anime-page">
           <div class="section-title-row">
-            <h2>Animeler</h2>
+            <h2 data-i18n="watchlist.animeCategory">Animeler</h2>
             <button class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9.954 2.21a9.99 9.99 0 0 1 4.091-.002A3.993 3.993 0 0 0 16 5.07a3.993 3.993 0 0 0 3.457.261A9.99 9.99 0 0 1 21.5 8.876 3.993 3.993 0 0 0 20 12c0 1.264.586 2.391 1.502 3.124a10.043 10.043 0 0 1-2.046 3.543 3.993 3.993 0 0 0-3.456.261 3.993 3.993 0 0 0-1.954 2.86 9.99 9.99 0 0 1-4.091.004A3.993 3.993 0 0 0 8 18.927a3.993 3.993 0 0 0-3.457-.26A9.99 9.99 0 0 1 2.5 15.121 3.993 3.993 0 0 0 4 12c0-1.264-.586-2.391-1.502-3.124a10.043 10.043 0 0 1 2.046-3.543A3.993 3.993 0 0 0 8 5.072a3.993 3.993 0 0 0 1.954-2.86zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="currentColor"/></svg></button>
           </div>
           
           <!-- İzleniyor Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzleniyor</h3>
+              <h3 data-i18n="watchlist.watchingStatus">İzleniyor</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="anime-watching"></div>
@@ -243,7 +243,7 @@
           <!-- İzlenecek Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzlenecek</h3>
+              <h3 data-i18n="watchlist.plannedStatus">İzlenecek</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="anime-plan"></div>
@@ -253,7 +253,7 @@
           <!-- İzlendi Slider -->
           <div class="slider-section">
             <div class="slider-header">
-              <h3>İzlendi</h3>
+              <h3 data-i18n="watchlist.completedStatus">İzlendi</h3>
             </div>
             <div class="slider-container">
               <div class="slider-content" id="anime-completed"></div>
@@ -263,42 +263,58 @@
         
         <!-- Ayarlar İçeriği -->
         <div class="page-section" id="settings-page">
-          <h2>Ayarlar</h2>
+          <h2 data-i18n="settings.title">Ayarlar</h2>
           
           <!-- API Ayarları -->
           <div class="settings-section">
-            <h3>API Ayarları</h3>
+            <h3 data-i18n="settings.apiSettingsTitle">API Ayarları</h3>
             <div class="settings-form">
               <div class="form-group">
-                <label for="tmdbApiKey">TMDB API Anahtarı</label>
+                <label for="tmdbApiKey" data-i18n="settings.tmdbApiKeyLabel">TMDB API Anahtarı</label>
                 <div class="input-with-button">
-                  <input type="text" id="tmdbApiKey" placeholder="API anahtarınızı girin" class="settings-input">
-                  <button id="showHideTmdbKey" class="show-hide-btn">Göster</button>
+                  <input type="text" id="tmdbApiKey" placeholder="API anahtarınızı girin" class="settings-input" data-i18n-placeholder="settings.tmdbApiKeyPlaceholder">
+                  <button id="showHideTmdbKey" class="show-hide-btn" data-i18n="settings.showButton">Göster</button>
                 </div>
               </div>
-              <button id="saveApiKeys" class="settings-button primary-btn">API Anahtarını Kaydet</button>
+              <button id="saveApiKeys" class="settings-button primary-btn" data-i18n="settings.saveApiKeysButton">API Anahtarını Kaydet</button>
               <div id="apiKeysMessage" class="settings-message"></div>
             </div>
           </div>
           
           <!-- Veri Yönetimi -->
           <div class="settings-section">
-            <h3>Veri Yönetimi</h3>
+            <h3 data-i18n="settings.dataManagementSectionTitle">Veri Yönetimi</h3>
             <div class="settings-actions">
               <div class="settings-action-group">
-                <button id="exportWatchlist" class="settings-button">İzleme Listesini Dışa Aktar</button>
-                <p class="settings-help">İzleme listenizi bir JSON dosyasına kopyalayın.</p>
+                <button id="exportWatchlist" class="settings-button" data-i18n="settings.exportWatchlistButton">İzleme Listesini Dışa Aktar</button>
+                <p class="settings-help" data-i18n="settings.exportWatchlistHelp">İzleme listenizi bir JSON dosyasına kopyalayın.</p>
               </div>
               <div id="exportMessage" class="settings-message"></div>
             </div>
           </div>
           
+          <!-- Dil Ayarları -->
+          <div class="settings-section">
+            <h3 id="language-settings-title" data-i18n="settings.languageSettingsTitle">Dil Ayarları</h3>
+            <div class="settings-form">
+              <div class="form-group">
+                <label id="language-select-label" for="languageSelect" data-i18n="settings.languageSelectLabel">Arayüz Dili</label>
+                <div class="select-wrapper">
+                  <select id="languageSelect" class="settings-input">
+                    <!-- Dil seçenekleri JavaScript ile dinamik olarak doldurulacak -->
+                  </select>
+                </div>
+              </div>
+              <div id="languageMessage" class="settings-message"></div>
+            </div>
+          </div>
+          
           <!-- Uygulama Bilgileri -->
           <div class="settings-section">
-            <h3>Uygulama Bilgileri</h3>
+            <h3 id="app-info-title" data-i18n="settings.appInfoTitle"></h3>
             <div class="app-info">
-              <p><strong>Sürüm:</strong> <span id="app-version">0.0.3</span></p>
-              <p><strong>Geliştirici:</strong> macidko</p>
+              <p><strong id="version-label" data-i18n="settings.versionLabel"></strong> <span id="app-version">0.0.3</span></p>
+              <p><strong id="developer-label" data-i18n="settings.developerLabel"></strong> macidko</p>
             </div>
           </div>
         </div>
@@ -310,18 +326,18 @@
   <div id="settingsPopupOverlay" class="settings-popup-overlay hidden">
     <div class="settings-popup">
       <div class="settings-popup-header">
-        <div class="settings-popup-title">Sekme Ayarları</div>
+        <div class="settings-popup-title" data-i18n="tabSettings.title">Sekme Ayarları</div>
         <button id="closeSettingsPopup" class="settings-popup-close">×</button>
       </div>
       <div class="settings-popup-body">
         <div class="slider-list-header">
-          <h3 class="slider-list-title">Kategoriler</h3>
+          <h3 class="slider-list-title" data-i18n="tabSettings.categoriesTitle">Kategoriler</h3>
           <button id="addNewSliderBtn" class="add-slider-list-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            <span>Yeni Ekle</span>
+            <span data-i18n="settings.addNewButton">Yeni Ekle</span>
           </button>
         </div>
         <div class="slider-list-container">
@@ -329,7 +345,7 @@
             <!-- Dummy data - Gerçek verilerle doldurulacak -->
             <li class="slider-list-item">
               <div class="slider-item-content">
-                <span class="slider-item-name">İzleniyor</span>
+                <span class="slider-item-name" data-i18n="watchlist.watchingStatus">İzleniyor</span>
                 <div class="slider-item-actions">
                   <button class="slider-action-btn delete-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -352,7 +368,7 @@
             </li>
             <li class="slider-list-item">
               <div class="slider-item-content">
-                <span class="slider-item-name">İzlenecek</span>
+                <span class="slider-item-name" data-i18n="watchlist.plannedStatus">İzlenecek</span>
                 <div class="slider-item-actions">
                   <button class="slider-action-btn delete-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -375,7 +391,7 @@
             </li>
             <li class="slider-list-item">
               <div class="slider-item-content">
-                <span class="slider-item-name">İzlendi</span>
+                <span class="slider-item-name" data-i18n="watchlist.completedStatus">İzlendi</span>
                 <div class="slider-item-actions">
                   <button class="slider-action-btn delete-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -398,7 +414,7 @@
             </li>
             <li class="slider-list-item">
               <div class="slider-item-content">
-                <span class="slider-item-name">Favori Yönetmenler</span>
+                <span class="slider-item-name" data-i18n="watchlist.customLists.favoriteDirectors">Favori Yönetmenler</span>
                 <div class="slider-item-actions">
                   <button class="slider-action-btn delete-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -421,7 +437,7 @@
             </li>
             <li class="slider-list-item">
               <div class="slider-item-content">
-                <span class="slider-item-name">Özel Liste</span>
+                <span class="slider-item-name" data-i18n="watchlist.customLists.customList">Özel Liste</span>
                 <div class="slider-item-actions">
                   <button class="slider-action-btn delete-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -452,44 +468,42 @@
   <div id="bulkAddPopupOverlay" class="settings-popup-overlay hidden">
     <div class="settings-popup">
       <div class="settings-popup-header">
-        <div class="settings-popup-title">Toplu İçerik Ekleme</div>
+        <div class="settings-popup-title" data-i18n="bulkAdd.title">Toplu İçerik Ekleme</div>
         <button id="closeBulkAddPopup" class="settings-popup-close">×</button>
       </div>
       <div class="settings-popup-body">
         <!-- Adım 1: Metin Girişi -->
         <div id="bulkAddStep1" class="bulk-add-step">
-          <p class="bulk-add-description">
-            Her satıra <strong>bir içerik adı</strong> ekleyerek toplu içerik listesi oluşturabilirsiniz.
-          </p>
+          <p class="bulk-add-description" data-i18n="bulkAdd.description"></p>
           
           <!-- İçerik türü seçimi -->
           <div class="search-type-selection bulk-search-type">
             <label class="radio-label">
-              <input type="radio" name="bulkContentType" value="movie" checked> Film
+              <input type="radio" name="bulkContentType" value="movie" checked> <span data-i18n="general.mediaTypes.movie">Film</span>
             </label>
             <label class="radio-label">
-              <input type="radio" name="bulkContentType" value="tv"> Dizi
+              <input type="radio" name="bulkContentType" value="tv"> <span data-i18n="general.mediaTypes.tv">Dizi</span>
             </label>
             <label class="radio-label">
-              <input type="radio" name="bulkContentType" value="anime"> Anime
+              <input type="radio" name="bulkContentType" value="anime"> <span data-i18n="general.mediaTypes.anime">Anime</span>
             </label>
           </div>
           
           <div class="form-group">
-            <textarea id="bulkContentInput" class="form-input" rows="10" placeholder="Her satıra bir içerik adı ekleyin..."></textarea>
+            <textarea id="bulkContentInput" class="form-input" rows="10" placeholder="Her satıra bir içerik adı ekleyin..." data-i18n-placeholder="bulkAdd.inputPlaceholder"></textarea>
           </div>
           <div class="settings-popup-actions">
-            <button id="searchBulkContent" class="settings-popup-btn settings-popup-btn-save">İçerikleri Ara</button>
+            <button id="searchBulkContent" class="settings-popup-btn settings-popup-btn-save" data-i18n="bulkAdd.searchContentsButton">İçerikleri Ara</button>
           </div>
         </div>
         
         <!-- Adım 2: Arama Sonuçları ve Onaylama -->
         <div id="bulkAddStep2" class="bulk-add-step hidden">
           <div class="bulk-results-header">
-            <h3 class="bulk-results-title">Bulunan İçerikler</h3>
+            <h3 class="bulk-results-title" data-i18n="bulkAdd.foundContentsTitle">Bulunan İçerikler</h3>
             <div class="bulk-select-actions">
-              <button id="selectAllResults" class="bulk-select-btn">Tümünü Seç</button>
-              <button id="deselectAllResults" class="bulk-select-btn">Tümünü Kaldır</button>
+              <button id="selectAllResults" class="bulk-select-btn" data-i18n="general.selectAllButton">Tümünü Seç</button>
+              <button id="deselectAllResults" class="bulk-select-btn" data-i18n="general.deselectAllButton">Tümünü Kaldır</button>
             </div>
           </div>
           
@@ -497,13 +511,13 @@
             <!-- Arama sonuçları buraya yüklenecek -->
             <div class="loading-indicator">
               <div class="loader"></div>
-              <p>İçerikler aranıyor...</p>
+              <p data-i18n="bulkAdd.searchingContents">İçerikler aranıyor...</p>
             </div>
           </div>
           
           <div class="settings-popup-actions">
-            <button id="backToBulkInput" class="settings-popup-btn">Geri Dön</button>
-            <button id="addSelectedContent" class="settings-popup-btn settings-popup-btn-save">Seçili İçerikleri Ekle</button>
+            <button id="backToBulkInput" class="settings-popup-btn" data-i18n="bulkAdd.backButton">Geri Dön</button>
+            <button id="addSelectedContent" class="settings-popup-btn settings-popup-btn-save" data-i18n="bulkAdd.addSelectedContentsButton">Seçili İçerikleri Ekle</button>
           </div>
         </div>
         
@@ -511,18 +525,18 @@
         <div id="bulkAddStep3" class="bulk-add-step hidden">
           <div class="bulk-add-result">
             <div id="bulkAddSuccessMessage" class="success-message">
-              <p>İçerikler başarıyla eklendi!</p>
+              <p data-i18n="bulkAdd.successMessage">İçerikler başarıyla eklendi!</p>
               <div id="bulkAddStats"></div>
             </div>
             <div id="bulkAddErrorMessage" class="error-message hidden">
-              <p>Bazı içerikler eklenirken hata oluştu.</p>
+              <p data-i18n="bulkAdd.errorMessage">Bazı içerikler eklenirken hata oluştu.</p>
               <div id="bulkAddErrorDetails"></div>
             </div>
           </div>
           
           <div class="settings-popup-actions">
-            <button id="newBulkAdd" class="settings-popup-btn">Yeni İçerik Ekle</button>
-            <button id="closeBulkAddResult" class="settings-popup-btn settings-popup-btn-save">Kapat</button>
+            <button id="newBulkAdd" class="settings-popup-btn" data-i18n="bulkAdd.newContentButton">Yeni İçerik Ekle</button>
+            <button id="closeBulkAddResult" class="settings-popup-btn settings-popup-btn-save" data-i18n="bulkAdd.closeButton">Kapat</button>
           </div>
         </div>
       </div>

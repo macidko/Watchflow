@@ -11,6 +11,9 @@ const { app } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+// Çeviriler için dosya yolları
+const translationsPath = path.join(app.getAppPath(), 'src/lang');
+
 // API modüllerini al
 let apiModules = null;
 
@@ -90,6 +93,38 @@ const setupIpcHandlers = (ipcMain) => {
   // IPC iletişim kanallarını kur
   ipcMain.handle('check-server-status', async () => {
     return { status: 'API bağlantısı hazır' };
+  });
+  
+  // Çeviri dosyalarını yükle
+  ipcMain.handle('get-translations', async (event, language) => {
+    try {
+      const langFile = path.join(translationsPath, `${language}.json`);
+      
+      if (!fs.existsSync(langFile)) {
+        console.error(`Çeviri dosyası bulunamadı: ${langFile}`);
+        throw new Error(`${language} dili için çeviri dosyası bulunamadı.`);
+      }
+      
+      const translations = JSON.parse(fs.readFileSync(langFile, 'utf8'));
+      return translations;
+    } catch (error) {
+      console.error('Çeviri dosyası yüklenirken hata:', error);
+      throw error;
+    }
+  });
+  
+  // Mevcut dilleri listeleme
+  ipcMain.handle('list-languages', async (event) => {
+    try {
+      const files = fs.readdirSync(translationsPath);
+      const languages = files
+        .filter(file => file.endsWith('.json'))
+        .map(file => file.replace('.json', ''));
+      return languages;
+    } catch (error) {
+      console.error('Diller listelenirken hata:', error);
+      throw error;
+    }
   });
   
   // TMDB API araması
