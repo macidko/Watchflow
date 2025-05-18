@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.0](https://github.com/macidko/Watchflow/compare/v0.7.0...v0.8.0) (2025-05-18)
+
+
+### Features
+
+* **i18n:** Added multi-language support and configuration management. ([c4a0962](https://github.com/macidko/Watchflow/commit/c4a096244d7d7e704c103057134671fd5469c6ee))
+
 ## [0.7.0](https://github.com/macidko/Watchflow/compare/v0.6.0...v0.7.0) (2025-05-15)
 
 
