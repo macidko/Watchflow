@@ -22,7 +22,7 @@
   width: 90%;
   max-width: 400px;
   max-height: 85vh;
-  background-color: #1a1a1a;
+  background-color: var(--secondary-bg);
   border-radius: var(--border-radius-lg);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
   display: flex;
@@ -39,7 +39,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background-color: #1f1f1f;
+  background-color: var(--secondary-bg);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 }
@@ -47,13 +47,13 @@
 .media-popup-title {
   font-size: 1.4rem;
   font-weight: 600;
-  color: white;
+  color: var(--primary-text);
   letter-spacing: 0.3px;
 }
 
 .media-popup-close {
   font-size: 1.5rem;
-  color: #888;
+  color: var(--secondary-text);
   background: rgba(0, 0, 0, 0.2);
   border: none;
   cursor: pointer;
@@ -67,8 +67,8 @@
 }
 
 .media-popup-close:hover {
-  color: white;
-  background-color: rgba(255, 69, 0, 0.5);
+  color: var(--primary-text);
+  background-color: rgba(var(--accent-color-rgb), 0.5);
   transform: rotate(90deg);
 }
 
@@ -103,13 +103,13 @@
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(to right, var(--accent-color), #ff6a33);
+  background: linear-gradient(to right, var(--accent-color), var(--hover-color));
   border-radius: 10px;
   transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .progress-text {
-  color: #ddd;
+  color: var(--primary-text);
   font-size: 0.95rem;
   font-weight: 500;
   min-width: 100px;
@@ -126,19 +126,19 @@
 
 .season-title {
   font-size: 1.1rem;
-  color: white;
+  color: var(--primary-text);
   font-weight: 600;
   letter-spacing: 0.3px;
 }
 
 .season-progress {
   color: white;
-  background: linear-gradient(to right, var(--accent-color), #ff6a33);
+  background: linear-gradient(to right, var(--accent-color), var(--hover-color));
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 500;
-  box-shadow: 0 3px 6px rgba(255, 69, 0, 0.3);
+  box-shadow: 0 3px 6px rgba(var(--accent-color-rgb), 0.3);
 }
 
 .episodes-container {
@@ -175,7 +175,7 @@
 
 .episode-button {
   background-color: rgba(255, 255, 255, 0.1);
-  color: white;
+  color: var(--primary-text);
   border: none;
   border-radius: 6px;
   padding: 10px 0;
@@ -187,8 +187,8 @@
 }
 
 .episode-button.watched {
-  background: linear-gradient(to bottom right, var(--accent-color), #ff6a33);
-  box-shadow: 0 3px 6px rgba(255, 69, 0, 0.3);
+  background: linear-gradient(to bottom right, var(--accent-color), var(--hover-color));
+  box-shadow: 0 3px 6px rgba(var(--accent-color-rgb), 0.3);
 }
 
 .episode-button:hover {
@@ -197,7 +197,7 @@
 }
 
 .episode-button.watched:hover {
-  background: linear-gradient(to bottom right, #ff5500, #ff7e33);
+  background: linear-gradient(to bottom right, var(--hover-color), var(--accent-color));
   transform: translateY(-2px);
 }
 
@@ -231,15 +231,15 @@
 }
 
 .popup-btn-mark-watched {
-  background: linear-gradient(to right, var(--accent-color), #ff6a33);
+  background: linear-gradient(to right, var(--accent-color), var(--hover-color));
   color: white;
-  box-shadow: 0 4px 10px rgba(255, 69, 0, 0.3);
+  box-shadow: 0 4px 10px rgba(var(--accent-color-rgb), 0.3);
 }
 
 .popup-btn-mark-watched:hover {
-  background: linear-gradient(to right, #ff5500, #ff7e33);
+  background: linear-gradient(to right, var(--hover-color), var(--accent-color));
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(255, 69, 0, 0.4);
+  box-shadow: 0 6px 15px rgba(var(--accent-color-rgb), 0.4);
 }
 
 /* İçerik arama popup stilleri */
@@ -563,7 +563,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: var(--overlay-bg, rgba(0, 0, 0, 0.8));
   backdrop-filter: blur(5px);
   z-index: 1000;
   display: flex;
@@ -582,16 +582,16 @@
   width: 90%;
   max-width: 400px;
   max-height: 85vh;
-  background-color: #1a1a1a;
+  background-color: var(--secondary-bg);
   border-radius: var(--border-radius-lg);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--border-color);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
   margin: 0 auto;
   animation: popIn 0.4s ease;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
 }
 
 .settings-popup-header {
@@ -599,21 +599,21 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background-color: #1f1f1f;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--primary-bg);
+  border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
 
 .settings-popup-title {
   font-size: 1.3rem;
   font-weight: 600;
-  color: white;
+  color: var(--primary-text);
   letter-spacing: 0.3px;
 }
 
 .settings-popup-close {
   font-size: 1.5rem;
-  color: #888;
+  color: var(--secondary-text);
   background: rgba(0, 0, 0, 0.2);
   border: none;
   cursor: pointer;
@@ -627,8 +627,8 @@
 }
 
 .settings-popup-close:hover {
-  color: white;
-  background-color: rgba(255, 69, 0, 0.5);
+  color: var(--primary-text);
+  background-color: rgba(var(--accent-color-rgb), 0.5);
   transform: rotate(90deg);
 }
 
@@ -645,7 +645,7 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 20px;
 }
 
@@ -655,7 +655,7 @@
 
 .settings-section-title {
   font-size: 1.1rem;
-  color: #ff4500;
+  color: var(--accent-color);
   margin: 0;
   font-weight: 600;
 }
@@ -668,14 +668,14 @@
 }
 
 .settings-option-label {
-  color: #ddd;
+  color: var(--primary-text);
   font-size: 0.95rem;
 }
 
 .settings-select {
-  background-color: #252525;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: var(--primary-text);
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -690,12 +690,12 @@
 
 .settings-select:focus {
   outline: none;
-  border-color: rgba(255, 69, 0, 0.5);
+  border-color: var(--accent-color);
 }
 
 .settings-toggle-group {
   display: flex;
-  background-color: #252525;
+  background-color: var(--input-bg);
   border-radius: 6px;
   padding: 3px;
   gap: 3px;
@@ -704,7 +704,7 @@
 .settings-toggle-btn {
   border: none;
   background: transparent;
-  color: #aaa;
+  color: var(--secondary-text);
   padding: 8px 12px;
   border-radius: 4px;
   cursor: pointer;
@@ -712,12 +712,12 @@
 }
 
 .settings-toggle-btn.active {
-  background-color: #333;
-  color: #ff4500;
+  background-color: var(--secondary-bg);
+  color: var(--accent-color);
 }
 
 .settings-toggle-btn:hover {
-  color: white;
+  color: var(--primary-text);
 }
 
 /* Toggle switch stilleri */
@@ -741,7 +741,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #454545;
+  background-color: var(--input-bg);
   transition: .4s;
   border-radius: 24px;
 }
@@ -753,17 +753,17 @@
   width: 18px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background-color: var(--primary-text);
   transition: .4s;
   border-radius: 50%;
 }
 
 input:checked + .settings-slider {
-  background-color: #ff4500;
+  background-color: var(--accent-color);
 }
 
 input:focus + .settings-slider {
-  box-shadow: 0 0 1px #ff4500;
+  box-shadow: 0 0 1px var(--accent-color);
 }
 
 input:checked + .settings-slider:before {
@@ -787,15 +787,15 @@ input:checked + .settings-slider:before {
 }
 
 .settings-popup-btn-save {
-  background: linear-gradient(to right, var(--accent-color), #ff6a33);
+  background: linear-gradient(to right, var(--accent-color), var(--hover-color));
   color: white;
-  box-shadow: 0 4px 10px rgba(255, 69, 0, 0.3);
+  box-shadow: 0 4px 10px rgba(var(--accent-color-rgb), 0.3);
 }
 
 .settings-popup-btn-save:hover {
-  background: linear-gradient(to right, #ff5500, #ff7e33);
+  background: linear-gradient(to right, var(--hover-color), var(--accent-color));
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(255, 69, 0, 0.4);
+  box-shadow: 0 6px 15px rgba(var(--accent-color-rgb), 0.4);
 }
 
 /* Slider Listesi Stilleri */
@@ -808,15 +808,15 @@ input:checked + .settings-slider:before {
 
 .slider-list-title {
   font-size: 1.1rem;
-  color: #ff4500;
+  color: var(--accent-color);
   margin: 0;
   font-weight: 600;
 }
 
 .add-slider-list-btn {
-  background-color: rgba(255, 69, 0, 0.1);
-  color: #ff4500;
-  border: 1px solid rgba(255, 69, 0, 0.3);
+  background-color: rgba(var(--accent-color-rgb), 0.1);
+  color: var(--accent-color);
+  border: 1px solid rgba(var(--accent-color-rgb), 0.3);
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -828,7 +828,7 @@ input:checked + .settings-slider:before {
 }
 
 .add-slider-list-btn:hover {
-  background-color: rgba(255, 69, 0, 0.2);
+  background-color: rgba(var(--accent-color-rgb), 0.2);
   transform: translateY(-2px);
 }
 
@@ -846,20 +846,20 @@ input:checked + .settings-slider:before {
 .slider-list-item {
   margin-bottom: 8px;
   border-radius: 6px;
-  background-color: #252525;
+  background-color: var(--input-bg);
   transition: all 0.2s ease;
   cursor: grab;
 }
 
 .slider-list-item:hover {
-  background-color: #333;
+  background-color: var(--secondary-bg);
   transform: translateY(-2px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
 
 .slider-list-item.dragging {
   opacity: 0.5;
-  background-color: #333;
+  background-color: var(--secondary-bg);
 }
 
 .slider-item-content {
@@ -871,7 +871,7 @@ input:checked + .settings-slider:before {
 
 .slider-item-name {
   font-size: 1rem;
-  color: #ddd;
+  color: var(--primary-text);
   font-weight: 500;
 }
 
@@ -883,7 +883,7 @@ input:checked + .settings-slider:before {
 .slider-action-btn {
   background: none;
   border: none;
-  color: #888;
+  color: var(--secondary-text);
   cursor: pointer;
   padding: 5px;
   border-radius: 4px;
@@ -894,7 +894,7 @@ input:checked + .settings-slider:before {
 }
 
 .slider-action-btn:hover {
-  color: #fff;
+  color: var(--primary-text);
   background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -918,7 +918,7 @@ input:checked + .settings-slider:before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--overlay-bg, rgba(0, 0, 0, 0.7));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -951,7 +951,7 @@ input:checked + .settings-slider:before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: rgba(255, 69, 0, 0.1);
+  background-color: rgba(var(--accent-color-rgb), 0.1);
   padding: 15px 20px;
   border-bottom: 1px solid var(--border-color);
 }
@@ -1011,7 +1011,7 @@ input:checked + .settings-slider:before {
 }
 
 .slider-edit-save-btn {
-  background-color: rgba(255, 69, 0, 0.8);
+  background-color: rgba(var(--accent-color-rgb), 0.8);
   color: white;
   border: none;
   padding: 8px 20px;
@@ -1023,9 +1023,9 @@ input:checked + .settings-slider:before {
 }
 
 .slider-edit-save-btn:hover {
-  background-color: rgba(255, 69, 0, 1);
+  background-color: var(--accent-color);
   transform: translateY(-2px);
-  box-shadow: 0 3px 8px rgba(255, 69, 0, 0.3);
+  box-shadow: 0 3px 8px rgba(var(--accent-color-rgb), 0.3);
 }
 
 /* İçerik arama popupundaki yeni liste görünümü stilleri */
@@ -1217,20 +1217,20 @@ input:checked + .settings-slider:before {
   display: flex;
   align-items: center;
   width: 100%;
-  background: rgba(28, 28, 30, 0.6);
+  background: var(--secondary-bg-transparent, rgba(28, 28, 30, 0.6));
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid #3a3a3a;
+  border: 1px solid var(--border-color);
   margin-bottom: 6px;
   padding: 8px 10px;
   transition: all 0.2s ease;
 }
 
 .related-anime-compact:hover {
-  background-color: rgba(40, 40, 45, 0.8);
+  background-color: var(--hover-bg, rgba(40, 40, 45, 0.8));
   transform: translateY(-2px);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-  border-color: #4a4a4a;
+  border-color: var(--border-color-hover, #4a4a4a);
 }
 
 .related-anime-thumbnail {
@@ -1258,7 +1258,7 @@ input:checked + .settings-slider:before {
 }
 
 .related-anime-add {
-  background: rgba(255, 69, 0, 0.8);
+  background: rgba(var(--accent-color-rgb), 0.8);
   border: none;
   border-radius: 50%;
   width: 28px;
@@ -1273,13 +1273,13 @@ input:checked + .settings-slider:before {
 }
 
 .related-anime-add:hover {
-  background-color: #ff4500;
+  background-color: var(--accent-color);
   transform: scale(1.1);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 .related-anime-add.added {
-  background-color: #4caf50;
+  background-color: var(--success-color, #4caf50);
   cursor: default;
 }
 
@@ -1329,7 +1329,7 @@ input:checked + .settings-slider:before {
 
 .related-anime-title {
   font-size: 0.95rem;
-  color: #ffffff;
+  color: var(--primary-text);
   font-weight: 500;
   margin-bottom: 6px;
   white-space: nowrap;
@@ -1342,13 +1342,13 @@ input:checked + .settings-slider:before {
   flex-wrap: wrap;
   gap: 6px;
   font-size: 0.75rem;
-  color: #9e9e9e;
+  color: var(--secondary-text);
 }
 
 .related-anime-type,
 .related-anime-year,
 .related-anime-episodes {
-  background: rgba(50, 50, 54, 0.8);
+  background: var(--tag-bg, rgba(50, 50, 54, 0.8));
   padding: 2px 8px;
   border-radius: 4px;
   font-weight: 500;

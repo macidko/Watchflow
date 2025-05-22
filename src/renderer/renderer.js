@@ -3,6 +3,70 @@
 
 console.log('Renderer.js yüklendi');
 
+// Config modülünü watchflowAPI üzerinden erişim sağlayarak tanımla
+const config = {
+  get: (key) => {
+    // Tarayıcıda localStorage üzerinden değerleri al
+    try {
+      const configData = JSON.parse(localStorage.getItem('watchflow_config') || '{}');
+      
+      // Nokta notasyonuyla alt anahtarlara erişim (örn: "api.preferredAnimeSource")
+      if (key.includes('.')) {
+        const keys = key.split('.');
+        let result = configData;
+        
+        for (const k of keys) {
+          result = result?.[k];
+          if (result === undefined) break;
+        }
+        
+        return result;
+      }
+      
+      return configData[key];
+    } catch (error) {
+      console.error('Config değeri okunurken hata:', error);
+      return null;
+    }
+  },
+  
+  set: (key, value) => {
+    try {
+      // Mevcut config verilerini al
+      const configData = JSON.parse(localStorage.getItem('watchflow_config') || '{}');
+      
+      // Yeni değeri ayarla
+      if (key.includes('.')) {
+        // Nokta notasyonlu değerler için nested objeler oluştur
+        const keys = key.split('.');
+        let current = configData;
+        
+        // Son anahtara kadar ilerle, gerekirse objeleri oluştur
+        for (let i = 0; i < keys.length - 1; i++) {
+          const k = keys[i];
+          if (!current[k] || typeof current[k] !== 'object') {
+            current[k] = {};
+          }
+          current = current[k];
+        }
+        
+        // Son anahtarı ayarla
+        current[keys[keys.length - 1]] = value;
+      } else {
+        // Basit anahtar-değer için doğrudan atama
+        configData[key] = value;
+      }
+      
+      // Güncellenmiş verileri kaydet
+      localStorage.setItem('watchflow_config', JSON.stringify(configData));
+      return true;
+    } catch (error) {
+      console.error('Config değeri kaydedilirken hata:', error);
+      return false;
+    }
+  }
+};
+
 // i18n (Dil desteği) değişkenleri ve fonksiyonları
 let currentLanguage = window.watchflowAPI.getLanguage() || 'en'; // Varsayılan dil
 let translations = {}; // Tüm dil çevirileri
@@ -229,6 +293,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Dil dosyasını yükle
     await loadTranslations(savedLanguage);
     
+    // Tema ayarını al ve uygula
+    const savedTheme = config.get('theme') || window.watchflowAPI.getTheme() || 'default';
+    applyTheme(savedTheme);
+    
     const status = await window.watchflowAPI.checkServerStatus();
     console.log('API durumu:', status);
     
@@ -275,10 +343,10 @@ function addViewAllStyles() {
   styleElement.textContent = `
     /* Slider başlığı yanında Tümünü Gör butonu */
     .view-all-btn {
-      background-color: rgba(255, 69, 0, 0.8);
+      background-color: rgba(var(--accent-color-rgb), 0.8);
       border: none;
       border-radius: 4px;
-      color: #ffffff;
+      color: var(--primary-text);
       cursor: pointer;
       font-size: 12px;
       padding: 5px 12px;
@@ -289,9 +357,9 @@ function addViewAllStyles() {
     }
     
     .view-all-btn:hover {
-      background-color: #ff4500;
+      background-color: var(--accent-color);
       transform: translateY(-2px);
-      box-shadow: 0 3px 8px rgba(255, 69, 0, 0.3);
+      box-shadow: 0 3px 8px rgba(var(--accent-color-rgb), 0.3);
     }
     
     /* Tümünü Gör Overlay */
@@ -310,7 +378,7 @@ function addViewAllStyles() {
     }
     
     .view-all-container {
-      background-color: #171717;
+      background-color: var(--secondary-bg);
       border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
       display: flex;
@@ -342,11 +410,11 @@ function addViewAllStyles() {
       justify-content: space-between;
       padding: 16px 20px;
       position: relative;
-      background-color: #1e1e1e;
+      background-color: var(--secondary-bg);
     }
     
     .view-all-header h2 {
-      color: #fff;
+      color: var(--primary-text);
       font-size: 18px;
       font-weight: 600;
       margin: 0;
@@ -357,7 +425,7 @@ function addViewAllStyles() {
       background: rgba(255, 255, 255, 0.08);
       border: none;
       border-radius: 50%;
-      color: #bbb;
+      color: var(--secondary-text);
       cursor: pointer;
       font-size: 20px;
       height: 30px;
@@ -369,8 +437,8 @@ function addViewAllStyles() {
     }
     
     .view-all-close:hover {
-      background-color: rgba(255, 69, 0, 0.5);
-      color: #fff;
+      background-color: rgba(var(--accent-color-rgb), 0.5);
+      color: var(--primary-text);
       transform: rotate(90deg);
     }
     
@@ -378,7 +446,7 @@ function addViewAllStyles() {
     .view-all-filters {
       display: flex;
       padding: 12px 20px;
-      background-color: #222;
+      background-color: var(--secondary-bg);
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       align-items: center;
       justify-content: space-between;
@@ -394,7 +462,7 @@ function addViewAllStyles() {
       background-color: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 4px;
-      color: #fff;
+      color: var(--primary-text);
       font-size: 14px;
       padding: 8px 14px 8px 36px;
       width: 100%;
@@ -2197,7 +2265,7 @@ async function addToWatchlist(item, button) {
     
     if (result.success) {
       // Buton metnini Eklendi olarak değiştir
-      button.textContent = 'Eklendi ✓';
+      button.textContent = `${t('search.addedButton')}`;
       button.classList.add('added');
       
       // Arama girdisini temizle
@@ -2210,7 +2278,7 @@ async function addToWatchlist(item, button) {
       loadWatchlist();
     } else {
       // Hata durumunda butonun stilini değiştir
-      button.textContent = 'Hata!';
+      button.textContent = `${t('search.errorButton')}`;
       button.classList.add('error');
       console.error('İzleme listesi eklerken hata:', result.error);
       
@@ -2219,21 +2287,21 @@ async function addToWatchlist(item, button) {
         button.textContent = originalText;
         button.disabled = false;
         button.classList.remove('error');
-      }, 2000);
+      }, config.get('timeouts').buttonReset); // Config'den al
     }
   } catch (error) {
     console.error('İzleme listesine eklerken hata:', error);
     
     // Hata durumunda butonu güncelle
-    button.textContent = 'Hata!';
+    button.textContent = `${t('search.errorButton')}`;
     button.classList.add('error');
     
     // 2 saniye sonra butonu orijinal haline getir
     setTimeout(() => {
-      button.textContent = 'Ekle';
+      button.textContent = `${t('search.addButton')}`;
       button.disabled = false;
       button.classList.remove('error');
-    }, 2000);
+    }, config.get('timeouts').buttonReset); // Config'den al
   }
 }
 
@@ -2345,7 +2413,7 @@ function setupSettingsPage() {
       // Başlangıçta her şeyi temizle
       apiKeysMessage.style.display = 'none';
       saveApiKeysBtn.disabled = true;
-      saveApiKeysBtn.textContent = 'Kaydediliyor...';
+      saveApiKeysBtn.textContent = `${t('setting.saveApiKeysButtonSaving')}`;
       
       const result = await window.watchflowAPI.saveApiKeys({
         TMDB_API_KEY: tmdbKey
@@ -2353,7 +2421,7 @@ function setupSettingsPage() {
       
       if (result.success) {
         // Önce buton durumunu normal haline getir
-        saveApiKeysBtn.textContent = 'API Anahtarını Kaydet';
+        saveApiKeysBtn.textContent = `${t('settings.saveApiKeysButton')}`;
         
         // Sonra başarı mesajını göster (gecikme olmadan doğru sıralama)
         showMessage(apiKeysMessage, t('notifications.operationSuccess'), 'success');
@@ -2362,9 +2430,9 @@ function setupSettingsPage() {
         setTimeout(() => {
           saveApiKeysBtn.disabled = false;
           apiKeysMessage.style.display = 'none';
-        }, 3000);
+        }, config.get('timeouts').messageAutoHide); // Config'den al
       } else {
-        throw new Error(result.error || 'API anahtarı kaydedilemedi.');
+        throw new Error(result.error || `${t('setting.saveApiKeysButtonError')}`);
       }
     } catch (error) {
       console.error('API anahtarı kaydedilirken hata:', error);
@@ -2390,7 +2458,7 @@ function setupSettingsPage() {
       }
       
       exportWatchlistBtn.disabled = true;
-      exportWatchlistBtn.textContent = 'Dışa Aktarılıyor...';
+      exportWatchlistBtn.textContent = `${t('setting.exportWatchlistButtonExporting')}`;
       
       const result = await window.watchflowAPI.exportWatchlist(filePath);
       
@@ -2400,7 +2468,7 @@ function setupSettingsPage() {
           t('notifications.backupSuccessTitle'), 
           t('notifications.backupSuccessMessage'),
           'success',
-          8000
+          config.get('timeouts').longNotification // Config'den al
         );
         
         // Son yedekleme tarihini güncelle
@@ -2409,17 +2477,56 @@ function setupSettingsPage() {
         // Mesajı belirli bir süre sonra otomatik olarak gizle
         setTimeout(() => {
           exportMessage.style.display = 'none';
-        }, 3000);
+        }, config.get('timeouts').messageAutoHide); // Config'den al
       } else {
-        throw new Error(result.error || 'Dışa aktarma sırasında bir hata oluştu.');
+        throw new Error(result.error || `${t('setting.exportWatchlistButtonError')}`);
       }
     } catch (error) {
-      console.error('İzleme listesi dışa aktarılırken hata:', error);
+      console.error(`${t('setting.exportWatchlistButtonError')}:`, error);
       showMessage(exportMessage, `${t('notifications.errorTitle')}: ${error.message}`, 'error');
     } finally {
       exportWatchlistBtn.disabled = false;
-      exportWatchlistBtn.textContent = 'İzleme Listesini Dışa Aktar';
+      exportWatchlistBtn.textContent = `${t('setting.exportDialogTitle')}`;
     }
+  });
+  
+  // Tema ayarları için UI referansları
+  const themeSelect = document.getElementById('themeSelect');
+  const themeMessage = document.getElementById('themeMessage');
+  const themePreviewBoxes = document.querySelectorAll('.theme-preview');
+  
+  // Mevcut tema değerini config'den al ve uygula
+  const currentTheme = config.get('theme') || 'default';
+  applyTheme(currentTheme);
+  
+  // Tema seçim kutularına tıklama olayı ekle
+  themePreviewBoxes.forEach(box => {
+    box.addEventListener('click', () => {
+      const themeName = box.dataset.theme;
+      applyTheme(themeName);
+      
+      // Tema değişikliği mesajı göster
+      showMessage(themeMessage, t('settings.themeChangeSuccess'), 'success');
+      
+      // Mesajı belirli bir süre sonra gizle
+      setTimeout(() => {
+        themeMessage.style.display = 'none';
+      }, config.get('timeouts').messageAutoHide);
+    });
+  });
+  
+  // Tema dropdown'ı değiştiğinde
+  themeSelect.addEventListener('change', () => {
+    const selectedTheme = themeSelect.value;
+    applyTheme(selectedTheme);
+    
+    // Tema değişikliği mesajı göster
+    showMessage(themeMessage, t('settings.themeChangeSuccess'), 'success');
+    
+    // Mesajı belirli bir süre sonra gizle
+    setTimeout(() => {
+      themeMessage.style.display = 'none';
+    }, config.get('timeouts').messageAutoHide);
   });
 }
 
@@ -2440,7 +2547,7 @@ async function updateLastBackupInfo() {
       }
     }
   } catch (error) {
-    console.error('Son yedekleme bilgisi güncellenirken hata:', error);
+    console.error(`${t('setting.lastBackupInfoError')}:`, error);
   }
 }
 
@@ -4047,6 +4154,10 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Toplu içerik ekleme adımlarını yönet
   setupBulkAddProcessSteps();
+  
+  // Mevcut tema değerini config'den al ve uygula
+  const currentTheme = config.get('theme') || 'default';
+  applyTheme(currentTheme);
 });
 
 // Toplu içerik ekleme popup'ını açma
@@ -4891,7 +5002,7 @@ async function addSelectedContents() {
  * Bildirim Sistemi
  * Kullanım: showNotification('Başlık', 'Mesaj', 'success'); // 'info', 'success', 'warning', 'error'
  */
-function showNotification(title, message, type = 'info', duration = 5000) {
+function showNotification(title, message, type = 'info', duration = config.get('notifications').duration) { // Varsayılan süre config'den
   // Başlık ve mesaj için dil kontrolü yap
   // Eğer başlık doğrudan hardcoded bir değerse, uygun çeviri anahtarını kullan
   if (title === 'Başarılı') title = t('notifications.successTitle');
@@ -5834,4 +5945,33 @@ setInterval(() => {
   updateViewAllBtnText();
   updateCardYearText();
 }, 1000);
+  
+// Tema değişikliğini tüm sayfaya uygulama fonksiyonu
+function applyTheme(themeName) {
+  // HTML body elementinden eski temaları kaldır
+  document.body.classList.remove('default', 'dark-red-theme', 'blue-theme', 'purple-theme', 'green-theme', 'orange-theme', 'cyberpunk-theme');
+  
+  // Yeni temayı ekle
+  document.body.classList.add(themeName);
+  
+  // Tema seçim kutularındaki aktif durumu güncelle
+  const previewBoxes = document.querySelectorAll('.theme-preview');
+  previewBoxes.forEach(box => {
+    box.classList.remove('active');
+    if (box.dataset.theme === themeName) {
+      box.classList.add('active');
+    }
+  });
+  
+  // Tema seçim dropdown'ını güncelle
+  const themeSelect = document.getElementById('themeSelect');
+  if (themeSelect) {
+    themeSelect.value = themeName;
+  }
+  
+  // Temayı config'e kaydet
+  window.watchflowAPI.setTheme(themeName);
+  // Ayrıca tarayıcı tarafında da tema değerini kaydet
+  config.set('theme', themeName);
+}
   

@@ -65,7 +65,7 @@
 
 /* Toplu ekleme butonu */
 .bulk-fab {
-  background-color: #444;
+  background-color: var(--input-bg);
   width: 48px;
   height: 48px;
   font-size: 18px;
@@ -81,7 +81,7 @@
 }
 
 .bulk-fab:hover {
-  background-color: #555;
+  background-color: var(--secondary-bg);
 }
 
 /* Döndürme animasyonu için stil */
@@ -234,18 +234,18 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(255, 69, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(var(--accent-color-rgb), 0.2);
 }
 
 .search-button:hover {
   background-color: var(--hover-color);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 69, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
 }
 
 .search-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(255, 69, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(var(--accent-color-rgb), 0.2);
 }
 
 .no-results {

@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Linkleri tarayıcıda aç
   tmdbLink.addEventListener('click', (e) => {
     e.preventDefault();
-    window.watchflowAPI.openExternalLink('https://www.themoviedb.org/settings/api');
+    window.watchflowAPI.openExternalLink(config.get('externalLinks').tmdbApiSettings);
   });
   
   // Kaydedilmiş anahtarları yükle (varsa)

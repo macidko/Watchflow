@@ -10,9 +10,10 @@ const axios = require('axios');
 const { app } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const config = require('../../config/config'); // Config modülünü import et
 
 // Çeviriler için dosya yolları
-const translationsPath = path.join(app.getAppPath(), 'src/lang');
+const translationsPath = path.join(app.getAppPath(), config.get('paths').languageDirectory); // Config'den al
 
 // API modüllerini al
 let apiModules = null;

@@ -1,3 +1,5 @@
+const config = require('../config/config');
+
 /**
  * Kitsu API Service
  * https://kitsu.docs.apiary.io/
@@ -5,7 +7,7 @@
 const axios = require('axios');
 
 // Kitsu API endpoint
-const API_URL = 'https://kitsu.io/api/edge';
+const API_URL = config.get('apiUrls').kitsu;
 
 // API istek ayarları
 const API_CONFIG = {

@@ -14,6 +14,12 @@
   --input-bg: #2c2c2c;
   --dropdown-bg: #1a1a1a;
   --card-bg: #1e1e1e;
+  --secondary-bg-transparent: rgba(30, 30, 30, 0.7);
+  --hover-bg: rgba(40, 40, 45, 0.8);
+  --border-color-hover: #3a3a3a;
+  --tag-bg: rgba(50, 50, 54, 0.8);
+  --overlay-bg: rgba(0, 0, 0, 0.8);
+  --success-color: #4caf50;
   
   /* Gölgeler */
   --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -38,4 +44,235 @@
   --star-color: #ffb400;
   --star-size: 24px;
   --text-muted: #8a8a8a;
+}
+
+/* Varsayılan (koyu) tema - Varsayılan tema için body.default ekleyelim */
+body.default {
+  /* Ana renkler */
+  --primary-bg: #121212;
+  --secondary-bg: #1e1e1e;
+  --primary-text: #ffffff;
+  --secondary-text: #b3b3b3;
+  --accent-color: #ff4500;
+  --accent-color-rgb: 255, 69, 0;
+  --hover-color: #ff6a33;
+  --border-color: #2a2a2a;
+  
+  /* UI Bileşenleri */
+  --input-bg: #2c2c2c;
+  --dropdown-bg: #1a1a1a;
+  --card-bg: #1e1e1e;
+  --secondary-bg-transparent: rgba(30, 30, 30, 0.7);
+  --hover-bg: rgba(40, 40, 45, 0.8);
+  --border-color-hover: #3a3a3a;
+  --tag-bg: rgba(50, 50, 54, 0.8);
+  --overlay-bg: rgba(0, 0, 0, 0.8);
+  --success-color: #4caf50;
+  
+  /* Gölgeler */
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  
+  /* Yıldız derecelendirme */
+  --star-color: #ffb400;
+  --text-muted: #8a8a8a;
+}
+
+/* Gece Kızılı Tema */
+body.dark-red-theme {
+  /* Ana renkler */
+  --primary-bg: #1e0a0a;
+  --secondary-bg: #2a1212;
+  --primary-text: #ffe3e3;
+  --secondary-text: #d9abab;
+  --accent-color: #ff3c3c;
+  --accent-color-rgb: 255, 60, 60;
+  --hover-color: #ff5c5c;
+  --border-color: #3a1a1a;
+  
+  /* UI Bileşenleri */
+  --input-bg: #321e1e;
+  --dropdown-bg: #231111;
+  --card-bg: #2c1515;
+  --secondary-bg-transparent: rgba(42, 18, 18, 0.75);
+  --hover-bg: rgba(58, 26, 26, 0.85);
+  --border-color-hover: #4e2828;
+  --tag-bg: rgba(65, 30, 30, 0.7);
+  --overlay-bg: rgba(20, 5, 5, 0.85);
+  --success-color: #a83232;
+  
+  /* Gölgeler */
+  --dropdown-shadow: 0 8px 24px rgba(20, 0, 0, 0.6);
+  --popup-shadow: 0 4px 12px rgba(10, 0, 0, 0.5);
+  --card-shadow: 0 4px 8px rgba(10, 0, 0, 0.4);
+  
+  /* Yıldız derecelendirme */
+  --star-color: #ff7070;
+  --text-muted: #aa7c7c;
+}
+
+/* Gece Mavisi Tema - İyileştirilmiş */
+body.blue-theme {
+  /* Ana renkler */
+  --primary-bg: #0a1022;  /* Daha koyu arka plan */
+  --secondary-bg: #1a2333;
+  --primary-text: #e4eaff;
+  --secondary-text: #8eaef0;
+  --accent-color: #3b82f6;  /* Daha canlı mavi */
+  --accent-color-rgb: 59, 130, 246;
+  --hover-color: #60a5fa;
+  --border-color: #2c3e50;
+  
+  /* UI Bileşenleri */
+  --input-bg: #1f2937;
+  --dropdown-bg: #111827;
+  --card-bg: #1f2937;
+  --secondary-bg-transparent: rgba(26, 35, 51, 0.7);
+  --hover-bg: rgba(35, 45, 65, 0.8);
+  --border-color-hover: #3c526a;
+  --tag-bg: rgba(30, 40, 60, 0.7);
+  --overlay-bg: rgba(5, 10, 25, 0.8);
+  --success-color: #10b981;
+  
+  /* Gölgeler */
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+  
+  /* Yıldız derecelendirme */
+  --star-color: #60a5fa;
+  --text-muted: #64748b;
+}
+
+/* Mor Tema - İyileştirilmiş */
+body.purple-theme {
+  /* Ana renkler */
+  --primary-bg: #170823;  /* Daha koyu arka plan */
+  --secondary-bg: #2b0f46;
+  --primary-text: #f1e6ff;
+  --secondary-text: #c9a6ff;
+  --accent-color: #a855f7;  /* Daha canlı mor */
+  --accent-color-rgb: 168, 85, 247;
+  --hover-color: #c084fc;
+  --border-color: #3f2a6d;
+  
+  /* UI Bileşenleri */
+  --input-bg: #331a56;
+  --dropdown-bg: #1e0d38;
+  --card-bg: #2b0f46;
+  --secondary-bg-transparent: rgba(43, 15, 70, 0.7);
+  --hover-bg: rgba(55, 20, 90, 0.8);
+  --border-color-hover: #4f359d;
+  --tag-bg: rgba(60, 25, 95, 0.7);
+  --overlay-bg: rgba(20, 5, 35, 0.8);
+  --success-color: #4ade80;
+  
+  /* Gölgeler */
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  
+  /* Yıldız derecelendirme */
+  --star-color: #d8b4fe;
+  --text-muted: #9d8ec7;
+}
+
+/* Yeşil Tema - İyileştirilmiş */
+body.green-theme {
+  /* Ana renkler */
+  --primary-bg: #0a1e14;
+  --secondary-bg: #113420;
+  --primary-text: #e6fbef;
+  --secondary-text: #a6e3b7;
+  --accent-color: #10b981;
+  --accent-color-rgb: 16, 185, 129;
+  --hover-color: #34d399;
+  --border-color: #1b4d2e;
+  
+  /* UI Bileşenleri */
+  --input-bg: #184028;
+  --dropdown-bg: #102818;
+  --card-bg: #184028;
+  --secondary-bg-transparent: rgba(17, 52, 32, 0.7);
+  --hover-bg: rgba(30, 70, 45, 0.8);
+  --border-color-hover: #2b6843;
+  --tag-bg: rgba(35, 75, 50, 0.7);
+  --overlay-bg: rgba(8, 20, 12, 0.8);
+  --success-color: #22c55e;
+  
+  /* Gölgeler */
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  
+  /* Yıldız derecelendirme */
+  --star-color: #34d399;
+  --text-muted: #65a986;
+}
+
+/* Turuncu Tema - İyileştirilmiş */
+body.orange-theme {
+  /* Ana renkler */
+  --primary-bg: #241308;
+  --secondary-bg: #33200b;
+  --primary-text: #ffecd9;
+  --secondary-text: #ffc38f;
+  --accent-color: #f97316;
+  --accent-color-rgb: 249, 115, 22;
+  --hover-color: #fb923c;
+  --border-color: #4f2b0c;
+  
+  /* UI Bileşenleri */
+  --input-bg: #451f0d;
+  --dropdown-bg: #331b0a;
+  --card-bg: #451f0d;
+  --secondary-bg-transparent: rgba(51, 32, 11, 0.7);
+  --hover-bg: rgba(69, 45, 15, 0.8);
+  --border-color-hover: #6f3a12;
+  --tag-bg: rgba(75, 45, 20, 0.7);
+  --overlay-bg: rgba(30, 15, 5, 0.8);
+  --success-color: #65a30d;
+  
+  /* Gölgeler */
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  
+  /* Yıldız derecelendirme */
+  --star-color: #fdba74;
+  --text-muted: #b88b58;
+}
+
+/* Cyberpunk Teması - Neon Şehir */
+body.cyberpunk-theme {
+  /* Ana renkler */
+  --primary-bg: #0f0f18;
+  --secondary-bg: #1a1a27;
+  --primary-text: #e2f3ff;
+  --secondary-text: #7b9cd3;
+  --accent-color: #00f6ff;
+  --accent-color-rgb: 0, 246, 255;
+  --hover-color: #08d9fb;
+  --border-color: #233259;
+  
+  /* UI Bileşenleri */
+  --input-bg: #1c1c32;
+  --dropdown-bg: #12121e;
+  --card-bg: #1c1c32;
+  --secondary-bg-transparent: rgba(26, 26, 39, 0.7);
+  --hover-bg: rgba(30, 30, 50, 0.8);
+  --border-color-hover: #2b3f68;
+  --tag-bg: rgba(20, 37, 60, 0.7);
+  --overlay-bg: rgba(10, 10, 20, 0.8);
+  --success-color: #01ffc3;
+  
+  /* Gölgeler */
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 30, 0.6);
+  --popup-shadow: 0 0 20px rgba(0, 246, 255, 0.25);
+  --card-shadow: 0 4px 12px rgba(0, 246, 255, 0.18);
+  
+  /* Yıldız derecelendirme */
+  --star-color: #f637ec;
+  --text-muted: #5d7b9c;
 } 

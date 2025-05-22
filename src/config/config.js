@@ -8,8 +8,8 @@ const defaultConfig = {
   // Uygulama dili (tr: Türkçe, en: İngilizce)
   language: 'tr',
   
-  // Tema (light, dark)
-  theme: 'dark',
+  // Tema (default, light-theme, blue-theme, purple-theme)
+  theme: 'default',
   
   // Bildirim ayarları
   notifications: {
@@ -26,6 +26,44 @@ const defaultConfig = {
   // API ayarları
   api: {
     preferredAnimeSource: 'anilist', // anilist, kitsu, jikan
+  },
+
+  // API Temel URL'leri
+  apiUrls: {
+    tmdb: 'https://api.themoviedb.org/3',
+    anilist: 'https://graphql.anilist.co',
+    kitsu: 'https://kitsu.io/api/edge'
+  },
+
+  // Dış Bağlantılar
+  externalLinks: {
+    tmdbApiSettings: 'https://www.themoviedb.org/settings/api'
+  },
+
+  // Pencere Varsayılanları
+  windowDefaults: {
+    mainWindow: {
+      width: 500,
+      height: 900
+    },
+    settingsWindow: {
+      width: 600,
+      height: 650
+    }
+  },
+
+  // Dosya Yolları (uygulama kök dizinine göre)
+  paths: {
+    languageDirectory: 'src/lang',
+    watchlistFile: 'watchlist.json',      // İzleme listesi dosya adı
+    backupInfoFile: 'backup_info.json'   // Yedekleme bilgi dosya adı
+  },
+
+  // Zaman Aşımları (milisaniye cinsinden)
+  timeouts: {
+    buttonReset: 2000,          // Hata/başarı sonrası buton sıfırlama süresi
+    messageAutoHide: 3000,      // Mesajların otomatik gizlenme süresi
+    longNotification: 8000      // Uzun süreli bildirimler için
   }
 };
 

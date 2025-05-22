@@ -1,3 +1,5 @@
+const config = require('../config/config');
+
 /**
  * AniList API Service
  * https://anilist.gitbook.io/anilist-apiv2-docs/
@@ -5,7 +7,7 @@
 const axios = require('axios');
 
 // AniList API endpoint
-const API_URL = 'https://graphql.anilist.co';
+const API_URL = config.get('apiUrls').anilist;
 
 // Anime arama sorgusu
 const SEARCH_ANIME_QUERY = `

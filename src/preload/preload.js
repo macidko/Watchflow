@@ -15,6 +15,11 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
     return config.setLanguage(language);
   },
   
+  // Tema ayarı için
+  setTheme: (themeName) => {
+    return config.set('theme', themeName);
+  },
+  
   // API sunucusu bağlantı durumunu kontrol et
   checkServerStatus: async () => {
     try {
@@ -48,7 +53,7 @@ contextBridge.exposeInMainWorld('watchflowAPI', {
   // Kullanılabilir dilleri doğrudan dosya sisteminden listele
   listAvailableLanguages: () => {
     try {
-      const langDir = path.join(__dirname, '../lang');
+      const langDir = path.join(__dirname, '..', config.get('paths').languageDirectory);
       const files = fs.readdirSync(langDir);
       
       // JSON uzantılı dil dosyalarını bul

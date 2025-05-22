@@ -1,10 +1,12 @@
+const config = require('../config/config');
+
 /**
  * TMDB API - Film ve dizi verilerine erişmek için API wrapper'ı
  * API Dökümantasyon: https://developers.themoviedb.org/3
  */
 
 // TMDB API URL'i
-const TMDB_API_BASE_URL = 'https://api.themoviedb.org/3';
+const TMDB_API_BASE_URL = config.get('apiUrls').tmdb;
 // API anahtarını çevre değişkeninden al
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
@@ -27,7 +29,7 @@ const searchMedia = async (searchText, type = 'multi', apiKey = TMDB_API_KEY) =>
   try {
     // API anahtarı kontrolü
     if (!apiKey) {
-      throw new Error('TMDB API anahtarı tanımlanmamış. Lütfen .env dosyasını kontrol edin.');
+      throw new Error(`${t('errors.tmdbApiKeyError')}`);
     }
     
     // API endpoint'i belirle

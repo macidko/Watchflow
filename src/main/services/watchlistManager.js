@@ -4,22 +4,23 @@
 const fs = require('fs').promises;
 const path = require('path');
 const { app } = require('electron');
+const config = require('../../config/config'); // Config modülünü import et
 
 // İzleme listesi dosya yolu hesaplama
 const getWatchlistPath = () => {
   const isDevelopment = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
   // Geliştirme modunda src/data içinde, üretim modunda userData klasöründe depolama yap
   return isDevelopment 
-    ? path.join(__dirname, '../../../src/data/watchlist.json')
-    : path.join(app.getPath('userData'), 'watchlist.json');
+    ? path.join(__dirname, '../../../src/data', config.get('paths').watchlistFile) // Config'den al
+    : path.join(app.getPath('userData'), config.get('paths').watchlistFile); // Config'den al
 };
 
 // Son yedekleme tarihini saklamak için dosya yolu
 const getBackupInfoPath = () => {
   const isDevelopment = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
   return isDevelopment 
-    ? path.join(__dirname, '../../../src/data/backup_info.json')
-    : path.join(app.getPath('userData'), 'backup_info.json');
+    ? path.join(__dirname, '../../../src/data', config.get('paths').backupInfoFile) // Config'den al
+    : path.join(app.getPath('userData'), config.get('paths').backupInfoFile); // Config'den al
 };
 
 // İzleme listesi dosyasının varlığını kontrol et, yoksa oluştur

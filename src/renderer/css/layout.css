@@ -7,8 +7,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 15px;
-  background-color: rgba(18, 18, 18, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: var(--primary-bg);
+  border-bottom: 1px solid var(--border-color);
   height: 58px;
   position: relative;
   z-index: 100;
@@ -26,7 +26,7 @@
 }
 
 .bulk-add-button {
-  background-color: rgba(255, 69, 0, 0.1);
+  background-color: rgba(var(--accent-color-rgb), 0.1);
   border: none;
   border-radius: var(--border-radius-sm);
   color: var(--accent-color);
@@ -41,7 +41,7 @@
 }
 
 .bulk-add-button:hover {
-  background-color: rgba(255, 69, 0, 0.2);
+  background-color: rgba(var(--accent-color-rgb), 0.2);
   transform: translateY(-2px);
 }
 
@@ -74,7 +74,7 @@
   right: 0;
   bottom: 0;
   background: radial-gradient(circle at 30% 50%, 
-              rgba(255, 69, 0, 0.08) 0%, 
+              rgba(var(--accent-color-rgb), 0.08) 0%, 
               transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -92,7 +92,7 @@
   height: 25px;
   width: auto;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  filter: drop-shadow(0 0 3px rgba(255, 69, 0, 0.2));
+  filter: drop-shadow(0 0 3px rgba(var(--accent-color-rgb), 0.2));
   animation: logoFloat 3s ease-in-out infinite;
 }
 
@@ -107,14 +107,14 @@
 
 .logo:hover svg {
   transform: scale(1.1) rotate(-5deg);
-  filter: drop-shadow(0 0 5px rgba(255, 69, 0, 0.4));
+  filter: drop-shadow(0 0 5px rgba(var(--accent-color-rgb), 0.4));
   animation-play-state: paused;
 }
 
 .logo-text {
   font-size: 18px;
   font-weight: 700;
-  background: linear-gradient(92deg, #ffffff 0%, #f5f5f5 100%);
+  background: linear-gradient(92deg, var(--primary-text) 0%, var(--secondary-text) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: 0.5px;
@@ -123,10 +123,10 @@
 }
 
 .logo:hover .logo-text {
-  background: linear-gradient(92deg, #ffffff 0%, var(--accent-color) 90%);
+  background: linear-gradient(92deg, var(--primary-text) 0%, var(--accent-color) 90%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 2px 8px rgba(255, 69, 0, 0.4);
+  text-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.4);
 }
 
 /* Navbar - İkinci satır: Navigasyon Menüsü */
@@ -170,7 +170,7 @@
 
 /* Hover efektleri */
 .main-nav ul li a:hover {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--primary-text);
 }
 
 /* Active (seçili) durumu için efekt */
@@ -178,7 +178,7 @@
   color: var(--accent-color);
   font-weight: 600;
   position: relative;
-  background-color: rgba(255, 69, 0, 0.08);
+  background-color: rgba(var(--accent-color-rgb), 0.08);
   border-radius: 3px;
 }
 
@@ -206,7 +206,7 @@
   opacity: 1;
   transform: scaleX(1);
   height: 3px;
-  box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+  box-shadow: 0 0 10px rgba(var(--accent-color-rgb), 0.5);
 }
 
 /* Tıklama efekti */
@@ -234,7 +234,7 @@
 }
 
 .page-section h2 {
-  color: #FFF;
+  color: var(--primary-text);
   margin-bottom: 15px;
   font-size: 28px;
   font-weight: 600;

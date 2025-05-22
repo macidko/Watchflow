@@ -3,6 +3,7 @@
 
 const { BrowserWindow } = require('electron');
 const path = require('path');
+const config = require('../../config/config'); // Config modülünü import et
 
 // Pencere referanslarını global olarak tut
 let mainWindow;
@@ -17,8 +18,8 @@ let settingsWindow;
 function createMainWindow(options = {}) {
   // Tarayıcı penceresi oluştur
   mainWindow = new BrowserWindow({
-    width: 500,
-    height: 900,
+    width: config.get('windowDefaults').mainWindow.width, // Config'den al
+    height: config.get('windowDefaults').mainWindow.height, // Config'den al
     frame: false,
     webPreferences: {
       nodeIntegration: true,
@@ -57,8 +58,8 @@ function createSettingsWindow(options = {}) {
   }
   
   settingsWindow = new BrowserWindow({
-    width: 600,
-    height: 650,
+    width: config.get('windowDefaults').settingsWindow.width, // Config'den al
+    height: config.get('windowDefaults').settingsWindow.height, // Config'den al
     resizable: false,
     frame: false,
     webPreferences: {
