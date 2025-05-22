@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.0](https://github.com/macidko/Watchflow/compare/v0.8.0...v0.9.0) (2025-05-22)
+
+
+### Features
+
+* **config-ui:** Get API URLs from config file and add theme settings ([99f3298](https://github.com/macidko/Watchflow/commit/99f3298202706391d593aad5abfdb55f933146a4))
+* **db:** firebase.js ([987aed7](https://github.com/macidko/Watchflow/commit/987aed7726bf22fdae9cce841b8bbb350ae4c2d7))
+
 ## [0.8.0](https://github.com/macidko/Watchflow/compare/v0.7.0...v0.8.0) (2025-05-18)
 
 
