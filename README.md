@@ -1,22 +1,25 @@
 # Watchflow
 
-A desktop application for tracking movies, TV shows, and anime.
+A comprehensive watchlist management app for movies, TV shows, and anime.
 
-## Overview
+## About the Project
 
-Watchflow helps you organize and monitor your watchlist for movies, series, and anime. You can create custom categories, track your progress, and manage your content in a simple and efficient way.
+Watchflow is a modern desktop application that helps you track, organize, and manage your movie, TV show, and anime watching habits. With its user-friendly interface and customizable categories, it gives you full control over your viewing experience.
 
-## Features
+## Key Features
 
-- Search for movies, TV shows, and anime
-- Create and manage your personal watchlist
-- Add custom categories (sliders) for better organization
-- Track seasons and episodes for series and anime
-- Rate your content
-- Bulk add items to your list
-- Drag-and-drop category sorting
-- Notification system for user feedback
-- 
+* **Comprehensive Content Search:** Search for movies, TV shows, and anime
+* **Personalized Watchlist:** Categorize content as watched, watching, or want to watch
+* **Custom Category System:** Organize content your way using customizable sliders
+* **Season & Episode Tracking:** Detailed progress tracking for series and anime
+* **Rating System:** Rate watched content on a 1–10 scale
+* **Bulk Content Import:** Quickly add items from text-based lists
+* **Drag-and-Drop Category Sorting:** Easily rearrange categories
+* **Notification System:** Real-time feedback for user actions
+* **Multi-language Support:** Supports Turkish and English
+* **Theme System:** Choose from 7 different themes
+* **Data Backup:** Safely back up and restore your watchlist
+
 ## 📦 Download
 
 ➡️ [Download the latest release (.exe)](https://github.com/macidko/Watchflow/releases/latest)
@@ -51,27 +54,30 @@ npm run build:mac   # macOS
 npm run build:linux # Linux
 ```
 
-## API Key Requirement
+## API Requirements
 
-On first launch, you will be prompted to enter your TMDB API key. This is required to fetch movie and TV show data. You can obtain a key from [themoviedb.org](https://www.themoviedb.org/settings/api).
+On first launch, you will be prompted to enter a TMDB API key. This is required to fetch movie and TV show data. You can obtain a key from [themoviedb.org](https://www.themoviedb.org/settings/api).
 
 ## Project Structure
 
 ```
 src/
   main/       # Main process and services
-  renderer/   # UI and CSS files
+  renderer/   # User interface and CSS files
   preload/    # Preload bridge
   api/        # API services
   data/       # Local storage
+  lang/       # Language files
+  i18n/       # Translation system
 ```
 
-## Requirements
+## System Requirements
 
-- Node.js 14 or higher
-- npm 6 or higher
-- Internet connection (for API requests)
+* Node.js 14 or later
+* npm 6 or later
+* Internet connection (for API requests)
+* Windows 7/8/10/11, macOS 10.13+, Linux (Debian-based)
 
 ## License
 
-MIT 
+MIT
