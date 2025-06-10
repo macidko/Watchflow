@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.1](https://github.com/macidko/Watchflow/compare/v0.9.0...v0.9.1) (2025-06-10)
+
+
+### Code Refactoring
+
+* improve build process and dependencies ([ab7dcb8](https://github.com/macidko/Watchflow/commit/ab7dcb8ef7f8030b3885518f692de6995072ebe3))
+
 ## [0.9.0](https://github.com/macidko/Watchflow/compare/v0.8.0...v0.9.0) (2025-05-22)
 
 
