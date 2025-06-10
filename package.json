@@ -16,7 +16,8 @@
     "release": "standard-version",
     "release:patch": "standard-version --release-as patch",
     "release:minor": "standard-version --release-as minor",
-    "release:major": "standard-version --release-as major"
+    "release:major": "standard-version --release-as major",
+    "build-css": "npx concat -o src/renderer/css/bundle.css src/renderer/css/variables.css src/renderer/css/base.css src/renderer/css/layout.css src/renderer/css/components.css src/renderer/css/cards.css src/renderer/css/popup.css src/renderer/css/search.css src/renderer/css/settings.css src/renderer/css/index.css && npx cleancss -o src/renderer/css/bundle.min.css src/renderer/css/bundle.css"
   },
   "keywords": [
     "electron",
@@ -31,7 +32,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
-    "dotenv": "^9.0.2",
+    "clean-css-cli": "^5.6.3",
+    "concat": "^1.0.3",
     "electron": "^29.0.0",
     "electron-builder": "^24.9.0",
     "rimraf": "^5.0.5",
@@ -39,10 +41,9 @@
   },
   "dependencies": {
     "axios": "^1.6.1",
-    "dotenv": "^16.4.5",
     "electron-store": "^8.1.0",
-    "fs-extra": "^11.2.0",
-    "firebase": "^10.8.0"
+    "firebase": "^10.8.0",
+    "fs-extra": "^11.2.0"
   },
   "build": {
     "appId": "com.watchflow.app",

@@ -67,33 +67,33 @@ const defaultConfig = {
   }
 };
 
-// Mevcut konfigürasyonu localStorage'dan yükle
-const loadConfig = () => {
-  try {
-    const savedConfig = localStorage.getItem('watchflow_config');
-    
-    if (savedConfig) {
-      // Kayıtlı config'i parse et ve varsayılan değerlerle birleştir
-      // Bu sayede yeni eklenen config seçenekleri de kullanılabilir olur
-      return { ...defaultConfig, ...JSON.parse(savedConfig) };
-    }
-  } catch (error) {
-    console.error('Config yüklenirken hata:', error);
-  }
-  
-  // Hata durumunda veya config yoksa varsayılanı kullan
-  return { ...defaultConfig };
-};
+const Store = require('electron-store');
+const store = new Store({
+  encryptionKey: 'watchflow-app-secure-key'
+});
 
-// Konfigürasyonu localStorage'a kaydet
+// localStorage kullanımlarını değiştir
+// Örnek:
 const saveConfig = (config) => {
   try {
-    localStorage.setItem('watchflow_config', JSON.stringify(config));
+    store.set('watchflow_config', config);
     return true;
   } catch (error) {
     console.error('Config kaydedilirken hata:', error);
     return false;
   }
+};
+
+const loadConfig = () => {
+  try {
+    const savedConfig = store.get('watchflow_config');
+    if (savedConfig) {
+      return { ...defaultConfig, ...savedConfig };
+    }
+  } catch (error) {
+    console.error('Config yüklenirken hata:', error);
+  }
+  return { ...defaultConfig };
 };
 
 // Mevcut config objesi
