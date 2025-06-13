@@ -42,4 +42,17 @@ app.whenReady().then(() => {
 // Tüm pencereler kapatıldığında uygulamadan çık (Windows ve Linux)
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
-}); 
+});
+
+function createWindow() {
+  const mainWindow = new BrowserWindow({
+    // ...mevcut ayarlar
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
+      sandbox: true
+    }
+  });
+} 
