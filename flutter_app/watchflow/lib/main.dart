@@ -8,6 +8,13 @@ import 'config/theme.dart';
 import 'utils/theme_service.dart';
 import 'data/services/service_bindings.dart';
 import 'presentation/screens/api_test_screen.dart';
+import 'presentation/screens/home_screen.dart';
+import 'presentation/screens/movie_screen.dart';
+import 'presentation/screens/tv_screen.dart';
+import 'presentation/screens/anime_screen.dart';
+import 'presentation/screens/settings_screen.dart';
+import 'presentation/screens/detail_screen.dart';
+import 'presentation/screens/root_screen.dart';
 
 void main() async {
   // Flutter widget bağlamını başlat
@@ -36,42 +43,33 @@ void main() async {
   final themeService = ThemeService();
   final isDarkMode = await themeService.loadThemeMode();
   
-  runApp(MyApp(isDarkMode: isDarkMode));
+  // Servisleri başlat
+  await ServiceBindings().dependencies();
+  
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool isDarkMode;
-  
-  const MyApp({super.key, required this.isDarkMode});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Watchflow',
-      debugShowCheckedModeBanner: false, // Debug banner'ı kaldır
-      
-      // Tema yapılandırması
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      
-      // Servis bağlayıcıları
-      initialBinding: ServiceBindings(),
-      
-      // Çoklu dil desteği
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+      themeMode: ThemeMode.dark, // Varsayılan olarak koyu tema
+      debugShowCheckedModeBanner: false,
+      defaultTransition: Transition.fade,
+      getPages: [
+        GetPage(name: '/', page: () => const HomeScreen()),
+        GetPage(name: '/movies', page: () => const MovieScreen()),
+        GetPage(name: '/tv', page: () => const TvScreen()),
+        GetPage(name: '/anime', page: () => const AnimeScreen()),
+        GetPage(name: '/settings', page: () => const SettingsScreen()),
+        GetPage(name: '/detail/:id', page: () => const DetailScreen()),
       ],
-      supportedLocales: const [
-        Locale('tr', 'TR'), // Türkçe
-        Locale('en', 'US'), // İngilizce
-      ],
-      locale: const Locale('tr', 'TR'), // Varsayılan dil
-      
-      // Ana sayfa
-      home: const SplashScreen(),
+      home: const RootScreen(),
     );
   }
 }

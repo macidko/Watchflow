@@ -3,15 +3,19 @@ import 'package:flutter/material.dart';
 /// Watchflow teması için renk, stil ve tema tanımlamaları
 class AppTheme {
   static const Color primaryColor = Color(0xFFFF4500); // Turuncu ana renk
-  static const Color accentColor = Color(0xFF2E6BEF); // Mavi vurgu rengi
-  static const Color backgroundColor = Color(0xFF121212); // Koyu arka plan
-  static const Color cardColor = Color(0xFF1E1E1E); // Kart arka plan
-  static const Color surfaceColor = Color(0xFF252525); // Yüzey rengi
-  static const Color textColor = Color(0xFFFFFFFF); // Beyaz metin
-  static const Color secondaryTextColor = Color(0xFFAAAAAA); // İkincil metin rengi
-  static const Color errorColor = Color(0xFFE53935); // Hata rengi
-  static const Color successColor = Color(0xFF43A047); // Başarı rengi
-  static const Color dividerColor = Color(0xFF323232); // Ayırıcı çizgi rengi
+  static const Color primaryDark = Color(0xFFE03D00);
+  static const Color primaryLight = Color(0xFFFF6A33);
+  
+  static const Color darkBg = Color(0xFF121212);
+  static const Color darkSurface = Color(0xFF1E1E1E);
+  static const Color darkCard = Color(0xFF252525);
+  
+  static const Color lightBg = Color(0xFFF5F5F5);
+  static const Color lightSurface = Color(0xFFFFFFFF);
+  static const Color lightCard = Color(0xFFF0F0F0);
+
+  // Statik arka plan rengi (sistem bar için)
+  static const Color backgroundColor = darkBg;
 
   // Logo için özel renkler
   static const Color logoColor = primaryColor;
@@ -30,223 +34,163 @@ class AppTheme {
   static const Color animeColor = Color(0xFF673AB7); // Anime
 
   /// Koyu tema
-  static ThemeData get darkTheme {
-    final ThemeData base = ThemeData.dark();
-    
-    return base.copyWith(
-      primaryColor: primaryColor,
-      colorScheme: const ColorScheme.dark(
-        primary: primaryColor,
-        secondary: accentColor,
-        surface: surfaceColor,
-        background: backgroundColor,
-        error: errorColor,
+  static final ThemeData darkTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    colorScheme: const ColorScheme.dark(
+      primary: primaryColor,
+      secondary: primaryLight,
+      surface: darkSurface,
+      background: darkBg,
+      error: Colors.redAccent,
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
+      onSurface: Colors.white,
+      onBackground: Colors.white,
+      onError: Colors.white,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: darkBg,
+      foregroundColor: Colors.white,
+      elevation: 0,
+    ),
+    scaffoldBackgroundColor: darkBg,
+    cardTheme: CardThemeData(
+      color: darkCard,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
       ),
-      cardColor: cardColor,
-      dialogBackgroundColor: cardColor,
-      scaffoldBackgroundColor: backgroundColor,
-      dividerColor: dividerColor,
-      
-      // Metin temaları
-      textTheme: _customTextTheme(base.textTheme),
-      primaryTextTheme: _customTextTheme(base.primaryTextTheme),
-      
-      // AppBar teması
-      appBarTheme: const AppBarTheme(
-        color: backgroundColor,
-        elevation: 0,
-        centerTitle: false,
-        iconTheme: IconThemeData(color: primaryColor),
-        titleTextStyle: TextStyle(
-          color: textColor,
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
-        ),
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: darkSurface,
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
       ),
-      
-      // Bottom Navigation teması
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: backgroundColor,
-        selectedItemColor: primaryColor,
-        unselectedItemColor: secondaryTextColor,
-        type: BottomNavigationBarType.fixed,
-        showUnselectedLabels: true,
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: darkBg,
+      selectedItemColor: primaryColor,
+      unselectedItemColor: Colors.grey,
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: primaryColor,
+      foregroundColor: Colors.white,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.grey),
       ),
-      
-      // Card teması - CardTheme yerine CardThemeData kullanıldı
-      cardTheme: CardThemeData(
-        color: cardColor,
-        elevation: 4,
-        shadowColor: Colors.black.withOpacity(0.4),
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: primaryColor, width: 2),
       ),
-      
-      // FloatingActionButton teması
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: primaryColor,
-        foregroundColor: textColor,
+      filled: true,
+      fillColor: darkCard,
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: primaryColor,
       ),
-      
-      // Input teması
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: surfaceColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: errorColor),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      ),
-      
-      // Button teması
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(primaryColor),
-          foregroundColor: MaterialStateProperty.all<Color>(textColor),
-          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12)
-          ),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0))
-          ),
-        ),
-      ),
-      
-      // Icon teması
-      iconTheme: const IconThemeData(
-        color: primaryColor,
-        size: 24,
-      ),
-    );
-  }
-
-  /// Açık tema
-  static ThemeData get lightTheme {
-    final ThemeData base = ThemeData.light();
-    
-    const Color lightBackgroundColor = Color(0xFFF5F5F5);
-    const Color lightSurfaceColor = Colors.white;
-    const Color lightTextColor = Color(0xFF212121);
-    const Color lightSecondaryTextColor = Color(0xFF757575);
-    const Color lightDividerColor = Color(0xFFE0E0E0);
-    
-    return base.copyWith(
-      primaryColor: primaryColor,
-      colorScheme: const ColorScheme.light(
-        primary: primaryColor,
-        secondary: accentColor,
-        surface: lightSurfaceColor,
-        background: lightBackgroundColor,
-        error: errorColor,
-      ),
-      cardColor: lightSurfaceColor,
-      dialogBackgroundColor: lightSurfaceColor,
-      scaffoldBackgroundColor: lightBackgroundColor,
-      dividerColor: lightDividerColor,
-      
-      // Metin temaları
-      textTheme: _customTextTheme(base.textTheme, lightTextColor, lightSecondaryTextColor),
-      primaryTextTheme: _customTextTheme(base.primaryTextTheme, lightTextColor, lightSecondaryTextColor),
-      
-      // AppBar teması
-      appBarTheme: const AppBarTheme(
-        color: primaryColor,
-        elevation: 0,
-        centerTitle: false,
-        iconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
-        ),
-      ),
-      
-      // Bottom Navigation teması
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: lightSurfaceColor,
-        selectedItemColor: primaryColor,
-        unselectedItemColor: lightSecondaryTextColor,
-        type: BottomNavigationBarType.fixed,
-        showUnselectedLabels: true,
-      ),
-      
-      // Card teması - CardTheme yerine CardThemeData kullanıldı
-      cardTheme: CardThemeData(
-        color: lightSurfaceColor,
-        elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.1),
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      
-      // FloatingActionButton teması
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-      ),
-      
-      // Input teması
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: errorColor),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      ),
-      
-      // Button teması
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(primaryColor),
-          foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12)
-          ),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0))
-          ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
       ),
-      
-      // Icon teması
-      iconTheme: const IconThemeData(
-        color: primaryColor,
-        size: 24,
+    ),
+    textTheme: const TextTheme(
+      titleLarge: TextStyle(fontWeight: FontWeight.bold),
+      bodyLarge: TextStyle(fontSize: 16),
+    ),
+  );
+
+  /// Açık tema
+  static final ThemeData lightTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    colorScheme: const ColorScheme.light(
+      primary: primaryColor,
+      secondary: primaryDark,
+      surface: lightSurface,
+      background: lightBg,
+      error: Colors.red,
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
+      onSurface: Colors.black,
+      onBackground: Colors.black,
+      onError: Colors.white,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: lightBg,
+      foregroundColor: Colors.black,
+      elevation: 0,
+    ),
+    scaffoldBackgroundColor: lightBg,
+    cardTheme: CardThemeData(
+      color: lightSurface,
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
       ),
-    );
-  }
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: lightSurface,
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: lightSurface,
+      selectedItemColor: primaryColor,
+      unselectedItemColor: Colors.grey,
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: primaryColor,
+      foregroundColor: Colors.white,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade400),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: primaryColor, width: 2),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: primaryColor,
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    ),
+    textTheme: const TextTheme(
+      titleLarge: TextStyle(fontWeight: FontWeight.bold),
+      bodyLarge: TextStyle(fontSize: 16),
+    ),
+  );
   
   // Özelleştirilmiş metin teması
   static TextTheme _customTextTheme(TextTheme base, [
-    Color textColor = textColor,
-    Color secondaryTextColor = secondaryTextColor,
+    Color textColor = primaryColor,
+    Color secondaryTextColor = Colors.grey,
   ]) {
     return base.copyWith(
       displayLarge: base.displayLarge?.copyWith(

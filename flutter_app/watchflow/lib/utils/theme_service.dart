@@ -4,32 +4,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Tema tercihlerini yöneten servis sınıfı
 class ThemeService {
-  final _darkModeKey = 'isDarkMode';
+  final _key = 'isDarkMode';
   
-  /// Tema modunu Get.isDarkMode üzerinden almak
-  bool get isDarkMode => Get.isDarkMode;
-  
-  /// Tema tercihi - karanlık mod için true
+  /// Tema modunu yükleyen fonksiyon, varsayılan olarak karanlık tema
   Future<bool> loadThemeMode() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_darkModeKey) ?? true; // Varsayılan olarak karanlık tema
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_key) ?? true;
+  }
+
+  /// Tema modunu kaydeden fonksiyon
+  Future<void> _saveThemeMode(bool isDarkMode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_key, isDarkMode);
+  }
+
+  /// Temayı değiştiren fonksiyon
+  void switchTheme() async {
+    bool isDarkMode = await loadThemeMode();
+    Get.changeThemeMode(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+    await _saveThemeMode(!isDarkMode);
   }
   
-  /// Tema ayarını kaydetme
-  Future<void> saveThemeMode(bool isDarkMode) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_darkModeKey, isDarkMode);
-  }
-  
-  /// Temayı değiştirme
-  Future<void> changeThemeMode() async {
-    Get.changeThemeMode(Get.isDarkMode ? ThemeMode.light : ThemeMode.dark);
-    await saveThemeMode(!Get.isDarkMode);
-  }
-  
-  /// Belirli bir tema moduna geçme
-  Future<void> setThemeMode(bool isDark) async {
-    Get.changeThemeMode(isDark ? ThemeMode.dark : ThemeMode.light);
-    await saveThemeMode(isDark);
+  /// Mevcut tema modunu döndüren fonksiyon
+  Future<ThemeMode> getThemeMode() async {
+    bool isDarkMode = await loadThemeMode();
+    return isDarkMode ? ThemeMode.dark : ThemeMode.light;
   }
 } 

@@ -1,0 +1,128 @@
+# Watchflow .gitignore
+# Hem Electron hem de Flutter projesi için ignore kuralları
+
+# Genel kurallar
+.DS_Store
+Thumbs.db
+desktop.ini
+.cursor/
+*.log
+*.tmp
+*.bak
+*.swp
+*.class
+*.pyc
+.history
+.svn/
+.atom/
+.buildlog/
+.swiftpm/
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IDE - JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+
+# Electron App
+## Bağımlılıklar
+electron_app/node_modules/
+electron_app/.pnp
+electron_app/.pnp.js
+
+## Üretim dosyaları
+electron_app/dist/
+electron_app/out/
+electron_app/build/
+electron_app/release/
+electron_app/release-builds/
+/dist_electron
+.electron-builder.*
+
+## Veri dosyaları
+electron_app/src/data/
+electron_app/src/data/watchlist.json
+
+## Günlükler
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+## Çevre değişkenleri ve gizli bilgiler
+electron_app/.env
+electron_app/.env.local
+electron_app/.env.development.local
+electron_app/.env.test.local
+electron_app/.env.production.local
+electron_app/*.pem
+electron_app/*.key
+electron_app/*.p8
+electron_app/*.p12
+electron_app/*.pfx
+electron_app/*.cert
+
+## Yerel kurulum
+/installers
+
+# Flutter App
+## Dart/Flutter spesifik
+flutter_app/watchflow/.dart_tool/
+flutter_app/watchflow/.flutter-plugins
+flutter_app/watchflow/.flutter-plugins-dependencies
+flutter_app/watchflow/.pub-cache/
+flutter_app/watchflow/.pub/
+flutter_app/watchflow/build/
+flutter_app/watchflow/**/ios/Flutter/.last_build_id
+flutter_app/watchflow/**/doc/api/
+flutter_app/watchflow/migrate_working_dir/
+
+## Symbolication ve obfuscation
+flutter_app/watchflow/app.*.symbols
+flutter_app/watchflow/app.*.map.json
+
+## Android Studio build artifacts
+flutter_app/watchflow/android/app/debug/
+flutter_app/watchflow/android/app/profile/
+flutter_app/watchflow/android/app/release/
+
+## Proje spesifik dosyalar
+flutter_app/watchflow/flutter_app_roadmap.md
+flutter_app/watchflow/olaylar.txt
+flutter_app/watchflow/project_map.txt
+flutter_app_roadmap.md
+todo.html
+
+## Secure keys ve config dosyaları
+flutter_app/watchflow/**/lib/config/api_keys.dart
+flutter_app/watchflow/**/*_key.json
+flutter_app/watchflow/**/*.jks
+flutter_app/watchflow/**/*.keystore
+flutter_app/watchflow/**/*.env
+flutter_app/watchflow/**/.env*
+flutter_app/watchflow/**/*.env.*
+flutter_app/watchflow/**/key.properties
+
+## Yerel geliştirme dosyaları
+flutter_app/watchflow/**/coverage/
+flutter_app/watchflow/**/generated/
+flutter_app/watchflow/**/tmp/
+
+## Firebase
+flutter_app/watchflow/**/google-services.json
+flutter_app/watchflow/**/GoogleService-Info.plist
+flutter_app/watchflow/firebase_options.dart

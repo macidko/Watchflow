@@ -1,17 +1,21 @@
 import 'package:get/get.dart';
 import '../../utils/logger.dart';
+import '../../domain/usecases/get_watchlist_items_usecase.dart';
 import 'api_key_service.dart';
 import 'api_service.dart';
 
 /// API ve diğer servisler için GetX bağlayıcısı
 class ServiceBindings extends Bindings {
   @override
-  void dependencies() {
+  Future<void> dependencies() async {
     // API Servisi
-    _initApiService();
+    await _initApiService();
     
     // API Key Servisi
     _initApiKeyService();
+    
+    // Use-case'leri kaydet
+    _initUseCases();
   }
   
   Future<void> _initApiService() async {
@@ -33,6 +37,18 @@ class ServiceBindings extends Bindings {
       AppLogger.i('API Key Servisi başarıyla başlatıldı.');
     } catch (e) {
       AppLogger.e('API Key Servisi başlatılırken hata oluştu', e);
+    }
+  }
+  
+  void _initUseCases() {
+    try {
+      AppLogger.i('Use-case\'ler başlatılıyor...');
+      // Watchlist Items Use-Case
+      final watchlistItemsUseCase = GetWatchlistItemsUseCase();
+      Get.put<GetWatchlistItemsUseCase>(watchlistItemsUseCase, permanent: true);
+      AppLogger.i('Use-case\'ler başarıyla başlatıldı.');
+    } catch (e) {
+      AppLogger.e('Use-case\'ler başlatılırken hata oluştu', e);
     }
   }
 } 

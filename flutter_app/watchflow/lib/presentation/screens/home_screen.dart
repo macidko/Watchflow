@@ -2,143 +2,80 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../config/theme.dart';
 import '../../utils/theme_service.dart';
+import 'package:watchflow/presentation/controllers/home_controller.dart';
+import 'package:watchflow/presentation/widgets/content_slider.dart';
+import 'package:watchflow/presentation/widgets/app_drawer.dart';
+import 'package:watchflow/presentation/widgets/watchflow_app_bar.dart';
+import 'package:watchflow/presentation/widgets/bottom_nav_bar.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final bool showAppBar;
+  final bool showBottomNav;
+
+  const HomeScreen({
+    super.key,
+    this.showAppBar = true,
+    this.showBottomNav = true,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Watchflow'),
-        actions: [
-          // Tema değiştirme butonu
-          IconButton(
-            icon: Icon(
-              Get.isDarkMode ? Icons.wb_sunny_outlined : Icons.dark_mode_outlined,
-              color: Get.isDarkMode ? Colors.yellow : Colors.grey.shade800,
+      backgroundColor: Colors.black,
+      appBar: showAppBar ? const WatchflowAppBar() : null,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ContentSlider(
+                  title: 'İzleniyor',
+                  items: [
+                    // Örnek veriler
+                    {'id': 1, 'title': 'Breaking Bad', 'image': 'https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg'},
+                    {'id': 2, 'title': 'Game of Thrones', 'image': 'https://image.tmdb.org/t/p/w500/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg'},
+                    {'id': 3, 'title': 'The Witcher', 'image': 'https://image.tmdb.org/t/p/w500/7vjaCdMw15FEbXyLQTVa04URsPm.jpg'},
+                  ],
+                  onSeeAll: () => Get.toNamed('/all-items', arguments: {'category': 'watching'}),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                ContentSlider(
+                  title: 'İzlenecekler',
+                  items: [
+                    // Örnek veriler
+                    {'id': 4, 'title': 'Stranger Things', 'image': 'https://image.tmdb.org/t/p/w500/49WJfeN0moxb9IPfGn8AIqMGskD.jpg'},
+                    {'id': 5, 'title': 'The Mandalorian', 'image': 'https://image.tmdb.org/t/p/w500/sWgBv7LV2PRoQgkxwlibdGXKz1S.jpg'},
+                    {'id': 6, 'title': 'Dark', 'image': 'https://image.tmdb.org/t/p/w500/apbrbWs8M9lyOpJYU5WXrpFbk1Z.jpg'},
+                  ],
+                  onSeeAll: () => Get.toNamed('/all-items', arguments: {'category': 'plan_to_watch'}),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                ContentSlider(
+                  title: 'İzlenenler',
+                  items: [
+                    // Örnek veriler
+                    {'id': 7, 'title': 'Friends', 'image': 'https://image.tmdb.org/t/p/w500/f496cm9enuEsZkSPzCwnTESEK5s.jpg'},
+                    {'id': 8, 'title': 'The Office', 'image': 'https://image.tmdb.org/t/p/w500/qWnJzyZhyy74gjpSjIXWmuk0ifX.jpg'},
+                    {'id': 9, 'title': 'Sherlock', 'image': 'https://image.tmdb.org/t/p/w500/7WTsnHkbA0FaG6R9hAiIVrZjwUf.jpg'},
+                  ],
+                  onSeeAll: () => Get.toNamed('/all-items', arguments: {'category': 'completed'}),
+                ),
+              ],
             ),
-            onPressed: () => ThemeService().changeThemeMode(),
           ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Logo
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.movie_outlined,
-                size: 60,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 32),
-            
-            // Başlık
-            Text(
-              'Watchflow',
-              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    color: AppTheme.primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Alt başlık
-            Text(
-              'Film, Dizi ve Anime Takip Uygulaması',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 48),
-            
-            // Tema renk testi
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildColorCard('Ana Renk', AppTheme.primaryColor),
-                  _buildColorCard('Vurgu Rengi', AppTheme.accentColor),
-                  _buildColorCard('Başarı', AppTheme.successColor),
-                  _buildColorCard('Hata', AppTheme.errorColor),
-                ],
-              ),
-            ),
-            const SizedBox(height: 48),
-            
-            // Kategori butonları
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildCategoryButton(context, 'Filmler', AppTheme.movieColor, Icons.movie),
-                  _buildCategoryButton(context, 'Diziler', AppTheme.tvColor, Icons.tv),
-                  _buildCategoryButton(context, 'Animeler', AppTheme.animeColor, Icons.animation),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
+      bottomNavigationBar: showBottomNav ? const BottomNavBar(currentIndex: 0, onTap: _dummyOnTap) : null,
     );
   }
   
-  // Renk kartı widget'ı
-  Widget _buildColorCard(String title, Color color) {
-    return Column(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 12),
-        ),
-      ],
-    );
-  }
-  
-  // Kategori buton widget'ı
-  Widget _buildCategoryButton(BuildContext context, String title, Color color, IconData icon) {
-    return ElevatedButton(
-      onPressed: () {},
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
+  static void _dummyOnTap(int index) {
+    // Boş fonksiyon, RootScreen'de zaten gerçek navigasyon işlemi yapılıyor
   }
 } 
