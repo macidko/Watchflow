@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:watchflow/domain/entities/media_entity.dart';
+import 'package:watchflow/presentation/widgets/media_detail_modal.dart';
 
 class MediaCard extends StatelessWidget {
   final MediaEntity media;
@@ -14,7 +15,26 @@ class MediaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        // Detay modalını açma işlevi
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          isDismissible: true,
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width > 600
+                ? 600 
+                : MediaQuery.of(context).size.width,
+          ),
+          builder: (context) => Center(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: MediaDetailModal(media: media),
+            ),
+          ),
+        );
+      },
       child: Container(
         width: 160,
         decoration: BoxDecoration(
@@ -154,6 +174,28 @@ class MediaCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              ),
+            
+            // Sezon Bilgisi Etiketi
+            if ((media.mediaType == 'tv' || media.mediaType == 'anime') && media.numberOfSeasons != null)
+              Positioned(
+                top: 40,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '${media.numberOfSeasons} S',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

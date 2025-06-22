@@ -68,8 +68,9 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/anime', page: () => const AnimeScreen()),
         GetPage(name: '/settings', page: () => const SettingsScreen()),
         GetPage(name: '/detail/:id', page: () => const DetailScreen()),
+        GetPage(name: '/api-test', page: () => const ApiTestScreen()),
       ],
-      home: const RootScreen(),
+      home: const SplashScreen(),
     );
   }
 }
@@ -85,9 +86,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // 2 saniye sonra API test ekranına geçiş yap
+    // 2 saniye sonra Ana Ekrana geçiş yap
     Future.delayed(const Duration(seconds: 2), () {
-      Get.off(() => const ApiTestScreen(), transition: Transition.fadeIn);
+      Get.off(() => const RootScreen(), transition: Transition.fadeIn);
     });
   }
 
@@ -100,11 +101,11 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo animasyonu burada yer alacak
-            const SizedBox(
+            // Logo
+            SizedBox(
               width: 120,
               height: 120,
-              child: FlutterLogo(size: 120),
+              child: Image.asset('assets/images/watchflow_logo.png'),
             ),
             const SizedBox(height: 24),
             Text(

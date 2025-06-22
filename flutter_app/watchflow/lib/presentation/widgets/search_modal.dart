@@ -264,11 +264,12 @@ class _SearchModalState extends State<SearchModal> {
                         shrinkWrap: true,
                         itemCount: _searchController.searchResults.length,
                         itemBuilder: (context, index) {
+                          final media = _searchController.searchResults[index];
                           return SearchResultItem(
-                            media: _searchController.searchResults[index],
+                            media: media,
                             onTap: () {
                               Get.back();
-                              Get.toNamed('/detail', arguments: _searchController.searchResults[index]);
+                              Get.toNamed('/detail', arguments: media);
                             },
                           );
                         },

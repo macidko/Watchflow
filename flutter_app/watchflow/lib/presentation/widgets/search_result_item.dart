@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:watchflow/domain/entities/media_entity.dart';
+import 'package:watchflow/presentation/widgets/media_detail_modal.dart';
 
 class SearchResultItem extends StatelessWidget {
   final MediaEntity media;
@@ -14,7 +15,26 @@ class SearchResultItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        // Detay modalını açma işlevi
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          isDismissible: true,
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width > 600 
+                ? 600 
+                : MediaQuery.of(context).size.width,
+          ),
+          builder: (context) => Center(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: MediaDetailModal(media: media),
+            ),
+          ),
+        );
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
         child: Row(
