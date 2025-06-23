@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:watchflow/domain/entities/media_entity.dart';
 import 'package:watchflow/presentation/widgets/media_detail_modal.dart';
+import 'package:watchflow/presentation/widgets/media_card.dart';
 
 class ContentSlider extends StatefulWidget {
   final String title;
@@ -96,9 +97,9 @@ class _ContentSliderState extends State<ContentSlider> {
         ),
         const SizedBox(height: 8),
         
-        // İçerik slider'ı - Yüksekliği küçültüldü
+        // İçerik slider'ı - Yüksekliği kart boyutuna göre ayarlandı
         SizedBox(
-          height: 160,
+          height: 260,
           child: widget.items.isEmpty
               ? _buildEmptyState()
               : Stack(
@@ -108,9 +109,15 @@ class _ContentSliderState extends State<ContentSlider> {
                       controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                       itemCount: widget.items.length,
-                  itemBuilder: (context, index) {
+                                        itemBuilder: (context, index) {
                         final item = widget.items[index];
-                        return _buildMediaCard(context, item);
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: MediaCard(
+                            media: _convertToMediaEntity(item),
+                            onTap: () {},
+                          ),
+                        );
                       },
                     ),
                     
@@ -199,16 +206,19 @@ class _ContentSliderState extends State<ContentSlider> {
                 child: Padding(
                   padding: const EdgeInsets.all(8),
                   child: GridView.builder(
-                    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 120,
-                      childAspectRatio: 0.55,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 180,
+                      childAspectRatio: 0.67,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
                     ),
                     itemCount: widget.items.length,
                     itemBuilder: (context, index) {
                       final item = widget.items[index];
-                      return _buildAllItemsCard(context, item);
+                      return MediaCard(
+                        media: _convertToMediaEntity(item),
+                        onTap: () {},
+                      );
                     },
                   ),
                 ),
@@ -220,9 +230,10 @@ class _ContentSliderState extends State<ContentSlider> {
     );
   }
 
-  Widget _buildAllItemsCard(BuildContext context, Map<String, dynamic> item) {
-    // ContentSlider için basit bir MediaEntity dönüştürmesi yapıyoruz
-    final media = MediaEntity(
+
+
+  MediaEntity _convertToMediaEntity(Map<String, dynamic> item) {
+    return MediaEntity(
       id: item['id'],
       title: item['title'],
       posterPath: item['image'],
@@ -231,276 +242,10 @@ class _ContentSliderState extends State<ContentSlider> {
       voteAverage: item['rating'],
       numberOfSeasons: item['seasons'],
       numberOfEpisodes: item['episodes'],
-      // progress bilgisini additionalInfo içinde saklıyoruz
-      additionalInfo: {'progress': item['progress']},
-    );
-    
-    return GestureDetector(
-      onTap: () {
-        // Detay modalını gösteriyoruz, mevcut modalı kapatmadan
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.transparent,
-          isScrollControlled: true,
-          isDismissible: true,
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width > 600 
-                ? 600 
-                : MediaQuery.of(context).size.width,
-          ),
-          builder: (context) => Center(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.8,
-              child: MediaDetailModal(media: media),
-            ),
-          ),
-        );
+      additionalInfo: {
+        'progress': item['progress'],
+        'watched': item['progress'] != null && item['progress'] >= 95,
       },
-      child: SizedBox(
-        width: 110,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Poster - Ana sayfadakiyle aynı boyutlar
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Stack(
-                children: [
-                  // Poster resmi
-                  Image.network(
-                    item['image'],
-                    width: 110,
-                    height: 140,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 110,
-                        height: 140,
-                        color: Colors.grey[800],
-                        child: const Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: Colors.white54,
-                            size: 20,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  
-                  // İzleme durumu göstergesi
-                  if (item['progress'] != null)
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: LinearProgressIndicator(
-                        value: item['progress'] / 100,
-                        backgroundColor: Colors.black54,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.orange[800]!),
-                      ),
-                    ),
-                    
-                  // Bölüm/Sezon Bilgisi Etiketi
-                  if (item['mediaType'] == 'tv' || item['mediaType'] == 'anime')
-                    Positioned(
-                      top: 5,
-                      right: 5,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '${item['seasons']} S',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            
-            // Başlık ve Alt Bilgiler
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item['title'],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  if (item['year'] != null)
-                    Text(
-                      item['year'],
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: Colors.grey[400],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMediaCard(BuildContext context, Map<String, dynamic> item) {
-    return GestureDetector(
-      onTap: () {
-        // ContentSlider için basit bir MediaEntity dönüştürmesi yapıyoruz
-        final media = MediaEntity(
-          id: item['id'],
-          title: item['title'],
-          posterPath: item['image'],
-          mediaType: item['mediaType'] ?? 'unknown',
-          releaseDate: item['year']?.toString(),
-          voteAverage: item['rating'],
-          numberOfSeasons: item['seasons'],
-          numberOfEpisodes: item['episodes'],
-          // progress bilgisini additionalInfo içinde saklıyoruz
-          additionalInfo: {'progress': item['progress']},
-        );
-        
-        // Detay modalını gösteriyoruz
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.transparent,
-          isScrollControlled: true,
-          isDismissible: true,
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width > 600 
-                ? 600 
-                : MediaQuery.of(context).size.width,
-          ),
-          builder: (context) => Center(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.8,
-              child: MediaDetailModal(media: media),
-            ),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(right: 4),
-        width: 100,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Poster - Küçültüldü
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Stack(
-                children: [
-                  // Poster resmi
-                  Image.network(
-                    item['image'],
-                    width: 100,
-                    height: 120,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 100,
-                        height: 120,
-                        color: Colors.grey[800],
-                        child: const Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: Colors.white54,
-                            size: 20,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  
-                  // İzleme durumu göstergesi
-                  if (item['progress'] != null)
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: LinearProgressIndicator(
-                        value: item['progress'] / 100,
-                        backgroundColor: Colors.black54,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.orange[800]!),
-                      ),
-                    ),
-                    
-                  // Bölüm/Sezon Bilgisi Etiketi
-                  if (item['mediaType'] == 'tv' || item['mediaType'] == 'anime')
-                    Positioned(
-                      top: 5,
-                      right: 5,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '${item['seasons']} S',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            
-            // Başlık ve Alt Bilgiler
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item['title'],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  if (item['year'] != null)
-                    Text(
-                      item['year'],
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: Colors.grey[400],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
