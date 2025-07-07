@@ -5,326 +5,224 @@ import 'package:watchflow/presentation/controllers/media_search_controller.dart'
 import 'package:watchflow/presentation/widgets/search_result_item.dart';
 
 class SearchModal extends StatefulWidget {
-  const SearchModal({Key? key}) : super(key: key);
+  const SearchModal({super.key});
 
   @override
   State<SearchModal> createState() => _SearchModalState();
 }
 
-class _SearchModalState extends State<SearchModal> {
-  final MediaSearchController _searchController = Get.put(MediaSearchController());
-  SearchType _selectedType = SearchType.movie;
-  final TextEditingController _textController = TextEditingController();
-  bool _showResults = false;
-  bool _isMultiSearch = false; // Çoklu arama modu
+class _SearchModalState extends State<SearchModal>
+    with SingleTickerProviderStateMixin {
+  final MediaSearchController _searchController =
+      Get.put(MediaSearchController());
+  late final TabController _tabController;
+  final TextEditingController _searchQueryController = TextEditingController();
+
+  final List<MediaEntity> _dummyData = [
+    MediaEntity(
+      id: 1,
+      title: 'Inception',
+      mediaType: 'movie',
+      releaseDate: '2010-07-16',
+      posterPath: 'https://image.tmdb.org/t/p/w500/qmDpIHrmpJINaRKAfWQfftjCdyi.jpg',
+    ),
+    MediaEntity(
+      id: 2,
+      title: 'Breaking Bad',
+      mediaType: 'tv',
+      releaseDate: '2008-01-20',
+      posterPath: 'https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg',
+    ),
+    MediaEntity(
+      id: 3,
+      title: 'Attack on Titan',
+      mediaType: 'anime',
+      releaseDate: '2013-04-07',
+      posterPath: 'https://image.tmdb.org/t/p/w500/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg',
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {
+          _searchController
+              .setSearchType(SearchType.values[_tabController.index]);
+        });
+        // Sekme değiştiğinde arama metni varsa aramayı tetikle
+        if (_searchQueryController.text.trim().isNotEmpty) {
+          _onSearch();
+        }
+      }
+    });
+    _searchQueryController.addListener(() {
+      setState(() {}); // Temizle butonunu göstermek/gizlemek için yeniden çiz
+    });
+  }
 
   @override
   void dispose() {
-    _textController.dispose();
+    _tabController.dispose();
+    _searchQueryController.dispose();
     super.dispose();
+  }
+
+  void _onSearch() {
+    FocusScope.of(context).unfocus();
+    final query = _searchQueryController.text.trim();
+    _searchController.setSearchType(SearchType.values[_tabController.index]);
+
+    if (query.isEmpty) {
+      // Dummy data göster
+      setState(() {
+        _searchController.searchResults.value = _dummyData;
+        _searchController.hasSearched.value = true; // Arama yapıldı olarak işaretle
+      });
+    } else {
+      _searchController.performSearch(query);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Container(
-        color: Colors.black,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+    // Ekran görüntüsünden ilham alan sade ve temiz bir tasarım
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 100.0, vertical: 80.0),
+      child: SizedBox(
+        width: 700,
+        height: 600,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildNewSearchBar(),
+            _buildTabs(),
+            const Divider(height: 1, color: Colors.black12),
+            Expanded(child: _buildBody()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: TextField(
+        controller: _searchQueryController,
+        autofocus: true,
+        style: const TextStyle(fontSize: 16),
+        decoration: InputDecoration(
+          hintText: 'Film, Dizi veya Anime Ara...',
+          prefixIcon: const Icon(Icons.search, size: 24),
+          suffixIcon: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Başlık ve Kapatma Butonu
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'İçerik Ara',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-              
-              // Arama Modu Seçimi (Tek/Çoklu)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Tek Arama',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Switch(
-                    value: _isMultiSearch,
-                    onChanged: (value) {
-                      setState(() {
-                        _isMultiSearch = value;
-                        _textController.clear();
-                        _showResults = false;
-                      });
-                    },
-                    activeColor: Colors.orange[800],
-                    activeTrackColor: Colors.orange[800]!.withOpacity(0.5),
-                  ),
-                  const Text(
-                    'Çoklu Arama',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Arama Girişi (Tek Arama veya Çoklu Arama)
-              if (!_isMultiSearch)
-                // Tek Arama - Input
-                TextField(
-                  controller: _textController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'İçerik ara...',
-                    hintStyle: TextStyle(color: Colors.grey[400]),
-                    filled: true,
-                    fillColor: const Color(0xFF1A1A1A),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      borderSide: BorderSide(color: Colors.orange[800]!),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      borderSide: BorderSide(color: Colors.orange[800]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      borderSide: BorderSide(color: Colors.orange[800]!, width: 2.0),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.clear, color: Colors.grey),
-                      onPressed: () {
-                        _textController.clear();
-                        setState(() {
-                          _showResults = false;
-                        });
-                      },
-                    ),
-                  ),
-                  onSubmitted: (value) {
-                    if (value.isNotEmpty) {
-                      _searchController.setSearchType(_selectedType);
-                      _searchController.performSearch(value);
-                      setState(() {
-                        _showResults = true;
-                      });
-                    }
-                  },
-                )
-              else
-                // Çoklu Arama - TextBox
-                Container(
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1A1A),
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: Colors.orange[800]!),
-                  ),
-                  child: TextField(
-                    controller: _textController,
-                    style: const TextStyle(color: Colors.white),
-                    maxLines: null,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    decoration: InputDecoration(
-                      hintText: 'Her satıra bir içerik adı yazın...',
-                      hintStyle: TextStyle(color: Colors.grey[400]),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.all(12),
-                      suffixIcon: Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
-                          onPressed: () {
-                            _textController.clear();
-                            setState(() {
-                              _showResults = false;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              
-              // Kategori Seçimleri
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildCategoryButton('Film', SearchType.movie),
-                    const SizedBox(width: 10),
-                    _buildCategoryButton('Dizi', SearchType.tv),
-                    const SizedBox(width: 10),
-                    _buildCategoryButton('Anime', SearchType.anime),
-                  ],
-                ),
-              ),
-              
-              // Arama Butonu
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.search, color: Colors.white),
-                  label: Text(
-                    _isMultiSearch ? 'Çoklu Ara' : 'Ara', 
-                    style: const TextStyle(color: Colors.white)
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange[800],
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+              if (_searchQueryController.text.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  tooltip: 'Temizle',
                   onPressed: () {
-                    if (_textController.text.isNotEmpty) {
-                      if (_isMultiSearch) {
-                        // Çoklu arama işlemi
-                        final List<String> queries = _textController.text
-                            .split('\n')
-                            .where((line) => line.trim().isNotEmpty)
-                            .toList();
-                        
-                        if (queries.isNotEmpty) {
-                          _searchController.setSearchType(_selectedType);
-                          _searchController.performMultiSearch(queries);
-                          setState(() {
-                            _showResults = true;
-                          });
-                        }
-                      } else {
-                        // Tek arama işlemi
-                        _searchController.setSearchType(_selectedType);
-                        _searchController.performSearch(_textController.text);
-                        setState(() {
-                          _showResults = true;
-                        });
-                      }
-                      // Klavyeyi kapat
-                      FocusScope.of(context).unfocus();
-                    }
+                    _searchQueryController.clear();
                   },
                 ),
+              IconButton(
+                icon: const Icon(Icons.arrow_forward_rounded),
+                tooltip: 'Ara',
+                color: Theme.of(context).primaryColor,
+                onPressed: _onSearch,
               ),
-
-              // Arama Sonuçları
-              if (_showResults)
-                Obx(() {
-                  if (_searchController.isLoading.value) {
-                    return const Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.orange,
-                        ),
-                      ),
-                    );
-                  } else if (_searchController.hasSearched.value && _searchController.searchResults.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            Icon(Icons.search_off, size: 50, color: Colors.grey),
-                            SizedBox(height: 16),
-                            Text(
-                              'Sonuç bulunamadı',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  } else if (_searchController.searchResults.isNotEmpty) {
-                    return Expanded(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: _searchController.searchResults.length,
-                        itemBuilder: (context, index) {
-                          final media = _searchController.searchResults[index];
-                          return SearchResultItem(
-                            media: media,
-                            onTap: () {
-                              Get.back();
-                              Get.toNamed('/detail', arguments: media);
-                            },
-                          );
-                        },
-                      ),
-                    );
-                  } else if (!_searchController.hasSearched.value) {
-                    return Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            const Icon(Icons.search, size: 50, color: Colors.grey),
-                            const SizedBox(height: 16),
-                            Text(
-                              _isMultiSearch
-                                  ? 'Her satıra bir içerik adı yazarak\nçoklu arama yapabilirsiniz'
-                                  : 'İzleme listenize eklemek istediğiniz\niçeriği aramak için arama kutusunu\nkullanın',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey[400]),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
             ],
           ),
+          filled: true,
+          fillColor: Colors.grey[100],
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
         ),
+        onSubmitted: (value) => _onSearch(),
       ),
     );
   }
 
-  Widget _buildCategoryButton(String title, SearchType type) {
-    final bool isSelected = _selectedType == type;
-    
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.orange[800] : const Color(0xFF333333),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
-      ),
-      onPressed: () {
-        setState(() {
-          _selectedType = type;
-        });
-      },
-      child: Text(
-        title,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.grey[300],
-        ),
+  Widget _buildTabs() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: TabBar(
+        controller: _tabController,
+        labelColor: Theme.of(context).primaryColor,
+        unselectedLabelColor: Colors.black54,
+        indicatorColor: Theme.of(context).primaryColor,
+        indicatorWeight: 2.5,
+        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        unselectedLabelStyle:
+            const TextStyle(fontWeight: FontWeight.normal, fontSize: 15),
+        tabs: const [
+          Tab(text: 'Film'),
+          Tab(text: 'Dizi'),
+          Tab(text: 'Anime'),
+          Tab(text: 'Hepsi'),
+        ],
       ),
     );
   }
-} 
+
+  Widget _buildBody() {
+    return Obx(() {
+      if (_searchController.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (!_searchController.hasSearched.value) {
+        return _buildInitialState();
+      } else if (_searchController.searchResults.isEmpty) {
+        return _buildNoResults();
+      } else {
+        return _buildResultsList();
+      }
+    });
+  }
+
+  Widget _buildResultsList() {
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: _searchController.searchResults.length,
+      separatorBuilder: (context, index) =>
+          const Divider(height: 1, indent: 16, endIndent: 16),
+      itemBuilder: (context, index) {
+        final media = _searchController.searchResults[index];
+        return SearchResultItem(
+          media: media,
+          onTap: () {
+            Get.back(result: media);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildInitialState() {
+    return Center(
+      child: Text(
+        'Aramak için yukarıdaki alanı kullanın.',
+        style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+      ),
+    );
+  }
+
+  Widget _buildNoResults() {
+    return Center(
+      child: Text(
+        'Bu arama için sonuç bulunamadı.',
+        style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+      ),
+    );
+  }
+}

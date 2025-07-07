@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:watchflow/domain/entities/media_entity.dart';
 
-class MediaDetailModal extends StatelessWidget {
+class MediaDetailModal extends StatefulWidget {
   final MediaEntity media;
   
   const MediaDetailModal({
@@ -10,15 +10,23 @@ class MediaDetailModal extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<MediaDetailModal> createState() => _MediaDetailModalState();
+}
+
+class _MediaDetailModalState extends State<MediaDetailModal> {
+  Set<int> _selectedEpisodes = {};
+
+  @override
   Widget build(BuildContext context) {
+    final media = widget.media;
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF212121), // Koyu tema arka plan rengi
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+        color: Color(0xFF181818),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x70000000),
-            blurRadius: 10,
+            color: Color(0x90000000),
+            blurRadius: 24,
             spreadRadius: 0,
           ),
         ],
@@ -27,10 +35,8 @@ class MediaDetailModal extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Başlık ve Kapatma Butonu
-          _buildHeader(context),
-          
-          // İçerik Bölümü
+          // Poster ve başlık
+          _buildPosterHeader(context),
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
@@ -38,57 +44,25 @@ class MediaDetailModal extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Başlık ve Türü
                     _buildTitleSection(),
-                    
                     const SizedBox(height: 16),
-                    
-                    // Poster ve Özet
-                    _buildPosterAndOverview(),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Kullanıcı Puanı
                     _buildRatingSection(),
-                    
                     const SizedBox(height: 16),
-                    
-                    // İzleme Durumu
-                    _buildWatchStatus(),
-                    
+                    _buildProgressBar(),
                     const SizedBox(height: 20),
-                    
-                    // Medya türüne göre farklı içerikler gösterelim
                     if (media.mediaType == 'tv' || media.mediaType == 'anime') ...[
-                      // Bölümler Başlığı
-                      _buildSectionHeader('Bölümler'),
-                      
-                      const SizedBox(height: 10),
-                      
-                      // Sezon Listesi
-                      _buildSeasonSelection(),
-                    
-                      const SizedBox(height: 10),
-                    
-                      // Bölüm Butonları (Electron'daki gibi ızgara şeklinde)
-                      _buildEpisodeGrid(),
-                    
+                      _buildSeasonSection(),
                       const SizedBox(height: 24),
-                      
-                      // İlişkili İçerikler
-                      _buildSectionHeader('İlişkili İçerikler'),
-                      
-                      const SizedBox(height: 10),
-                      
-                      // İlişkili içerik listeleme
-                      _buildRelatedContentList(),
-                      
+                      if (media.mediaType == 'anime') ...[
+                        _buildSectionHeader('İlişkili Animeler'),
+                        const SizedBox(height: 10),
+                        _buildRelatedContentList(),
+                      ],
                     ] else ...[
-                      // Film için ekstra bilgiler
                       _buildMovieInfo(),
                     ],
-                    
                     const SizedBox(height: 16),
+                    _buildActionButtons(context),
                   ],
                 ),
               ),
@@ -96,6 +70,119 @@ class MediaDetailModal extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPosterHeader(BuildContext context) {
+    final media = widget.media;
+    return Stack(
+      children: [
+        // Poster görseli
+        Container(
+          width: double.infinity,
+          height: 220,
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            image: media.posterPath != null
+                ? DecorationImage(
+                    image: NetworkImage('https://image.tmdb.org/t/p/w500${media.posterPath}'),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+            color: const Color(0xFF232323),
+          ),
+          child: media.posterPath == null
+              ? const Center(child: Icon(Icons.movie, color: Colors.white54, size: 60))
+              : null,
+        ),
+        // Gradient overlay
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Color.fromRGBO(0, 0, 0, 0.85),
+                  Color.fromRGBO(0, 0, 0, 0.3),
+                  Colors.transparent,
+                ],
+                stops: [0.0, 0.7, 1.0],
+              ),
+            ),
+          ),
+        ),
+        // Badge ve kapatma butonu
+        Positioned(
+          top: 16,
+          left: 16,
+          child: Row(
+            children: [
+              if (media.voteAverage != null)
+                _buildInfoChip('${media.voteAverage!.toStringAsFixed(1)} ★', const Color(0xFF9C5400)),
+              if (media.releaseDate != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: _buildInfoChip(media.releaseDate!.substring(0, 4), Colors.grey.shade800),
+                ),
+              if (media.mediaType != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: _buildInfoChip(_getTypeText(media.mediaType), _getTypeColor(media.mediaType)),
+                ),
+            ],
+          ),
+        ),
+        // Kapatma butonu
+        Positioned(
+          top: 16,
+          right: 16,
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.black38,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+              padding: EdgeInsets.zero,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+        ),
+        // Başlık
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 18,
+          child: Text(
+            media.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              letterSpacing: 0.5,
+              shadows: [
+                Shadow(
+                  color: Colors.black54,
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
   
@@ -111,7 +198,7 @@ class MediaDetailModal extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              media.title,
+              widget.media.title,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -143,11 +230,11 @@ class MediaDetailModal extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Orijinal başlık (varsa)
-        if (media.originalTitle != null && media.originalTitle != media.title)
+        if (widget.media.originalTitle != null && widget.media.originalTitle != widget.media.title)
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(
-              media.originalTitle!,
+              widget.media.originalTitle!,
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 14,
@@ -160,13 +247,13 @@ class MediaDetailModal extends StatelessWidget {
         Wrap(
           spacing: 8,
           children: [
-            _buildInfoChip(_getTypeText(media.mediaType), _getTypeColor(media.mediaType)),
-            if (media.releaseDate != null)
-              _buildInfoChip(media.releaseDate!.substring(0, 4), Colors.grey.shade800),
-            if (media.status != null)
-              _buildInfoChip(media.status!, Colors.grey.shade800),
-            if (media.voteAverage != null)
-              _buildInfoChip('${media.voteAverage!.toStringAsFixed(1)} ★', const Color(0xFF9C5400)),
+            _buildInfoChip(_getTypeText(widget.media.mediaType), _getTypeColor(widget.media.mediaType)),
+            if (widget.media.releaseDate != null)
+              _buildInfoChip(widget.media.releaseDate!.substring(0, 4), Colors.grey.shade800),
+            if (widget.media.status != null)
+              _buildInfoChip(widget.media.status!, Colors.grey.shade800),
+            if (widget.media.voteAverage != null)
+              _buildInfoChip('${widget.media.voteAverage!.toStringAsFixed(1)} ★', const Color(0xFF9C5400)),
           ],
         ),
       ],
@@ -192,90 +279,36 @@ class MediaDetailModal extends StatelessWidget {
     );
   }
   
-  Widget _buildPosterAndOverview() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Poster
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: SizedBox(
-            width: 120,
-            height: 180,
-            child: media.posterPath != null
-                ? Image.network(
-                    'https://image.tmdb.org/t/p/w500${media.posterPath}',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey.shade800,
-                      child: const Center(child: Icon(Icons.broken_image, color: Colors.white30)),
-                    ),
-                  )
-                : Container(
-                    color: Colors.grey.shade800,
-                    child: const Center(child: Icon(Icons.image_not_supported, color: Colors.white30)),
-                  ),
-          ),
-        ),
-        
-        const SizedBox(width: 16),
-        
-        // Özet
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Özet',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                media.overview ?? 'Bu içerik için özet bilgisi bulunmuyor.',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-  
   Widget _buildRatingSection() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black26,
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade800, width: 1),
+        border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
       ),
       child: Row(
         children: [
           const Text(
-            'Puanınız:',
+            'Senin Puanın:',
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const Spacer(),
           Row(
             children: List.generate(5, (index) {
-              final rating = media.userRating ?? 0;
+              final rating = widget.media.userRating ?? 0;
               final isActive = index < (rating / 2).ceil();
-              return Icon(
-                isActive ? Icons.star : Icons.star_border,
-                color: isActive ? const Color(0xFFFF4500) : Colors.white38,
-                size: 24,
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                child: Icon(
+                  isActive ? Icons.star : Icons.star_border,
+                  color: isActive ? const Color(0xFFFFB400) : const Color(0xFF8A8A8A),
+                  size: 24,
+                ),
               );
             }),
           ),
@@ -284,180 +317,158 @@ class MediaDetailModal extends StatelessWidget {
     );
   }
   
-  Widget _buildWatchStatus() {
-    // Electron'daki gibi izleme durumu
-    final progress = (media.additionalInfo?['progress'] as num?) ?? 0;
-    final inWatchlist = (media.additionalInfo?['inWatchlist'] as bool?) ?? false;
-    
+  Widget _buildProgressBar() {
+    final progress = (widget.media.additionalInfo?['progress'] as num?) ?? 0;
+    final totalEpisodes = (widget.media.additionalInfo?['totalEpisodes'] as int?) ?? 12;
+    final watchedEpisodes = (widget.media.additionalInfo?['watchedEpisodes'] as int?) ?? totalEpisodes;
     return Container(
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black26,
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade800, width: 1),
+        border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // İlerleme çubuğu
-          Container(
-            height: 8,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.black45,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: FractionallySizedBox(
-              widthFactor: progress / 100,
-              alignment: Alignment.centerLeft,
-              child: Container(
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress / 100,
+                    minHeight: 10,
+                    backgroundColor: const Color(0xFF2A2A2A),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF4500)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF4500),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  '$watchedEpisodes/$totalEpisodes',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '${progress.toStringAsFixed(0)}% tamamlandı ($watchedEpisodes/$totalEpisodes bölüm)',
+            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildSeasonSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Sezon 1',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF6A1A),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Text(
+                '12/12',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
                 ),
               ),
             ),
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Durum Butonları
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildStatusButton('İzledim', Icons.check_circle_outline, isActive: progress == 100),
-              _buildStatusButton('İzliyorum', Icons.play_circle_outline, isActive: progress > 0 && progress < 100),
-              _buildStatusButton('İzleyeceğim', Icons.bookmark_border, isActive: inWatchlist && progress == 0),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildStatusButton(String label, IconData icon, {bool isActive = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFFF4500) : Colors.black38,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildSectionHeader(String title) {
-    return Row(
-      children: [
-        Container(
-          width: 4,
-          height: 18,
-          decoration: const BoxDecoration(
-            color: Color(0xFFFF4500),
-            borderRadius: BorderRadius.all(Radius.circular(2)),
-          ),
+          ],
         ),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        const SizedBox(height: 12),
+        _buildEpisodeGrid(),
       ],
     );
   }
   
-  Widget _buildSeasonSelection() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black26,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey.shade800, width: 1),
-      ),
-      child: Row(
-        children: [
-          const Text(
-            'Sezon 1',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF4500),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text(
-              '24/24',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          const Icon(
-            Icons.arrow_drop_down,
-            color: Colors.white,
-          ),
-        ],
-      ),
-    );
-  }
-  
   Widget _buildEpisodeGrid() {
-    // Electron'daki gibi bölüm grid'i
+    final totalEpisodes = (widget.media.additionalInfo?['totalEpisodes'] as int?) ?? 12;
+    final watchedEpisodes = (widget.media.additionalInfo?['watchedEpisodes'] as int?) ?? 0;
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 6,
+        crossAxisCount: 5,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
-        childAspectRatio: 1.5,
+        childAspectRatio: 40/28,
       ),
-      itemCount: 24, // Örnek olarak 24 bölüm
+      itemCount: totalEpisodes,
       itemBuilder: (context, index) {
         final episodeNumber = index + 1;
-        // Electron'daki gibi izlenen bölümler renkli
-        final isWatched = episodeNumber <= 18; // İlk 18 bölüm izlendi varsayalım
-        
-        return Container(
-          decoration: BoxDecoration(
-            color: isWatched ? const Color(0xFFFF4500) : Colors.black26,
-            borderRadius: BorderRadius.circular(4),
-            border: isWatched ? null : Border.all(color: Colors.grey.shade800, width: 1),
-          ),
-          child: Center(
-            child: Text(
-              episodeNumber.toString(),
-              style: TextStyle(
-                color: isWatched ? Colors.white : Colors.white70,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+        final isWatched = episodeNumber <= watchedEpisodes;
+        final isSelected = _selectedEpisodes.contains(episodeNumber) || isWatched;
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              if (_selectedEpisodes.contains(episodeNumber)) {
+                _selectedEpisodes.remove(episodeNumber);
+              } else {
+                _selectedEpisodes.add(episodeNumber);
+              }
+            });
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? const Color(0xFFFF4500)
+                  : const Color(0xFF1E1E1E),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: isSelected ? const Color(0xFFFF4500) : const Color(0xFF2A2A2A),
+                width: 2,
+              ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFFF6A33).withOpacity(0.15),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : [],
+            ),
+            width: 40,
+            height: 28,
+            child: Center(
+              child: Text(
+                episodeNumber.toString(),
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFFB3B3B3),
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -499,9 +510,9 @@ class MediaDetailModal extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.black26,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey.shade800, width: 1),
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
       ),
       child: Row(
         children: [
@@ -510,16 +521,14 @@ class MediaDetailModal extends StatelessWidget {
             width: 40,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.grey.shade800,
+              color: const Color(0xFF2A2A2A),
               borderRadius: BorderRadius.circular(4),
             ),
             child: const Center(
-              child: Icon(Icons.movie, color: Colors.white30, size: 20),
+              child: Icon(Icons.movie, color: Color(0xFF8A8A8A), size: 20),
             ),
           ),
-          
           const SizedBox(width: 12),
-          
           // Bilgiler
           Expanded(
             child: Column(
@@ -535,9 +544,7 @@ class MediaDetailModal extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                
                 const SizedBox(height: 4),
-                
                 // Alt bilgiler
                 Wrap(
                   spacing: 6,
@@ -551,7 +558,6 @@ class MediaDetailModal extends StatelessWidget {
               ],
             ),
           ),
-          
           // Aksiyon butonu
           Container(
             width: 30,
@@ -668,6 +674,87 @@ class MediaDetailModal extends StatelessWidget {
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildSectionHeader(String title) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 18,
+          decoration: const BoxDecoration(
+            color: Color(0xFFFF4500),
+            borderRadius: BorderRadius.all(Radius.circular(2)),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildActionButtons(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF393939),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () {},
+              child: const Text(
+                'KALDIR',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  letterSpacing: 1.1,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF6A1A),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () {},
+              child: const Text(
+                'İZLENDİ OLARAK İŞARETLE',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  letterSpacing: 1.1,
+                ),
               ),
             ),
           ),

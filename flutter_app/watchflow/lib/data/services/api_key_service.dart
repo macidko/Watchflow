@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -122,21 +122,22 @@ abstract class StorageInterface {
 
 /// Mobil için güvenli depolama
 class MobileSecureStorage implements StorageInterface {
-  final _storage = const FlutterSecureStorage();
+  // flutter_secure_storage kaldırıldığı için, mobilde kalıcı depolama devre dışı bırakıldı.
   
   @override
   Future<void> write(String key, String value) async {
-    await _storage.write(key: key, value: value);
+    // Mobilde güvenli depolama kaldırıldı. İsterseniz shared_preferences ile değiştirebilirsiniz.
+    throw UnimplementedError('Mobilde güvenli depolama kaldırıldı.');
   }
-  
+
   @override
   Future<String?> read(String key) async {
-    return await _storage.read(key: key);
+    throw UnimplementedError('Mobilde güvenli depolama kaldırıldı.');
   }
-  
+
   @override
   Future<void> delete(String key) async {
-    await _storage.delete(key: key);
+    throw UnimplementedError('Mobilde güvenli depolama kaldırıldı.');
   }
 }
 

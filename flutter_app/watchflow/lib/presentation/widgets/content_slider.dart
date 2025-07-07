@@ -66,93 +66,166 @@ class _ContentSliderState extends State<ContentSlider> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Başlık ve "Tümünü Gör" butonu
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 28),
+      decoration: BoxDecoration(
+        color: const Color(0xFF23232A),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        border: Border.all(color: Colors.orange.withOpacity(0.08), width: 1.2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            if (widget.items.isNotEmpty)
-              TextButton(
-                onPressed: () => _showAllItemsModal(context),
-                child: Text(
-                  'Tümünü Gör',
-                  style: TextStyle(
-                    color: Colors.orange[800],
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+            // Başlık ve "Tümünü Gör" butonu
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: Colors.orange[800],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      widget.title,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange[800],
+                        letterSpacing: 0.7,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.18),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (widget.items.isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () => _showAllItemsModal(context),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.orange[800],
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    icon: const Icon(Icons.grid_view_rounded, size: 18),
+                    label: const Text('Tümünü Gör'),
                   ),
-              ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // İçerik slider'ı - Yüksekliği kart boyutuna göre ayarlandı
+            SizedBox(
+              height: 260,
+              child: widget.items.isEmpty
+                  ? _buildEmptyState()
+                  : Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        ListView.separated(
+                          controller: _scrollController,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: widget.items.length,
+                          padding: const EdgeInsets.only(bottom: 15),
+                          separatorBuilder: (context, index) => const SizedBox(width: 18),
+                          itemBuilder: (context, index) {
+                            final item = widget.items[index];
+                            return MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF232323),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.15),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: MediaCard(
+                                  media: _convertToMediaEntity(item),
+                                  onTap: () {},
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        // Sol kaydırma butonu
+                        if (_showLeftButton)
+                          Positioned(
+                            left: 0,
+                            child: _buildScrollButton(Icons.arrow_back_ios_rounded, _scrollLeft, isLeft: true),
+                          ),
+                        // Sağ kaydırma butonu
+                        if (_showRightButton)
+                          Positioned(
+                            right: 0,
+                            child: _buildScrollButton(Icons.arrow_forward_ios_rounded, _scrollRight, isLeft: false),
+                          ),
+                      ],
+                    ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        
-        // İçerik slider'ı - Yüksekliği kart boyutuna göre ayarlandı
-        SizedBox(
-          height: 260,
-          child: widget.items.isEmpty
-              ? _buildEmptyState()
-              : Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    ListView.builder(
-                      controller: _scrollController,
-                  scrollDirection: Axis.horizontal,
-                      itemCount: widget.items.length,
-                                        itemBuilder: (context, index) {
-                        final item = widget.items[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: MediaCard(
-                            media: _convertToMediaEntity(item),
-                            onTap: () {},
-                          ),
-                        );
-                      },
-                    ),
-                    
-                    // Sol kaydırma butonu
-                    if (_showLeftButton)
-                      Positioned(
-                        left: 0,
-                        child: _buildScrollButton(Icons.arrow_back_ios_rounded, _scrollLeft),
-                      ),
-                    
-                    // Sağ kaydırma butonu
-                    if (_showRightButton)
-                      Positioned(
-                        right: 0,
-                        child: _buildScrollButton(Icons.arrow_forward_ios_rounded, _scrollRight),
-                      ),
-                  ],
-                ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildScrollButton(IconData icon, VoidCallback onPressed) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        padding: EdgeInsets.zero,
-        icon: Icon(icon, color: Colors.white, size: 18),
-        onPressed: onPressed,
+  Widget _buildScrollButton(IconData icon, VoidCallback onPressed, {bool isLeft = false}) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onPressed,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.7),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.orange.withOpacity(0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -160,64 +233,105 @@ class _ContentSliderState extends State<ContentSlider> {
   void _showAllItemsModal(BuildContext context) {
     showDialog(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.65),
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
         child: Container(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width > 800 
-                ? 800 
-                : MediaQuery.of(context).size.width * 0.9,
-            maxHeight: MediaQuery.of(context).size.height * 0.8,
+            maxWidth: MediaQuery.of(context).size.width > 900
+                ? 900
+                : MediaQuery.of(context).size.width * 0.98,
+            maxHeight: MediaQuery.of(context).size.height * 0.88,
           ),
-          decoration: const BoxDecoration(
-            color: Color(0xFF212121),
-            borderRadius: BorderRadius.all(Radius.circular(16)),
+          decoration: BoxDecoration(
+            color: const Color(0xFF23232A),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.32),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+              BoxShadow(
+                color: Colors.orange.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+              ),
+            ],
+            border: Border.all(
+              color: Colors.orange.withOpacity(0.13),
+              width: 1.3,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Modal başlık
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       widget.title,
-                      style: const TextStyle(
-                        fontSize: 18, 
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      style: TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.orange[800],
+                        letterSpacing: 0.7,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.18),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
+                      icon: const Icon(Icons.close, color: Colors.white, size: 26),
+                      splashRadius: 22,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),
               ),
-              
-              const Divider(color: Colors.grey, height: 1),
-              
+              const Divider(color: Color(0xFF3A3A3A), height: 1, thickness: 1),
               // İçerik grid'i
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(18),
                   child: GridView.builder(
                     gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 180,
+                      maxCrossAxisExtent: 200,
                       childAspectRatio: 0.67,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 22,
+                      mainAxisSpacing: 22,
                     ),
                     itemCount: widget.items.length,
                     itemBuilder: (context, index) {
                       final item = widget.items[index];
-                      return MediaCard(
-                        media: _convertToMediaEntity(item),
-                        onTap: () {},
+                      return MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF23232A),
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.13),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: MediaCard(
+                            media: _convertToMediaEntity(item),
+                            onTap: () {},
+                          ),
+                        ),
                       );
                     },
                   ),

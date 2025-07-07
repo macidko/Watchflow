@@ -43,21 +43,21 @@ dependencies:
   # Veri saklama
   hive: ^2.2.3 # Yerel veri depolama
   hive_flutter: ^1.1.0 # Hive için Flutter entegrasyonu
-  path_provider: ^2.1.2 # Dosya sistemi erişimi
-  shared_preferences: ^2.2.2 # Basit ayarlar için
-  flutter_secure_storage: ^9.0.0 # Güvenli veri depolama
+  path_provider: ^2.1.3 # Dosya sistemi erişimi
+  shared_preferences: ^2.2.3 # Basit ayarlar için
+  # flutter_secure_storage: ^8.0.0 # Güvenli veri depolama
   
   # Ağ istekleri ve API
   dio: ^5.4.1 # HTTP istekleri için
-  connectivity_plus: ^5.0.2 # İnternet bağlantısı kontrolü
+  connectivity_plus: ^6.1.4 # İnternet bağlantısı kontrolü
   
   # Yardımcı araçlar
   intl: ^0.20.2 # Uluslararasılaştırma (Flutter SDK ile uyumlu olması için güncellendi)
   logger: ^2.0.2 # Loglama
-  url_launcher: ^6.2.5 # URL açma
-  package_info_plus: ^4.2.0 # Paket bilgisi
-  device_info_plus: ^9.1.2 # Cihaz bilgisi
-  file_picker: ^6.1.1 # Dosya seçme
+  url_launcher: ^6.2.7 # URL açma
+  package_info_plus: ^8.3.0 # Paket bilgisi
+  device_info_plus: ^11.5.0 # Cihaz bilgisi
+  file_picker: ^10.2.0 # Dosya seçme
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

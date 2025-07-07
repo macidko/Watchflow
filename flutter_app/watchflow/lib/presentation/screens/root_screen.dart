@@ -18,7 +18,8 @@ class RootScreen extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       isDismissible: true,
-      enableDrag: true,
+      enableDrag: false,
+      showDragHandle: false,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.9,
@@ -69,9 +70,15 @@ class RootScreen extends StatelessWidget {
     
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Obx(() => IndexedStack(
-        index: controller.currentIndex,
-        children: controller.pages,
+      body: Obx(() => AnimatedSwitcher(
+        duration: const Duration(milliseconds: 350),
+        switchInCurve: Curves.easeInOut,
+        switchOutCurve: Curves.easeInOut,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+        child: controller.pages[controller.currentIndex],
       )),
       bottomNavigationBar: Obx(() => BottomNavBar(
         currentIndex: controller.currentIndex,

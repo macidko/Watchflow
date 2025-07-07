@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark, // Varsayılan olarak koyu tema
       debugShowCheckedModeBanner: false,
-      defaultTransition: Transition.fade,
+      defaultTransition: Transition.cupertino,
       getPages: [
         GetPage(name: '/', page: () => const HomeScreen()),
         GetPage(name: '/movies', page: () => const MovieScreen()),
