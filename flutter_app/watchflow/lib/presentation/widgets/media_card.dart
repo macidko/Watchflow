@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:watchflow/domain/entities/media_entity.dart';
 import 'package:watchflow/presentation/widgets/media_detail_modal.dart';
+import 'package:watchflow/presentation/theme/app_colors.dart';
 
 class MediaCard extends StatefulWidget {
   final MediaEntity media;
@@ -63,11 +64,11 @@ class _MediaCardState extends State<MediaCard> with SingleTickerProviderStateMix
               width: 160,
               height: 240,
               decoration: BoxDecoration(
-                color: const Color(0xFF1e1e1e),
+                color: AppColors.secondaryBg,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(_isHovered ? 0.4 : 0.3),
+                    color: AppColors.primaryBg.withOpacity(_isHovered ? 0.4 : 0.3),
                     blurRadius: _isHovered ? 28 : 10,
                     offset: const Offset(0, 4),
                   ),
@@ -147,9 +148,9 @@ class _MediaCardState extends State<MediaCard> with SingleTickerProviderStateMix
 
   Widget _buildPlaceholder() {
     return Container(
-      color: const Color(0xFF232323),
+      color: AppColors.secondaryBg,
       child: const Center(
-        child: Icon(Icons.movie, color: Colors.white54, size: 40),
+        child: Icon(Icons.movie, color: AppColors.secondaryText, size: 40),
       ),
     );
   }

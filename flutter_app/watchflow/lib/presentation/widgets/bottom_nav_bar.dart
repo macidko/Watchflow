@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:watchflow/presentation/theme/app_colors.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -24,11 +25,11 @@ class BottomNavBar extends StatelessWidget {
       height: 60 + safeAreaPadding,
       padding: EdgeInsets.only(bottom: safeAreaPadding),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1B20),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1), width: 0.5)),
+        color: AppColors.secondaryBg,
+        border: Border(top: BorderSide(color: AppColors.border.withOpacity(0.5), width: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: AppColors.primaryBg.withOpacity(0.7),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -46,15 +47,10 @@ class BottomNavBar extends StatelessWidget {
               height: 3.0,
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(2)),
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.orange[600]!,
-                    Colors.orange[800]!,
-                  ],
-                ),
+                color: AppColors.accent,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.5),
+                    color: AppColors.accent.withOpacity(0.5),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   )
@@ -91,7 +87,7 @@ class BottomNavBar extends StatelessWidget {
               Icon(
                 icon,
                 size: 26,
-                color: isSelected ? Colors.white : Colors.blueGrey[200],
+                color: isSelected ? AppColors.primaryText : AppColors.secondaryText,
               ),
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 250),
@@ -104,13 +100,13 @@ class BottomNavBar extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 4.0),
                           child: Text(
                             label,
-                            style: TextStyle(
-                              color: Colors.orange[100],
+                            style: const TextStyle(
+                              color: AppColors.accent,
                               fontWeight: FontWeight.w600,
                               fontSize: 11.5,
                               shadows: [
                                 Shadow(
-                                  color: Colors.black.withOpacity(0.5),
+                                  color: AppColors.primaryBg,
                                   blurRadius: 4,
                                 )
                               ]

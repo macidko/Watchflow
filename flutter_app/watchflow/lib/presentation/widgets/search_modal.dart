@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:watchflow/presentation/theme/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:watchflow/domain/entities/media_entity.dart';
 import 'package:watchflow/presentation/controllers/media_search_controller.dart';
@@ -90,7 +91,7 @@ class _SearchModalState extends State<SearchModal>
   Widget build(BuildContext context) {
     // Ekran görüntüsünden ilham alan sade ve temiz bir tasarım
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.secondaryBg,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       insetPadding:
           const EdgeInsets.symmetric(horizontal: 100.0, vertical: 80.0),
@@ -102,7 +103,7 @@ class _SearchModalState extends State<SearchModal>
           children: [
             _buildNewSearchBar(),
             _buildTabs(),
-            const Divider(height: 1, color: Colors.black12),
+            const Divider(height: 1, color: AppColors.border),
             Expanded(child: _buildBody()),
           ],
         ),
@@ -116,31 +117,31 @@ class _SearchModalState extends State<SearchModal>
       child: TextField(
         controller: _searchQueryController,
         autofocus: true,
-        style: const TextStyle(fontSize: 16),
+        style: const TextStyle(fontSize: 16, color: AppColors.primaryText),
         decoration: InputDecoration(
           hintText: 'Film, Dizi veya Anime Ara...',
-          prefixIcon: const Icon(Icons.search, size: 24),
+          hintStyle: const TextStyle(color: AppColors.secondaryText),
+          prefixIcon: const Icon(Icons.search, size: 24, color: AppColors.secondaryText),
           suffixIcon: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_searchQueryController.text.isNotEmpty)
                 IconButton(
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const Icon(Icons.close_rounded, color: AppColors.secondaryText),
                   tooltip: 'Temizle',
                   onPressed: () {
                     _searchQueryController.clear();
                   },
                 ),
               IconButton(
-                icon: const Icon(Icons.arrow_forward_rounded),
+                icon: const Icon(Icons.arrow_forward_rounded, color: AppColors.accent),
                 tooltip: 'Ara',
-                color: Theme.of(context).primaryColor,
                 onPressed: _onSearch,
               ),
             ],
           ),
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: AppColors.primaryBg,
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -157,9 +158,9 @@ class _SearchModalState extends State<SearchModal>
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: TabBar(
         controller: _tabController,
-        labelColor: Theme.of(context).primaryColor,
-        unselectedLabelColor: Colors.black54,
-        indicatorColor: Theme.of(context).primaryColor,
+        labelColor: AppColors.accent,
+        unselectedLabelColor: AppColors.secondaryText,
+        indicatorColor: AppColors.accent,
         indicatorWeight: 2.5,
         labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         unselectedLabelStyle:
@@ -212,7 +213,7 @@ class _SearchModalState extends State<SearchModal>
     return Center(
       child: Text(
         'Aramak için yukarıdaki alanı kullanın.',
-        style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+        style: const TextStyle(fontSize: 16, color: AppColors.secondaryText),
       ),
     );
   }
@@ -221,7 +222,7 @@ class _SearchModalState extends State<SearchModal>
     return Center(
       child: Text(
         'Bu arama için sonuç bulunamadı.',
-        style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+        style: const TextStyle(fontSize: 16, color: AppColors.secondaryText),
       ),
     );
   }

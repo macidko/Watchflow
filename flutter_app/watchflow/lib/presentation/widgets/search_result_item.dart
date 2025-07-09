@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:watchflow/presentation/theme/app_colors.dart';
 import 'package:watchflow/domain/entities/media_entity.dart';
 
 class SearchResultItem extends StatelessWidget {
@@ -17,7 +18,7 @@ class SearchResultItem extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        hoverColor: Colors.grey[100],
+        hoverColor: AppColors.secondaryBg,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           child: Row(
@@ -34,15 +35,15 @@ class SearchResultItem extends StatelessWidget {
                         errorBuilder: (context, error, stackTrace) => Container(
                           width: 60,
                           height: 90,
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+                          color: AppColors.border,
+                          child: const Icon(Icons.broken_image, size: 32, color: AppColors.secondaryText),
                         ),
                       )
                     : Container(
                         width: 60,
                         height: 90,
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+                        color: AppColors.border,
+                        child: const Icon(Icons.broken_image, size: 32, color: AppColors.secondaryText),
                       ),
               ),
               const SizedBox(width: 16),
@@ -56,7 +57,7 @@ class SearchResultItem extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: AppColors.primaryText,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -66,18 +67,18 @@ class SearchResultItem extends StatelessWidget {
                       children: [
                         Text(
                           _getMediaTypeText(media.mediaType),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 13,
-                            color: Colors.grey[600],
+                            color: AppColors.secondaryText,
                           ),
                         ),
                         if (media.releaseDate != null &&
                             media.releaseDate!.isNotEmpty)
                           Text(
                             ' • ${media.releaseDate!.split('-').first}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 13,
-                              color: Colors.grey[600],
+                              color: AppColors.secondaryText,
                             ),
                           ),
                       ],
@@ -86,7 +87,7 @@ class SearchResultItem extends StatelessWidget {
                 ),
               ),
               // Sağdaki ikon (isteğe bağlı, şimdilik boş)
-              const Icon(Icons.chevron_right, color: Colors.grey),
+              const Icon(Icons.chevron_right, color: AppColors.secondaryText),
             ],
           ),
         ),

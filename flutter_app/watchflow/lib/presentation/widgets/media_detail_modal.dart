@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:watchflow/domain/entities/media_entity.dart';
+import 'package:watchflow/presentation/theme/app_colors.dart';
 
 class MediaDetailModal extends StatefulWidget {
   final MediaEntity media;
@@ -20,10 +21,10 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
   Widget build(BuildContext context) {
     final media = widget.media;
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF181818),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
+      decoration: BoxDecoration(
+        color: AppColors.secondaryBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: const [
           BoxShadow(
             color: Color(0x90000000),
             blurRadius: 24,
@@ -89,7 +90,7 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
                     fit: BoxFit.cover,
                   )
                 : null,
-            color: const Color(0xFF232323),
+            color: AppColors.secondaryBg,
           ),
           child: media.posterPath == null
               ? const Center(child: Icon(Icons.movie, color: Colors.white54, size: 60))
@@ -188,9 +189,9 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
   
   Widget _buildHeader(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A), // Header daha koyu
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -236,7 +237,7 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
             child: Text(
               widget.media.originalTitle!,
               style: const TextStyle(
-                color: Colors.white70,
+                color: AppColors.secondaryText,
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
               ),
@@ -271,7 +272,7 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
       child: Text(
         label,
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.primaryText,
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -283,9 +284,9 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
+        color: AppColors.secondaryBg,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Row(
         children: [
@@ -325,9 +326,9 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
+        color: AppColors.secondaryBg,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,8 +341,8 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
                   child: LinearProgressIndicator(
                     value: progress / 100,
                     minHeight: 10,
-                    backgroundColor: const Color(0xFF2A2A2A),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF4500)),
+                    backgroundColor: AppColors.border,
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
                   ),
                 ),
               ),
@@ -349,13 +350,13 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF4500),
+                  color: AppColors.accent,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
                   '$watchedEpisodes/$totalEpisodes',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.primaryText,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),
@@ -391,13 +392,13 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6A1A),
+                color: AppColors.hover,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Text(
                 '12/12',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.primaryText,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),
@@ -442,17 +443,17 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
             duration: const Duration(milliseconds: 180),
             decoration: BoxDecoration(
               color: isSelected
-                  ? const Color(0xFFFF4500)
-                  : const Color(0xFF1E1E1E),
+                  ? AppColors.accent
+                  : AppColors.secondaryBg,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: isSelected ? const Color(0xFFFF4500) : const Color(0xFF2A2A2A),
+                color: isSelected ? AppColors.accent : AppColors.border,
                 width: 2,
               ),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: const Color(0xFFFF6A33).withOpacity(0.15),
+                        color: AppColors.hover.withOpacity(0.15),
                         blurRadius: 4,
                         spreadRadius: 1,
                       ),
@@ -465,7 +466,7 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
               child: Text(
                 episodeNumber.toString(),
                 style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFFB3B3B3),
+                  color: isSelected ? AppColors.primaryText : AppColors.secondaryText,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
@@ -510,9 +511,9 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
+        color: AppColors.secondaryBg,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF2A2A2A), width: 1),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Row(
         children: [
@@ -521,11 +522,11 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
             width: 40,
             height: 60,
             decoration: BoxDecoration(
-              color: const Color(0xFF2A2A2A),
+              color: AppColors.border,
               borderRadius: BorderRadius.circular(4),
             ),
             child: const Center(
-              child: Icon(Icons.movie, color: Color(0xFF8A8A8A), size: 20),
+              child: Icon(Icons.movie, color: AppColors.secondaryText, size: 20),
             ),
           ),
           const SizedBox(width: 12),
@@ -563,12 +564,12 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
             width: 30,
             height: 30,
             decoration: const BoxDecoration(
-              color: Color(0xFFFF4500),
+              color: AppColors.accent,
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.add,
-              color: Colors.white,
+              color: AppColors.primaryText,
               size: 20,
             ),
           ),
@@ -581,13 +582,13 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.black45,
+        color: AppColors.border.withOpacity(0.5),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         text,
         style: const TextStyle(
-          color: Colors.white70,
+          color: AppColors.secondaryText,
           fontSize: 12,
         ),
       ),
@@ -606,9 +607,9 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.black26,
+            color: AppColors.secondaryBg.withOpacity(0.7),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade800, width: 1),
+            border: Border.all(color: AppColors.border, width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -639,11 +640,11 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
                 margin: const EdgeInsets.only(right: 8),
                 width: 100,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade800,
+                  color: AppColors.border,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Center(
-                  child: Icon(Icons.movie, color: Colors.white30),
+                  child: Icon(Icons.movie, color: AppColors.secondaryText),
                 ),
               );
             },
@@ -689,7 +690,7 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
           width: 4,
           height: 18,
           decoration: const BoxDecoration(
-            color: Color(0xFFFF4500),
+            color: AppColors.accent,
             borderRadius: BorderRadius.all(Radius.circular(2)),
           ),
         ),
@@ -697,7 +698,7 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
         Text(
           title,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.primaryText,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -715,7 +716,7 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF393939),
+                backgroundColor: AppColors.border,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -726,7 +727,7 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
               child: const Text(
                 'KALDIR',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.primaryText,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   letterSpacing: 1.1,
@@ -739,7 +740,7 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF6A1A),
+                backgroundColor: AppColors.hover,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -750,7 +751,7 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
               child: const Text(
                 'İZLENDİ OLARAK İŞARETLE',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.primaryText,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   letterSpacing: 1.1,
@@ -765,16 +766,8 @@ class _MediaDetailModalState extends State<MediaDetailModal> {
   
   // Medya türüne göre renk döndürür
   Color _getTypeColor(String? mediaType) {
-    switch (mediaType) {
-      case 'movie':
-        return const Color(0xFF3498DB); // Mavi
-      case 'tv':
-        return const Color(0xFF2ECC71); // Yeşil
-      case 'anime':
-        return const Color(0xFFE74C3C); // Kırmızı
-      default:
-        return const Color(0xFF95A5A6); // Gri
-    }
+    // Tüm medya türleri için accent rengi kullanılıyor
+    return AppColors.accent;
   }
   
   // Medya türüne göre metin döndürür

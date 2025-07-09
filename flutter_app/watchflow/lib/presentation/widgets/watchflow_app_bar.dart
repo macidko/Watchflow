@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:watchflow/config/theme.dart';
+import 'package:watchflow/presentation/theme/app_colors.dart';
 
 class WatchflowAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -20,24 +21,24 @@ class WatchflowAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.primaryBg,
       elevation: 0,
       centerTitle: true,
       leading: showBackButton
           ? IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              icon: const Icon(Icons.arrow_back, color: AppColors.primaryText),
               onPressed: () => Navigator.of(context).pop(),
             )
           : null,
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.local_fire_department, color: Colors.orange[800]),
+          Icon(Icons.local_fire_department, color: AppColors.accent),
           const SizedBox(width: 8),
           Text(
             title,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.primaryText,
               fontWeight: FontWeight.bold,
             ),
           ),

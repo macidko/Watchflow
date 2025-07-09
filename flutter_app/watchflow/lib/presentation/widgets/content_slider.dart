@@ -69,7 +69,7 @@ class _ContentSliderState extends State<ContentSlider> {
     return Container(
       margin: const EdgeInsets.only(bottom: 28),
       decoration: BoxDecoration(
-        color: const Color(0xFF23232A),
+        color: const Color(0xFF1e1e1e), // secondary-bg
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -78,7 +78,7 @@ class _ContentSliderState extends State<ContentSlider> {
             offset: const Offset(0, 6),
           ),
         ],
-        border: Border.all(color: Colors.orange.withOpacity(0.08), width: 1.2),
+        border: Border.all(color: const Color(0xFF2a2a2a), width: 1.2), // border-color
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -95,23 +95,23 @@ class _ContentSliderState extends State<ContentSlider> {
                       width: 4,
                       height: 22,
                       decoration: BoxDecoration(
-                        color: Colors.orange[800],
+                        color: const Color(0xFFFF4500), // accent-color
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Text(
                       widget.title,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.orange[800],
+                        color: Color(0xFFFF4500), // accent-color
                         letterSpacing: 0.7,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withOpacity(0.18),
+                            color: Colors.black26,
                             blurRadius: 4,
-                            offset: const Offset(0, 2),
+                            offset: Offset(0, 2),
                           ),
                         ],
                       ),
@@ -121,16 +121,22 @@ class _ContentSliderState extends State<ContentSlider> {
                 if (widget.items.isNotEmpty)
                   TextButton.icon(
                     onPressed: () => _showAllItemsModal(context),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.orange[800],
-                      textStyle: const TextStyle(
+                    style: ButtonStyle(
+                      foregroundColor: MaterialStateProperty.all(const Color(0xFFFF4500)), // accent-color
+                      textStyle: MaterialStateProperty.all(const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      shape: RoundedRectangleBorder(
+                      )),
+                      padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
-                      ),
+                      )),
+                      overlayColor: MaterialStateProperty.resolveWith<Color?>((states) {
+                        if (states.contains(MaterialState.hovered) || states.contains(MaterialState.pressed)) {
+                          return const Color(0xFFFF6A33).withOpacity(0.13); // hover-color
+                        }
+                        return null;
+                      }),
                     ),
                     icon: const Icon(Icons.grid_view_rounded, size: 18),
                     label: const Text('Tümünü Gör'),
