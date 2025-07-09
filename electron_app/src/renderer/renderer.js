@@ -1114,7 +1114,7 @@ async function showMediaDetails(item, mediaType) {
   // Popup oluştur
   const popupOverlay = document.createElement('div');
   popupOverlay.className = 'media-popup-overlay';
-  
+
   popupOverlay.innerHTML = `
     <div class="media-popup">
       <div class="media-popup-header">
@@ -1130,25 +1130,72 @@ async function showMediaDetails(item, mediaType) {
             </div>
           </div>
         </div>
-        
+
         <div class="progress-container">
           <div class="progress-bar-container">
             <div class="progress-bar" id="progress-bar"></div>
           </div>
           <div class="progress-text">${t('general.progressText', { progress: progressPercent, watched: watchedCount, total: totalEpisodes })}</div>
         </div>
-        
+
         ${generateSeasonsHTML(item, watchedEpisodes)}
-        
+
         ${mediaType === 'anime' && relatedAnimeHTML ? relatedAnimeHTML : ''}
-        
+
         <div class="popup-actions">
           <button class="popup-btn popup-btn-remove" data-id="${item.id}" data-type="${mediaType}" data-i18n="general.remove">KALDIR</button>
           <button class="popup-btn popup-btn-mark-watched" data-id="${item.id}" data-type="${mediaType}">${t('popup.markAsWatched').toUpperCase()}</button>
+          <button class="popup-btn popup-btn-reload-seasons" title="Sezon ve bölüm bilgisini güncelle" style="background: none; border: none; margin-left: 8px; cursor: pointer; padding: 8px; display: inline-flex; align-items: center; justify-content: center;" data-id="${item.id}" data-type="${mediaType}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"></path><path d="M20.49 15A9 9 0 0 1 6.36 18.36L1 14"></path></svg>
+          </button>
         </div>
       </div>
     </div>
   `;
+  // Geri dönüşüm (reload) butonuna tıklama olayı
+  const reloadSeasonsButton = popupOverlay.querySelector('.popup-btn-reload-seasons');
+  if (reloadSeasonsButton) {
+    reloadSeasonsButton.addEventListener('click', async () => {
+      reloadSeasonsButton.disabled = true;
+      reloadSeasonsButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"></path><path d="M20.49 15A9 9 0 0 1 6.36 18.36L1 14"></path></svg>`;
+      try {
+        let seasonsData;
+        if (mediaType === 'tv') {
+          seasonsData = await window.watchflowAPI.getTvShowSeasons(item.id);
+        } else if (mediaType === 'anime') {
+          seasonsData = await window.watchflowAPI.getAnimeSeasons(item.id);
+        } else {
+          showNotification(t('notifications.errorTitle'), t('errors.seasonReloadNotSupported'), 'error');
+          return;
+        }
+        if (seasonsData) {
+          if (Array.isArray(seasonsData)) {
+            item.seasons = seasonsData;
+            item.totalSeasons = seasonsData.length;
+          } else if (Array.isArray(seasonsData.seasons)) {
+            item.seasons = seasonsData.seasons;
+            item.totalSeasons = seasonsData.totalSeasons || seasonsData.seasons.length;
+          } else {
+            item.seasons = [seasonsData];
+            item.totalSeasons = 1;
+          }
+          // Watchlist'e kaydet
+          await window.watchflowAPI.addToWatchlist({ ...item, type: mediaType });
+          // UI güncellemesi için popup'ı kapatıp tekrar aç
+          popupOverlay.remove();
+          showMediaDetails(item, mediaType);
+          showNotification(t('notifications.successTitle'), t('notifications.seasonReloaded'), 'success');
+        } else {
+          showNotification(t('notifications.errorTitle'), t('errors.seasonReloadFailed'), 'error');
+        }
+      } catch (err) {
+        showNotification(t('notifications.errorTitle'), t('errors.seasonReloadFailed') + ' ' + (err.message || ''), 'error');
+      } finally {
+        reloadSeasonsButton.disabled = false;
+        reloadSeasonsButton.innerHTML = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"23 4 23 10 17 10\"></polyline><polyline points=\"1 20 1 14 7 14\"></polyline><path d=\"M3.51 9a9 9 0 0 1 14.13-3.36L23 10\"></path><path d=\"M20.49 15A9 9 0 0 1 6.36 18.36L1 14\"></path></svg>`;
+      }
+    });
+  }
   
   // Popup'ı sayfaya ekle
   document.body.appendChild(popupOverlay);
