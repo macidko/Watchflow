@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'config/theme.dart';
 import 'utils/theme_service.dart';
 import 'data/services/service_bindings.dart';
+import 'config/config_service.dart';
 import 'presentation/screens/api_test_screen.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/movie_screen.dart';
@@ -45,7 +46,10 @@ void main() async {
   
   // Servisleri başlat
   await ServiceBindings().dependencies();
-  
+
+  // Slider ve app configlerini yükle
+  await ConfigService().loadConfigs();
+
   runApp(const MyApp());
 }
 

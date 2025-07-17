@@ -1,9 +1,15 @@
 import 'package:get/get.dart';
 import 'package:watchflow/domain/entities/media_entity.dart';
 import 'package:watchflow/domain/usecases/get_watchlist_items_usecase.dart';
+import 'dart:developer';
+
+// Route name constants
+const String allItemsRoute = '/all-items';
 
 class HomeController extends GetxController {
-  final GetWatchlistItemsUseCase _getWatchlistItemsUseCase = GetWatchlistItemsUseCase();
+  final GetWatchlistItemsUseCase _getWatchlistItemsUseCase;
+
+  HomeController(this._getWatchlistItemsUseCase);
   
   var isLoading = true.obs;
   var watchingItems = <MediaEntity>[].obs;
@@ -27,25 +33,25 @@ class HomeController extends GetxController {
         mediaType: 'all'
       );
       watchingItems.value = watchingResult;
-      
+
       // Plan to watch kategorisini yükle
       final planToWatchResult = await _getWatchlistItemsUseCase.call(
         status: 'plan_to_watch', 
         mediaType: 'all'
       );
       planToWatchItems.value = planToWatchResult;
-      
+
       // Completed kategorisini yükle
       final completedResult = await _getWatchlistItemsUseCase.call(
         status: 'completed', 
         mediaType: 'all'
       );
       completedItems.value = completedResult;
-      
+
       // Özel sliderları yükle
       await loadCustomSliders();
-      
     } catch (e) {
+      log('Error loading watchlist data: $e');
       // Hata yönetimi
       print('Error loading watchlist data: $e');
     } finally {
@@ -58,8 +64,8 @@ class HomeController extends GetxController {
       // TODO: Mevcut özel sliderları getir
       // Şimdilik örnek veri
       _customSliders['custom_1'] = <MediaEntity>[].obs;
-      
     } catch (e) {
+      log('Error loading custom sliders: $e');
       print('Error loading custom sliders: $e');
     }
   }
@@ -70,12 +76,12 @@ class HomeController extends GetxController {
   
   void seeAllItems(String category) {
     // Tümünü göster sayfasına yönlendir
-    Get.toNamed('/all-items', arguments: {
+    Get.toNamed(allItemsRoute, arguments: {
       'category': category,
       'title': getCategoryTitle(category),
     });
   }
-  
+
   String getCategoryTitle(String category) {
     switch (category) {
       case 'watching':

@@ -1,0 +1,24 @@
+{
+  "sliders": {
+    "home": [
+      { "id": "watching", "title": "İzleniyor", "color": "#2196F3" },
+      { "id": "completed", "title": "İzlendi", "color": "#4CAF50" },
+      { "id": "plan", "title": "İzlenecek", "color": "#FF9800" }
+    ],
+    "movie": [
+      { "id": "watching", "title": "İzleniyor", "color": "#2196F3" },
+      { "id": "completed", "title": "İzlendi", "color": "#4CAF50" },
+      { "id": "plan", "title": "İzlenecek", "color": "#FF9800" }
+    ],
+    "series": [
+      { "id": "watching", "title": "İzleniyor", "color": "#2196F3" },
+      { "id": "completed", "title": "İzlendi", "color": "#4CAF50" },
+      { "id": "plan", "title": "İzlenecek", "color": "#FF9800" }
+    ],
+    "anime": [
+      { "id": "watching", "title": "İzleniyor", "color": "#2196F3" },
+      { "id": "completed", "title": "İzlendi", "color": "#4CAF50" },
+      { "id": "plan", "title": "İzlenecek", "color": "#FF9800" }
+    ]
+  }
+}

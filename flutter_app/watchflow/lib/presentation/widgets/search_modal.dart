@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:watchflow/presentation/theme/app_colors.dart';
 import 'package:get/get.dart';
@@ -12,11 +14,13 @@ class SearchModal extends StatefulWidget {
   State<SearchModal> createState() => _SearchModalState();
 }
 
-class _SearchModalState extends State<SearchModal>
-    with SingleTickerProviderStateMixin {
+class _SearchModalState extends State<SearchModal> with SingleTickerProviderStateMixin {
   final MediaSearchController _searchController =
       Get.put(MediaSearchController());
-  late final TabController _tabController;
+  late TabController _tabController;
+  final List<String> _tabTitles = ['Movie', 'Series', 'Anime'];
+  int _currentTabIndex = 0;
+  final Map<int, Future<List<MediaEntity>> Function(String)> _searchHandlers = {};
   final TextEditingController _searchQueryController = TextEditingController();
 
   final List<MediaEntity> _dummyData = [
@@ -43,22 +47,41 @@ class _SearchModalState extends State<SearchModal>
     ),
   ];
 
+  Map<String, List<Map<String, dynamic>>> _slidersConfig = {};
+  // Her medya için seçili slider'ı tutan map
+  final Map<int, String?> _selectedSliderIds = {};
+
+
+  Future<void> _loadSlidersConfig() async {
+    final String jsonStr = await rootBundle.loadString('assets/config/sliders_config.json');
+    final Map<String, dynamic> jsonMap = json.decode(jsonStr);
+    setState(() {
+      _slidersConfig = (jsonMap['sliders'] as Map<String, dynamic>).map((key, value) => MapEntry(
+        key,
+        (value as List).map((e) => Map<String, dynamic>.from(e)).toList(),
+      ));
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: _tabTitles.length, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {
-          _searchController
-              .setSearchType(SearchType.values[_tabController.index]);
+          _currentTabIndex = _tabController.index;
         });
-        // Sekme değiştiğinde arama metni varsa aramayı tetikle
+        _loadSlidersConfig();
         if (_searchQueryController.text.trim().isNotEmpty) {
           _onSearch();
         }
       }
     });
+    // Varsayılan her tab için handler dummy olarak atanıyor, API entegrasyonunda değiştirilebilir
+    _searchHandlers[0] = _searchMovies;
+    _searchHandlers[1] = _searchTv;
+    _searchHandlers[2] = _searchAnime;
     _searchQueryController.addListener(() {
       setState(() {}); // Temizle butonunu göstermek/gizlemek için yeniden çiz
     });
@@ -74,16 +97,24 @@ class _SearchModalState extends State<SearchModal>
   void _onSearch() {
     FocusScope.of(context).unfocus();
     final query = _searchQueryController.text.trim();
-    _searchController.setSearchType(SearchType.values[_tabController.index]);
-
     if (query.isEmpty) {
-      // Dummy data göster
       setState(() {
         _searchController.searchResults.value = _dummyData;
-        _searchController.hasSearched.value = true; // Arama yapıldı olarak işaretle
+        _searchController.hasSearched.value = true;
       });
     } else {
-      _searchController.performSearch(query);
+      final handler = _searchHandlers[_currentTabIndex];
+      if (handler != null) {
+        _searchController.isLoading.value = true;
+        handler(query).then((results) {
+          _searchController.searchResults.value = results;
+          _searchController.hasSearched.value = true;
+        }).whenComplete(() {
+          _searchController.isLoading.value = false;
+        });
+      } else {
+        _searchController.performSearch(query);
+      }
     }
   }
 
@@ -165,14 +196,28 @@ class _SearchModalState extends State<SearchModal>
         labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         unselectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.normal, fontSize: 15),
-        tabs: const [
-          Tab(text: 'Film'),
-          Tab(text: 'Dizi'),
-          Tab(text: 'Anime'),
-          Tab(text: 'Hepsi'),
-        ],
+        tabs: _tabTitles.map((title) => Tab(text: title)).toList(),
       ),
     );
+  }
+
+  // Dummy API fonksiyonları, burada gerçek API entegrasyonu yapılabilir
+  Future<List<MediaEntity>> _searchMovies(String query) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    // Burada gerçek API çağrısı yapılacak
+    return _dummyData.where((e) => e.mediaType == 'movie' && e.title.toLowerCase().contains(query.toLowerCase())).toList();
+  }
+
+  Future<List<MediaEntity>> _searchTv(String query) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    // Burada gerçek API çağrısı yapılacak
+    return _dummyData.where((e) => e.mediaType == 'tv' && e.title.toLowerCase().contains(query.toLowerCase())).toList();
+  }
+
+  Future<List<MediaEntity>> _searchAnime(String query) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    // Burada gerçek API çağrısı yapılacak
+    return _dummyData.where((e) => e.mediaType == 'anime' && e.title.toLowerCase().contains(query.toLowerCase())).toList();
   }
 
   Widget _buildBody() {
@@ -192,6 +237,8 @@ class _SearchModalState extends State<SearchModal>
   }
 
   Widget _buildResultsList() {
+    String tabKey = _tabTitles[_currentTabIndex].toLowerCase();
+    final sliders = _slidersConfig[tabKey] ?? [];
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: _searchController.searchResults.length,
@@ -201,7 +248,14 @@ class _SearchModalState extends State<SearchModal>
         final media = _searchController.searchResults[index];
         return SearchResultItem(
           media: media,
-          onTap: () {
+          sliders: sliders.map((e) => e['title'] as String).toList(),
+          selectedSlider: _selectedSliderIds[media.id],
+          onSliderChanged: (val) {
+            setState(() {
+              _selectedSliderIds[media.id] = val;
+            });
+          },
+          onAdd: () {
             Get.back(result: media);
           },
         );

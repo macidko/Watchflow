@@ -30,25 +30,6 @@ class RootScreen extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: Column(
               children: [
-                // Kaydırma çubuğu (handle)
-                Container(
-                  width: double.infinity,
-                  color: Colors.black,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 8),
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[600],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
-                ),
                 // Modal içeriği
                 Expanded(
                   child: SingleChildScrollView(

@@ -1,0 +1,11 @@
+{
+  "app": {
+    "theme": "dark",
+    "language": "tr",
+    "version": "1.0.0"
+  },
+  "api": {
+    "baseUrl": "https://api.example.com",
+    "timeout": 5000
+  }
+}

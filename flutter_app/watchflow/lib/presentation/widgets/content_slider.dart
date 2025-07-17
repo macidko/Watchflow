@@ -353,15 +353,34 @@ class _ContentSliderState extends State<ContentSlider> {
 
 
   MediaEntity _convertToMediaEntity(Map<String, dynamic> item) {
+    // Ortak alanlar ve fallback'ler
+    String? posterPath = item['poster_path'] ?? item['cover_image'] ?? item['image'];
+    String? backdropPath = item['backdrop_path'] ?? item['banner_image'];
+    String? title = item['title'] ?? item['name'] ?? item['romaji'] ?? item['native'] ?? '';
+    String? originalTitle = item['original_title'] ?? item['original_name'] ?? item['romaji'] ?? item['native'];
+    String? overview = item['overview'] ?? item['description'];
+    String? mediaType = item['media_type'] ?? item['mediaType'] ?? 'unknown';
+    String? releaseDate = item['release_date'] ?? item['first_air_date'] ?? item['start_date'];
+    double? voteAverage = (item['vote_average'] ?? item['average_score'])?.toDouble();
+    int? voteCount = item['vote_count'] ?? item['popularity'];
+    int? numberOfSeasons = item['number_of_seasons'] ?? item['seasons'];
+    int? numberOfEpisodes = item['number_of_episodes'] ?? item['episodes'];
+    String? status = item['status'];
+
     return MediaEntity(
       id: item['id'],
-      title: item['title'],
-      posterPath: item['image'],
-      mediaType: item['mediaType'] ?? 'unknown',
-      releaseDate: item['year']?.toString(),
-      voteAverage: item['rating'],
-      numberOfSeasons: item['seasons'],
-      numberOfEpisodes: item['episodes'],
+      title: title ?? '',
+      originalTitle: originalTitle,
+      overview: overview,
+      posterPath: posterPath,
+      backdropPath: backdropPath,
+      mediaType: mediaType,
+      releaseDate: releaseDate,
+      voteAverage: voteAverage,
+      voteCount: voteCount,
+      numberOfSeasons: numberOfSeasons,
+      numberOfEpisodes: numberOfEpisodes,
+      status: status,
       additionalInfo: {
         'progress': item['progress'],
         'watched': item['progress'] != null && item['progress'] >= 95,
