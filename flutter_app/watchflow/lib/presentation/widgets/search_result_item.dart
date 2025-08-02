@@ -89,8 +89,8 @@ class SearchResultItem extends StatelessWidget {
             if (sliders.isNotEmpty) ...[
               const SizedBox(width: 10),
               Container(
-                constraints: const BoxConstraints(maxWidth: 110, minHeight: 36),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                constraints: const BoxConstraints(maxWidth: 120, minHeight: 36),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                 decoration: BoxDecoration(
                   color: AppColors.secondaryBg,
                   borderRadius: BorderRadius.circular(8),
@@ -99,7 +99,9 @@ class SearchResultItem extends StatelessWidget {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: selectedSlider,
-                    hint: const Text('Slider'),
+                    hint: const Text('Kategori', style: TextStyle(fontSize: 13, color: AppColors.secondaryText)),
+                    icon: const Icon(Icons.arrow_drop_down, color: AppColors.secondaryText),
+                    isDense: true,
                     items: sliders.map((slider) => DropdownMenuItem(
                       value: slider,
                       child: Text(slider, style: const TextStyle(fontSize: 13)),
@@ -108,10 +110,7 @@ class SearchResultItem extends StatelessWidget {
                     isExpanded: true,
                     style: const TextStyle(fontSize: 13, color: AppColors.primaryText),
                     dropdownColor: AppColors.primaryBg,
-                    // Remove extra vertical padding
                     alignment: Alignment.centerLeft,
-                    // This property is not available in all Flutter versions, but if available:
-                    // contentPadding: EdgeInsets.zero,
                   ),
                 ),
               ),

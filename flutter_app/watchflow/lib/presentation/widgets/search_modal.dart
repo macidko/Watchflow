@@ -1,11 +1,16 @@
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:watchflow/presentation/theme/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:watchflow/domain/entities/media_entity.dart';
 import 'package:watchflow/presentation/controllers/media_search_controller.dart';
 import 'package:watchflow/presentation/widgets/search_result_item.dart';
+import 'package:watchflow/data/repositories/tmdb_repository_impl.dart';
+import 'package:watchflow/data/repositories/anime_repository_impl.dart';
+import 'package:watchflow/data/models/media_model.dart';
+import 'package:watchflow/data/services/api_service.dart';
+import 'package:hive/hive.dart';
+import 'package:watchflow/utils/slider_utils.dart';
 
 class SearchModal extends StatefulWidget {
   const SearchModal({super.key});
@@ -20,6 +25,7 @@ class _SearchModalState extends State<SearchModal> with SingleTickerProviderStat
   late TabController _tabController;
   final List<String> _tabTitles = ['Movie', 'Series', 'Anime'];
   int _currentTabIndex = 0;
+  // Tab index'e göre arama handler'ları: 0=Movie, 1=Series, 2=Anime
   final Map<int, Future<List<MediaEntity>> Function(String)> _searchHandlers = {};
   final TextEditingController _searchQueryController = TextEditingController();
 
@@ -50,17 +56,94 @@ class _SearchModalState extends State<SearchModal> with SingleTickerProviderStat
   Map<String, List<Map<String, dynamic>>> _slidersConfig = {};
   // Her medya için seçili slider'ı tutan map
   final Map<int, String?> _selectedSliderIds = {};
+  
+  // Uygulama başlatma işlemleri
+  Future<void> _initializeApp() async {
+    try {
+      // Önce slider yapılandırmasının varlığından emin olalım
+      await initSlidersIfNeeded();
+      // Sonra yapılandırmayı yükle
+      await _loadSlidersConfig();
+    } catch (e) {
+      print('Error initializing app: $e');
+      // Hata durumunda varsayılan değerler kullan
+      _setDefaultSlidersInMemory();
+    }
+  }
+  
+  // Hafızada varsayılan slider yapılandırması oluştur (Hive'dan bağımsız)
+  void _setDefaultSlidersInMemory() {
+    setState(() {
+      final defaultSliders = [
+        {'id': 'watching', 'title': 'İzleniyor', 'color': '#2196F3'},
+        {'id': 'completed', 'title': 'İzlendi', 'color': '#4CAF50'},
+        {'id': 'plan', 'title': 'İzlenecek', 'color': '#FF9800'}
+      ];
+      
+      _slidersConfig = {
+        'home': List<Map<String, dynamic>>.from(defaultSliders),
+        'movie': List<Map<String, dynamic>>.from(defaultSliders),
+        'series': List<Map<String, dynamic>>.from(defaultSliders),
+        'anime': List<Map<String, dynamic>>.from(defaultSliders),
+      };
+      
+      _slidersConfig['tv'] = _slidersConfig['series']!;
+      
+      print('Using default sliders in memory');
+    });
+  }
 
 
   Future<void> _loadSlidersConfig() async {
-    final String jsonStr = await rootBundle.loadString('assets/config/sliders_config.json');
-    final Map<String, dynamic> jsonMap = json.decode(jsonStr);
-    setState(() {
-      _slidersConfig = (jsonMap['sliders'] as Map<String, dynamic>).map((key, value) => MapEntry(
-        key,
-        (value as List).map((e) => Map<String, dynamic>.from(e)).toList(),
-      ));
-    });
+    // Önce slider yapılandırmasının varlığından emin olalım
+    await initSlidersIfNeeded();
+    
+    var box = await Hive.openBox('slidersBox');
+    
+    try {
+      // Tüm slider yapılandırmalarını al
+      final home = box.get('home') ?? [];
+      final movie = box.get('movie') ?? [];
+      final series = box.get('series') ?? [];
+      final anime = box.get('anime') ?? [];
+      
+      // Güvenli dönüşüm fonksiyonu
+      List<Map<String, dynamic>> convertToMapList(dynamic data) {
+        if (data is List) {
+          return data.map<Map<String, dynamic>>((item) {
+            if (item is Map) {
+              // Map<dynamic, dynamic>'dan Map<String, dynamic>'a dönüştür
+              return Map<String, dynamic>.from(item.map((key, value) => 
+                MapEntry(key.toString(), value)));
+            }
+            return <String, dynamic>{};
+          }).toList();
+        }
+        return [];
+      }
+      
+      setState(() {
+        _slidersConfig = {
+          'home': convertToMapList(home),
+          'movie': convertToMapList(movie),
+          'series': convertToMapList(series),
+          'anime': convertToMapList(anime),
+        };
+        
+        // TV için seriesi kullan
+        _slidersConfig['tv'] = _slidersConfig['series']!;
+      });
+    } catch (e) {
+      print('Error loading slider config: $e');
+      // Hata durumunda varsayılan değerler kullan
+      _setDefaultSlidersInMemory();
+    }
+    
+    print('Sliders config loaded from Hive: ${_slidersConfig.keys}');
+    print('Movie sliders: ${_slidersConfig['movie']?.length ?? 0} sliders found');
+    for (var slider in _slidersConfig['movie'] ?? []) {
+      print('Movie slider: ${slider['id']} - ${slider['title']}');
+    }
   }
 
   @override
@@ -78,10 +161,13 @@ class _SearchModalState extends State<SearchModal> with SingleTickerProviderStat
         }
       }
     });
-    // Varsayılan her tab için handler dummy olarak atanıyor, API entegrasyonunda değiştirilebilir
-    _searchHandlers[0] = _searchMovies;
-    _searchHandlers[1] = _searchTv;
-    _searchHandlers[2] = _searchAnime;
+    
+    // Başlangıçta slider yapılandırmasını yükle ve varsayılan değerleri oluştur
+    _initializeApp();
+    // Tab'a göre API handler'ları
+    _searchHandlers[0] = _searchMoviesFromTmdb;
+    _searchHandlers[1] = _searchTvFromTmdb;
+    _searchHandlers[2] = _searchAnimeFromAnilist;
     _searchQueryController.addListener(() {
       setState(() {}); // Temizle butonunu göstermek/gizlemek için yeniden çiz
     });
@@ -202,22 +288,43 @@ class _SearchModalState extends State<SearchModal> with SingleTickerProviderStat
   }
 
   // Dummy API fonksiyonları, burada gerçek API entegrasyonu yapılabilir
-  Future<List<MediaEntity>> _searchMovies(String query) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    // Burada gerçek API çağrısı yapılacak
-    return _dummyData.where((e) => e.mediaType == 'movie' && e.title.toLowerCase().contains(query.toLowerCase())).toList();
+  // TMDB'den film arama
+  Future<List<MediaEntity>> _searchMoviesFromTmdb(String query) async {
+    final apiService = Get.find<ApiService>();
+    final mediaModels = await apiService.searchMediaWithTmdb(query, type: 'movie');
+    return mediaModels.map(_mediaModelToEntity).toList();
   }
 
-  Future<List<MediaEntity>> _searchTv(String query) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    // Burada gerçek API çağrısı yapılacak
-    return _dummyData.where((e) => e.mediaType == 'tv' && e.title.toLowerCase().contains(query.toLowerCase())).toList();
+  // TMDB'den dizi arama
+  Future<List<MediaEntity>> _searchTvFromTmdb(String query) async {
+    final apiService = Get.find<ApiService>();
+    final mediaModels = await apiService.searchMediaWithTmdb(query, type: 'tv');
+    return mediaModels.map(_mediaModelToEntity).toList();
   }
 
-  Future<List<MediaEntity>> _searchAnime(String query) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    // Burada gerçek API çağrısı yapılacak
-    return _dummyData.where((e) => e.mediaType == 'anime' && e.title.toLowerCase().contains(query.toLowerCase())).toList();
+  // AniList'ten anime arama
+  Future<List<MediaEntity>> _searchAnimeFromAnilist(String query) async {
+    final apiService = Get.find<ApiService>();
+    final mediaModels = await apiService.searchAnime(query);
+    return mediaModels.map(_mediaModelToEntity).toList();
+  }
+
+  // MediaModel'den MediaEntity'ye tek ve doğru dönüşüm
+  MediaEntity _mediaModelToEntity(MediaModel m) {
+    int safeId;
+    try {
+      safeId = int.tryParse(m.id) ?? m.id.hashCode;
+    } catch (_) {
+      safeId = m.id.hashCode;
+    }
+    return MediaEntity(
+      id: safeId,
+      title: m.title,
+      mediaType: m.mediaTypeString ?? '',
+      releaseDate: m.year != null ? m.year.toString() : '',
+      posterPath: m.posterUrl ?? '',
+      overview: m.overview ?? '',
+    );
   }
 
   Widget _buildBody() {
@@ -238,7 +345,49 @@ class _SearchModalState extends State<SearchModal> with SingleTickerProviderStat
 
   Widget _buildResultsList() {
     String tabKey = _tabTitles[_currentTabIndex].toLowerCase();
+    
+    // TV için series anahtarını kullan
+    if (tabKey == 'tv') tabKey = 'series';
+    
+    // Sliders boşsa tekrar yükle
+    if ((_slidersConfig[tabKey] ?? []).isEmpty) {
+      print('No sliders found for $tabKey, reloading...');
+      // Şimdi reload yapacağız ama widget güncellemesi için future kullanıyoruz
+      Future.microtask(() => _loadSlidersConfig());
+    }
+    
     final sliders = _slidersConfig[tabKey] ?? [];
+    
+    print('Building results list for $tabKey with sliders: $sliders');
+    print('Sliders count: ${sliders.length}');
+    
+    // ID ve başlık eşleştirmelerini yap
+    final Map<String, String> sliderTitleToId = {};
+    final Map<String, String> sliderIdToTitle = {};
+    
+    if (sliders.isNotEmpty) {
+      for (var slider in sliders) {
+        final id = slider['id']?.toString() ?? '';
+        final title = slider['title']?.toString() ?? '';
+        if (id.isNotEmpty && title.isNotEmpty) {
+          sliderTitleToId[title] = id;
+          sliderIdToTitle[id] = title;
+          print('Slider mapping: $title -> $id');
+        }
+      }
+    } else {
+      // Varsayılan mapping - her zaman mevcut olmalı
+      sliderTitleToId['İzleniyor'] = 'watching';
+      sliderTitleToId['İzlendi'] = 'completed';
+      sliderTitleToId['İzlenecek'] = 'plan';
+      
+      sliderIdToTitle['watching'] = 'İzleniyor';
+      sliderIdToTitle['completed'] = 'İzlendi';
+      sliderIdToTitle['plan'] = 'İzlenecek';
+      
+      print('Using default slider mappings');
+    }
+    
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: _searchController.searchResults.length,
@@ -246,17 +395,123 @@ class _SearchModalState extends State<SearchModal> with SingleTickerProviderStat
           const Divider(height: 1, indent: 16, endIndent: 16),
       itemBuilder: (context, index) {
         final media = _searchController.searchResults[index];
+        
+        // Slider ID'ye göre başlık göster
+        final selectedSliderId = _selectedSliderIds[media.id];
+        final selectedSliderTitle = selectedSliderId != null ? 
+            sliderIdToTitle[selectedSliderId] : null;
+        
+        // Sliders'ı string listesine dönüştür ve null-safety kontrolü yap
+        List<String> sliderTitles = [];
+        if (sliders.isNotEmpty) {
+          sliderTitles = sliders.map((e) {
+            final title = e['title'];
+            return title != null ? title.toString() : '';
+          }).where((title) => title.isNotEmpty).toList();
+        } 
+        
+        // Her durumda varsayılan değerleri kullan - dropdown'da hep bir seçenek olmasını sağlar
+        if (sliderTitles.isEmpty) {
+          sliderTitles = ['İzleniyor', 'İzlendi', 'İzlenecek'];
+        }
+        
+        print('Available slider titles for item ${media.title}: $sliderTitles');
+        
         return SearchResultItem(
           media: media,
-          sliders: sliders.map((e) => e['title'] as String).toList(),
-          selectedSlider: _selectedSliderIds[media.id],
-          onSliderChanged: (val) {
+          sliders: sliderTitles,
+          selectedSlider: selectedSliderTitle,
+          onSliderChanged: (title) {
             setState(() {
-              _selectedSliderIds[media.id] = val;
+              // Başlıktan ID'ye çevir ve kaydet
+              final sliderId = title != null ? sliderTitleToId[title] : null;
+              _selectedSliderIds[media.id] = sliderId;
+              print('Selected slider for ${media.title}: ID=$sliderId, Title=$title');
             });
           },
-          onAdd: () {
-            Get.back(result: media);
+          onAdd: () async {
+            // Eğer slider seçilmediyse uyarı göster
+            if (_selectedSliderIds[media.id] == null || _selectedSliderIds[media.id]!.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Lütfen önce bir kategori seçiniz')),
+              );
+              return;
+            }
+            
+            // Aktif tab'a göre ilgili Hive kutusuna ekle
+            final tabKey = _tabTitles[_currentTabIndex].toLowerCase();
+            
+            // TV için 'tv' yerine 'series' kullan (boxName değil, sadece JSON içinde)
+            final boxName = tabKey + 'Box';
+            // MediaEntity'yi JSON string olarak sakla
+            // media.json ile birebir aynı anahtarlar
+            Map<String, dynamic> jsonMap;
+            if (tabKey == 'movie') {
+              jsonMap = {
+                'id': media.id,
+                'title': media.title,
+                'original_title': media.title, // varsa farklı, yoksa aynı
+                'overview': media.overview,
+                'poster_path': media.posterPath,
+                'backdrop_path': '', // eklenebilir
+                'media_type': 'movie',
+                'release_date': media.releaseDate,
+                'vote_average': 0,
+                'vote_count': 0,
+                'status': _selectedSliderIds[media.id] ?? '', // Slider ID'sini kaydediyoruz, başlığını değil
+              };
+            } else if (tabKey == 'tv' || tabKey == 'series') {
+              jsonMap = {
+                'id': media.id,
+                'name': media.title,
+                'original_name': media.title,
+                'overview': media.overview,
+                'poster_path': media.posterPath,
+                'backdrop_path': '',
+                'media_type': 'tv',
+                'first_air_date': media.releaseDate,
+                'vote_average': 0,
+                'vote_count': 0,
+                'status': _selectedSliderIds[media.id] ?? '', // Slider ID'sini kaydediyoruz, başlığını değil
+              };
+            } else if (tabKey == 'anime') {
+              jsonMap = {
+                'id': media.id,
+                'title': media.title,
+                'romaji': media.title,
+                'native': media.title,
+                'description': media.overview,
+                'cover_image': media.posterPath,
+                'banner_image': '',
+                'media_type': 'anime',
+                'start_date': media.releaseDate,
+                'average_score': 0,
+                'popularity': 0,
+                'status': _selectedSliderIds[media.id] ?? '', // Slider ID'sini kaydediyoruz, başlığını değil
+              };
+            } else {
+              jsonMap = {};
+            }
+            // Debug: İçeriği kontrol et
+            print('Saving to box: $boxName');
+            print('Media status ID: ${_selectedSliderIds[media.id]}');
+            final selectedTitle = sliderIdToTitle[_selectedSliderIds[media.id]!];
+            print('Media status Title: $selectedTitle');
+            print('JSON: ${jsonMap}');
+            
+            final jsonString = json.encode(jsonMap);
+            var box = await Hive.openBox<String>(boxName);
+            await box.add(jsonString);
+            
+            // Diğer ekranları da güncelle
+            setState(() {
+              // Ekleme işlemi başarılı olduğunda seçili slider'ı temizle
+              _selectedSliderIds.remove(media.id);
+            });
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Kaydedildi: ${media.title} ($tabKey)')),
+            );
           },
         );
       },

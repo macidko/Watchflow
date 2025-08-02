@@ -8,6 +8,7 @@ import 'config/theme.dart';
 import 'utils/theme_service.dart';
 import 'data/services/service_bindings.dart';
 import 'config/config_service.dart';
+import 'utils/slider_utils.dart';
 import 'presentation/screens/api_test_screen.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/movie_screen.dart';
@@ -47,7 +48,10 @@ void main() async {
   // Servisleri başlat
   await ServiceBindings().dependencies();
 
-  // Slider ve app configlerini yükle
+  // Slider yapılandırmasını Hive'da kontrol et ve gerekirse varsayılan değerleri yükle
+  await initSlidersIfNeeded();
+
+  // App configlerini yükle
   await ConfigService().loadConfigs();
 
   runApp(const MyApp());
