@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.2](https://github.com/macidko/Watchflow/compare/v0.9.1...v0.9.2) (2025-08-02)
+
+
+### Features
+
+* **api:** episode count refresh button ([61b2c46](https://github.com/macidko/Watchflow/commit/61b2c464838659417229724b1337bc1c99ff5627))
+* UI ve arama işlevselliği geliştirmeleri ([598e37a](https://github.com/macidko/Watchflow/commit/598e37ad4d783a5ade4d66855e02e70db93d0737))
+* **ui:** Create and configure a Flutter project ([7154139](https://github.com/macidko/Watchflow/commit/715413979e2be798c095b547bd275ea22a8f76a5))
+* **ui:** MediaCard tasarımı modernize edildi ([c76a748](https://github.com/macidko/Watchflow/commit/c76a74809c41a01446b54ec4045856f451fed0d2))
+* **ui:** Search modal and results: Dynamic slider and dynamic search modal integration, UI improvements and code edits. tab specific options with sliders_config, asset and config updates. ([962ce0c](https://github.com/macidko/Watchflow/commit/962ce0c50e37875879c81673bdb76ea04794d040))
+
+
+### Bug Fixes
+
+* **ui:** color fix ([05c74b8](https://github.com/macidko/Watchflow/commit/05c74b8cee240822c0122f532037e816845388e8))
+
+
+### Code Refactoring
+
+* **project:** Electron ve Flutter yapısını düzenleme ([98a9c89](https://github.com/macidko/Watchflow/commit/98a9c89bfdc88aaf478f861cc7d02786de5afcd0))
+
 ### [0.9.1](https://github.com/macidko/Watchflow/compare/v0.9.0...v0.9.1) (2025-06-10)
 
 
