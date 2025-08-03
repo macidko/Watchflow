@@ -1,0 +1,135 @@
+/* Navbar Animations and Styles */
+
+/* Logo float animation */
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Navbar specific styles */
+.navbar-top {
+  -webkit-app-region: drag;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.2), 
+    0 2px 3px rgba(0, 0, 0, 0.1) inset;
+  backdrop-filter: blur(10px);
+}
+
+.navbar-bottom {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Logo styles */
+.logo {
+  position: relative;
+  overflow: hidden;
+}
+
+.logo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 50%, 
+              rgba(255, 69, 0, 0.08) 0%, 
+              transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 6px;
+}
+
+.logo:hover::before {
+  opacity: 1;
+}
+
+.logo-svg {
+  filter: drop-shadow(0 0 3px rgba(255, 69, 0, 0.2));
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+.logo:hover .logo-svg {
+  filter: drop-shadow(0 0 5px rgba(255, 69, 0, 0.4));
+  animation-play-state: paused;
+}
+
+.logo-text {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.logo:hover .logo-text {
+  text-shadow: 0 2px 8px rgba(255, 69, 0, 0.4);
+}
+
+/* Window control buttons */
+.window-controls {
+  -webkit-app-region: no-drag;
+}
+
+.window-control-btn {
+  -webkit-app-region: no-drag;
+  line-height: 1;
+}
+
+/* Navigation tabs */
+.nav-tab {
+  position: relative;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.nav-tab:hover {
+  color: #ffffff;
+}
+
+.nav-tab.active {
+  position: relative;
+}
+
+/* Enhanced underline effect */
+.nav-tab .absolute.bottom-0 {
+  box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+}
+
+/* Click effect */
+.nav-tab:active {
+  transform: translateY(1px);
+}
+
+/* Additional hover effects */
+@keyframes shine {
+  0% {
+    background-position: -50% 0;
+  }
+  100% {
+    background-position: 150% 0;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar-top {
+    padding: 0 12px;
+    height: 52px;
+  }
+  
+  .navbar-bottom {
+    height: 48px;
+    gap: 16px;
+  }
+  
+  .logo-text {
+    font-size: 16px;
+  }
+  
+  .nav-tab {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}

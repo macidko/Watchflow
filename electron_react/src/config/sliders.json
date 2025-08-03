@@ -1,0 +1,482 @@
+{
+  "pages": {
+    "anasayfa": {
+      "sliders": [
+        {
+          "id": "slider_1",
+          "title": "İzlenecek Filmler",
+          "order": 1,
+          "visible": true,
+          "createdAt": "2024-01-15",
+          "type": "movies",
+          "items": [
+            {
+              "id": 1,
+              "title": "The Dark Knight",
+              "description": "Batman'in Joker ile mücadelesi",
+              "year": "2008",
+              "rating": "9.0",
+              "genre": ["Aksiyon", "Suç", "Drama"],
+              "image": "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-15"
+            },
+            {
+              "id": 2,
+              "title": "Inception",
+              "description": "Rüyalar içinde rüyalar",
+              "year": "2010",
+              "rating": "8.8",
+              "genre": ["Aksiyon", "Bilim Kurgu", "Thriller"],
+              "image": "https://image.tmdb.org/t/p/w500/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg",
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-15"
+            },
+            {
+              "id": 3,
+              "title": "Interstellar",
+              "description": "Uzayda geçen epik bilim kurgu",
+              "year": "2014",
+              "rating": "8.6",
+              "genre": ["Drama", "Bilim Kurgu"],
+              "image": "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-15"
+            },
+            {
+              "id": 4,
+              "title": "Pulp Fiction",
+              "description": "Tarantino'nun klasik eseri",
+              "year": "1994",
+              "rating": "8.9",
+              "genre": ["Suç", "Drama"],
+              "image": "https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg",
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-15"
+            },
+            {
+              "id": 5,
+              "title": "The Matrix",
+              "description": "Gerçeklik ile sanal dünya arasında",
+              "year": "1999",
+              "rating": "8.7",
+              "genre": ["Aksiyon", "Bilim Kurgu"],
+              "image": "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-15"
+            },
+            {
+              "id": 6,
+              "title": "Fight Club",
+              "description": "Underground dövüş kulübü",
+              "year": "1999",
+              "rating": "8.8",
+              "genre": ["Drama", "Thriller"],
+              "image": "https://image.tmdb.org/t/p/w500/bptfVGEQuv6vDTIMVCHjJ9Dz8PX.jpg",
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-15"
+            }
+          ]
+        },
+        {
+          "id": "slider_2",
+          "title": "İzlenen Diziler",
+          "order": 2,
+          "visible": true,
+          "createdAt": "2024-01-10",
+          "type": "series",
+          "items": [
+            {
+              "id": 7,
+              "title": "Breaking Bad",
+              "description": "Kimya öğretmeninin uyuşturucu imparatorluğu",
+              "year": "2008-2013",
+              "rating": "9.5",
+              "genre": ["Suç", "Drama", "Thriller"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-10"
+            },
+            {
+              "id": 8,
+              "title": "Game of Thrones",
+              "description": "Taht oyunları ve ejderhalar",
+              "year": "2011-2019",
+              "rating": "9.3",
+              "genre": ["Aksiyon", "Drama", "Fantastik"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-10"
+            },
+            {
+              "id": 9,
+              "title": "The Office",
+              "description": "Büro hayatının komik halleri",
+              "year": "2005-2013",
+              "rating": "8.9",
+              "genre": ["Komedi"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-10"
+            },
+            {
+              "id": 10,
+              "title": "Stranger Things",
+              "description": "80'lerin gizemli dünyası",
+              "year": "2016-2022",
+              "rating": "8.7",
+              "genre": ["Drama", "Fantastik", "Korku"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-10"
+            }
+          ]
+        },
+        {
+          "id": "slider_3",
+          "title": "İzlenen Animeler",
+          "order": 3,
+          "visible": true,
+          "createdAt": "2024-01-05",
+          "type": "anime",
+          "items": [
+            {
+              "id": 11,
+              "title": "Attack on Titan",
+              "description": "Dev titanlarla savaş",
+              "year": "2013-2023",
+              "rating": "9.0",
+              "genre": ["Aksiyon", "Drama", "Fantastik"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-05"
+            },
+            {
+              "id": 12,
+              "title": "Death Note",
+              "description": "Ölüm defteri ile adalet",
+              "year": "2006-2007",
+              "rating": "9.0",
+              "genre": ["Supernatural", "Thriller"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-05"
+            },
+            {
+              "id": 13,
+              "title": "One Piece",
+              "description": "Korsan kral olmak için macera",
+              "year": "1999-devam",
+              "rating": "8.9",
+              "genre": ["Aksiyon", "Macera", "Komedi"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-05"
+            },
+            {
+              "id": 14,
+              "title": "Naruto",
+              "description": "Ninja köyünde büyüyen çocuk",
+              "year": "2002-2017",
+              "rating": "8.3",
+              "genre": ["Aksiyon", "Macera"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-05"
+            }
+          ]
+        }
+      ]
+    },
+    "filmler": {
+      "sliders": [
+        {
+          "id": "slider_4",
+          "title": "İzlenen Filmler",
+          "order": 1,
+          "visible": true,
+          "createdAt": "2024-01-20",
+          "type": "movies",
+          "items": [
+            {
+              "id": 15,
+              "title": "The Shawshank Redemption",
+              "description": "Hapishane dramı",
+              "year": "1994",
+              "rating": "9.3",
+              "genre": ["Drama"],
+              "image": "https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg",
+              "watchStatus": "watched",
+              "addedDate": "2024-01-20"
+            },
+            {
+              "id": 16,
+              "title": "The Godfather",
+              "description": "Mafya ailesinin hikayesi",
+              "year": "1972",
+              "rating": "9.2",
+              "genre": ["Suç", "Drama"],
+              "image": "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+              "watchStatus": "watched",
+              "addedDate": "2024-01-20"
+            },
+            {
+              "id": 17,
+              "title": "Schindler's List",
+              "description": "Holocaust dramı",
+              "year": "1993",
+              "rating": "8.9",
+              "genre": ["Biyografi", "Drama", "Tarih"],
+              "image": "https://image.tmdb.org/t/p/w500/c8Ass7acuOe4za6DhSattE359gr.jpg",
+              "watchStatus": "watched",
+              "addedDate": "2024-01-20"
+            }
+          ]
+        },
+        {
+          "id": "slider_5",
+          "title": "İzlenecek Filmler",
+          "order": 2,
+          "visible": true,
+          "createdAt": "2024-01-18",
+          "type": "movies",
+          "items": [
+            {
+              "id": 18,
+              "title": "Dune",
+              "description": "Çöl gezegeni macerası",
+              "year": "2021",
+              "rating": "8.0",
+              "genre": ["Aksiyon", "Drama", "Bilim Kurgu"],
+              "image": "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-18"
+            },
+            {
+              "id": 19,
+              "title": "No Time to Die",
+              "description": "James Bond'un son macerası",
+              "year": "2021",
+              "rating": "7.3",
+              "genre": ["Aksiyon", "Macera", "Thriller"],
+              "image": "https://image.tmdb.org/t/p/w500/iUgygt3fscRoKWCV1d0C7FbM9TP.jpg",
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-18"
+            }
+          ]
+        },
+        {
+          "id": "slider_6",
+          "title": "Son İzlenen Filmler",
+          "order": 3,
+          "visible": true,
+          "createdAt": "2024-01-25",
+          "type": "movies",
+          "items": [
+            {
+              "id": 20,
+              "title": "Spider-Man: No Way Home",
+              "description": "Çoklu evren Spider-Man macerası",
+              "year": "2021",
+              "rating": "8.4",
+              "genre": ["Aksiyon", "Macera", "Bilim Kurgu"],
+              "image": "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+              "watchStatus": "recently_watched",
+              "addedDate": "2024-01-25"
+            }
+          ]
+        }
+      ]
+    },
+    "dizi": {
+      "sliders": [
+        {
+          "id": "slider_7",
+          "title": "İzlenen Diziler",
+          "order": 1,
+          "visible": true,
+          "createdAt": "2024-01-12",
+          "type": "series",
+          "items": [
+            {
+              "id": 21,
+              "title": "The Sopranos",
+              "description": "Mafya liderinin ailesi",
+              "year": "1999-2007",
+              "rating": "9.2",
+              "genre": ["Suç", "Drama"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-12"
+            },
+            {
+              "id": 22,
+              "title": "The Wire",
+              "description": "Baltimore sokakları",
+              "year": "2002-2008",
+              "rating": "9.3",
+              "genre": ["Suç", "Drama", "Thriller"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-12"
+            }
+          ]
+        },
+        {
+          "id": "slider_8",
+          "title": "İzlenecek Diziler",
+          "order": 2,
+          "visible": true,
+          "createdAt": "2024-01-08",
+          "type": "series",
+          "items": [
+            {
+              "id": 23,
+              "title": "House of the Dragon",
+              "description": "Game of Thrones prequel'i",
+              "year": "2022-devam",
+              "rating": "8.5",
+              "genre": ["Aksiyon", "Drama", "Fantastik"],
+              "image": null,
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-08"
+            },
+            {
+              "id": 24,
+              "title": "The Bear",
+              "description": "Restoran mutfağında geçen komedi-drama",
+              "year": "2022-devam",
+              "rating": "8.7",
+              "genre": ["Komedi", "Drama"],
+              "image": null,
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-08"
+            }
+          ]
+        },
+        {
+          "id": "slider_9",
+          "title": "Son İzlenen Diziler",
+          "order": 3,
+          "visible": true,
+          "createdAt": "2024-01-28",
+          "type": "series",
+          "items": [
+            {
+              "id": 25,
+              "title": "Wednesday",
+              "description": "Addams ailesi kızı okul hayatı",
+              "year": "2022",
+              "rating": "8.1",
+              "genre": ["Komedi", "Suç", "Fantastik"],
+              "image": null,
+              "watchStatus": "recently_watched",
+              "addedDate": "2024-01-28"
+            }
+          ]
+        }
+      ]
+    },
+    "anime": {
+      "sliders": [
+        {
+          "id": "slider_10",
+          "title": "İzlenen Animeler",
+          "order": 1,
+          "visible": true,
+          "createdAt": "2024-01-14",
+          "type": "anime",
+          "items": [
+            {
+              "id": 26,
+              "title": "Demon Slayer",
+              "description": "Şeytan avcısı kardeşler",
+              "year": "2019-devam",
+              "rating": "8.7",
+              "genre": ["Aksiyon", "Supernatural"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-14"
+            },
+            {
+              "id": 27,
+              "title": "My Hero Academia",
+              "description": "Süper güçlü kahramanlar okulu",
+              "year": "2016-devam",
+              "rating": "8.5",
+              "genre": ["Aksiyon", "Macera"],
+              "image": null,
+              "watchStatus": "watched",
+              "addedDate": "2024-01-14"
+            }
+          ]
+        },
+        {
+          "id": "slider_11",
+          "title": "İzlenecek Animeler",
+          "order": 2,
+          "visible": true,
+          "createdAt": "2024-01-16",
+          "type": "anime",
+          "items": [
+            {
+              "id": 28,
+              "title": "Jujutsu Kaisen",
+              "description": "Lanet savaşçıları",
+              "year": "2020-devam",
+              "rating": "8.8",
+              "genre": ["Aksiyon", "Supernatural"],
+              "image": null,
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-16"
+            },
+            {
+              "id": 29,
+              "title": "Chainsaw Man",
+              "description": "Testere şeytanı ile savaş",
+              "year": "2022-devam",
+              "rating": "8.9",
+              "genre": ["Aksiyon", "Supernatural"],
+              "image": null,
+              "watchStatus": "to_watch",
+              "addedDate": "2024-01-16"
+            }
+          ]
+        },
+        {
+          "id": "slider_12",
+          "title": "Son İzlenen Animeler",
+          "order": 3,
+          "visible": true,
+          "createdAt": "2024-01-30",
+          "type": "anime",
+          "items": [
+            {
+              "id": 30,
+              "title": "Spy x Family",
+              "description": "Casus ailenin komik halleri",
+              "year": "2022-devam",
+              "rating": "8.7",
+              "genre": ["Komedi", "Aksiyon"],
+              "image": null,
+              "watchStatus": "recently_watched",
+              "addedDate": "2024-01-30"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "settings": {
+    "defaultSliders": {
+      "anasayfa": ["İzlenecek Filmler", "İzlenen Diziler", "İzlenen Animeler"],
+      "filmler": ["İzlenen Filmler", "İzlenecek Filmler", "Son İzlenen Filmler"],
+      "dizi": ["İzlenen Diziler", "İzlenecek Diziler", "Son İzlenen Diziler"],
+      "anime": ["İzlenen Animeler", "İzlenecek Animeler", "Son İzlenen Animeler"]
+    },
+    "maxSlidersPerPage": 10,
+    "allowCustomSliders": true,
+    "watchStatuses": ["watched", "to_watch", "watching", "recently_watched", "dropped"],
+    "contentTypes": ["movies", "series", "anime"]
+  }
+}

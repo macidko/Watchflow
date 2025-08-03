@@ -79,6 +79,90 @@ electron_app/*.cert
 ## Yerel kurulum
 /installers
 
+# Electron React App
+## Bağımlılıklar
+electron_react/node_modules/
+electron_react/npm-debug.log*
+electron_react/yarn-debug.log*
+electron_react/yarn-error.log*
+electron_react/pnpm-debug.log*
+electron_react/lerna-debug.log*
+
+## Üretim dosyaları
+electron_react/dist/
+electron_react/dist-ssr/
+electron_react/build/
+electron_react/out/
+
+## Çevre değişkenleri
+electron_react/.env
+electron_react/.env.local
+electron_react/.env.development.local
+electron_react/.env.test.local
+electron_react/.env.production.local
+electron_react/*.local
+
+## Günlükler
+electron_react/logs/
+
+## Runtime veri
+electron_react/pids/
+electron_react/*.pid
+electron_react/*.seed
+electron_react/*.pid.lock
+
+## Test coverage
+electron_react/coverage/
+electron_react/*.lcov
+electron_react/.nyc_output/
+
+## Bağımlılık dizinleri
+electron_react/jspm_packages/
+
+## NPM cache
+electron_react/.npm/
+
+## ESLint cache
+electron_react/.eslintcache
+
+## Microbundle cache
+electron_react/.rpt2_cache/
+electron_react/.rts2_cache_cjs/
+electron_react/.rts2_cache_es/
+electron_react/.rts2_cache_umd/
+
+## REPL geçmişi
+electron_react/.node_repl_history
+
+## NPM pack çıktısı
+electron_react/*.tgz
+
+## Yarn
+electron_react/.yarn-integrity
+
+## Parcel bundler cache
+electron_react/.cache/
+electron_react/.parcel-cache/
+
+## Geçici klasörler
+electron_react/tmp/
+electron_react/temp/
+
+## Electron spesifik
+electron_react/app/
+electron_react/release/
+
+## TypeScript
+electron_react/*.tsbuildinfo
+
+## Stylelint cache
+electron_react/.stylelintcache
+
+## Lock dosyaları (isteğe bağlı)
+electron_react/package-lock.json
+electron_react/yarn.lock
+electron_react/pnpm-lock.yaml
+
 # Flutter App
 ## Dart/Flutter spesifik
 flutter_app/watchflow/.dart_tool/
