@@ -90,9 +90,9 @@ const Slider = ({ title, items = [], onCardClick }) => {
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           onScroll={(e) => setScrollPosition(e.target.scrollLeft)}
         >
-          {items.map((item, index) => (
+          {items.map((item) => (
             <Card 
-              key={index} 
+              key={item.id || item.apiData?.tmdbId || item.apiData?.kitsuId || Math.random()} 
               item={item} 
               onClick={onCardClick}
             />
@@ -100,7 +100,7 @@ const Slider = ({ title, items = [], onCardClick }) => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .scrollbar-hide {
           -webkit-overflow-scrolling: touch;
         }

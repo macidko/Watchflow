@@ -6,9 +6,18 @@ import {
   batchSearchAnime,
   MediaTypes 
 } from '../api/index.js';
-import { getAllPageSliders, addItemToSlider, getSliderData } from '../config/dataUtils.js';
+import useContentStore from '../config/initialData.js';
 
 const SearchButton = () => {
+  // Store
+  const {
+    getPages,
+    getStatusesByPage,
+    addContent,
+    initializeStore
+  } = useContentStore();
+
+  // Local state
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,11 +28,21 @@ const SearchButton = () => {
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [selectedAlternatives, setSelectedAlternatives] = useState({ query: '', results: [] });
   const [allSearchResults, setAllSearchResults] = useState({}); // Store all results for alternatives
-  const [showDropdownFor, setShowDropdownFor] = useState(null); // Hangi item için dropdown açık
-  const [dropdownSliders, setDropdownSliders] = useState([]); // Dropdown'daki sliderlar
-  const [toastMessage, setToastMessage] = useState('');
+  
+  // Dropdown states
+  const [showDropdownFor, setShowDropdownFor] = useState(null);
+  const [dropdownStatuses, setDropdownStatuses] = useState([]);
+  
+  // Toast states
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  
   const inputRef = useRef(null);
+
+  // Initialize store on component mount
+  useEffect(() => {
+    initializeStore();
+  }, [initializeStore]);
 
   useEffect(() => {
     if (showModal && inputRef.current) {
@@ -269,78 +288,81 @@ const SearchButton = () => {
     setShowAlternatives(true);
   };
 
-  // Inline dropdown handler
+  // Inline dropdown handler - yeni store sistemi
   const handleShowDropdown = useCallback((item, event) => {
     event.stopPropagation();
     
-    // Get sliders for this item
-    const sliderData = getSliderData();
-    const allPages = Object.keys(sliderData.pages || {});
-    const allSliders = [];
+    // Get all pages and their statuses
+    const pages = getPages();
+    const availableStatuses = [];
     
-    allPages.forEach(page => {
-      const pageSliders = getAllPageSliders(page);
-      allSliders.push(...pageSliders.map(slider => ({
-        ...slider,
-        page,
-        displayName: `${page.charAt(0).toUpperCase() + page.slice(1)} - ${slider.title}`
-      })));
+    pages.forEach(page => {
+      // Determine if this page is compatible with the item type
+      const isCompatible = 
+        (item.type === MediaTypes.MOVIE && page.id === 'film') ||
+        (item.type === MediaTypes.TV && page.id === 'dizi') ||
+        (item.type === MediaTypes.ANIME && page.id === 'anime') ||
+        (activeTab === 'all' && ['film', 'dizi', 'anime'].includes(page.id));
+        
+      if (isCompatible) {
+        const pageStatuses = getStatusesByPage(page.id);
+        pageStatuses.forEach(status => {
+          availableStatuses.push({
+            ...status,
+            pageName: page.title,
+            displayName: `${page.title} - ${status.title}`
+          });
+        });
+      }
     });
     
-    // Filter by active tab
-    let filteredSliders = allSliders;
-    if (activeTab === 'movies') {
-      filteredSliders = allSliders.filter(slider => slider.type === 'movies');
-    } else if (activeTab === 'series') {
-      filteredSliders = allSliders.filter(slider => slider.type === 'series');
-    } else if (activeTab === 'anime') {
-      filteredSliders = allSliders.filter(slider => slider.type === 'anime');
-    } else {
-      filteredSliders = allSliders.filter(slider => {
-        return (
-          (item.type === MediaTypes.MOVIE && slider.type === 'movies') ||
-          (item.type === MediaTypes.TV && slider.type === 'series') ||
-          (item.type === MediaTypes.ANIME && slider.type === 'anime')
-        );
-      });
-    }
+    console.log('Available statuses for item:', item.title, availableStatuses);
     
-    // Remove duplicates
-    const uniqueSliders = filteredSliders.filter((slider, index, array) => 
-      array.findIndex(s => s.title === slider.title) === index
-    );
-    
-    setDropdownSliders(uniqueSliders);
+    setDropdownStatuses(availableStatuses);
     setShowDropdownFor(item.id);
-  }, [activeTab]);
+  }, [activeTab, getPages, getStatusesByPage]);
 
-  // Add directly to slider from dropdown
-  const addDirectlyToSlider = (item, slider) => {
-    const sliderItem = {
-      title: item.title,
-      originalTitle: item.originalTitle,
-      description: item.overview || item.description || '',
-      year: item.year || item.releaseDate?.split('-')[0] || '',
-      rating: item.score || item.rating || '',
-      genre: item.genres || [],
-      image: item.imageUrl,
-      watchStatus: 'to_watch',
-      provider: item.provider,
-      externalId: item.id,
-      type: item.type
+  // Add directly to status from dropdown - yeni store sistemi
+  const addDirectlyToStatus = (item, status) => {
+    // Prepare content data for the new store structure
+    const contentData = {
+      pageId: status.pageId,
+      statusId: status.id,
+      apiData: {
+        title: item.title,
+        originalTitle: item.originalTitle,
+        overview: item.overview || item.description || '',
+        poster: item.imageUrl,
+        rating: item.score || item.rating || 0,
+        releaseDate: item.year || item.releaseDate || '',
+        genres: Array.isArray(item.genres)
+          ? item.genres.map(g => typeof g === 'string' ? g : String(g))
+          : (item.genre ? [String(item.genre)] : []),
+        // Provider specific data
+        [item.provider + 'Id']: item.id, // tmdbId, kitsuId, etc.
+        provider: item.provider
+      },
+      // Initialize seasons if TV/Anime
+      seasons: (item.type === MediaTypes.TV || item.type === MediaTypes.ANIME) ? {} : undefined
     };
 
     try {
-      addItemToSlider(slider.page, slider.id, sliderItem);
+      console.log('Adding content to store:', { 
+        pageId: status.pageId, 
+        statusId: status.id, 
+        title: item.title 
+      });
       
-      setToastMessage(`"${item.title}" added to "${slider.title}"! ✅`);
+      addContent(contentData);
+      
+      setToastMessage(`"${item.title}" added to "${status.pageName} - ${status.title}"! ✅`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       
       setShowDropdownFor(null);
     } catch (error) {
-      console.error('Error adding item to slider:', error);
-      setToastMessage('Failed to add item! ❌');
+      console.error('Error adding content:', error);
+      setToastMessage('Failed to add content! ❌');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }
@@ -658,7 +680,7 @@ const SearchButton = () => {
                                   <button 
                                     className="opacity-0 group-hover:opacity-100 p-1.5 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
                                     onClick={(e) => handleShowDropdown(item, e)}
-                                    title="Add to slider"
+                                    title="Add to list"
                                   >
                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -669,42 +691,42 @@ const SearchButton = () => {
                                   {showDropdownFor === item.id && (
                                     <div className="absolute top-full right-0 mt-1 w-64 bg-white shadow-2xl rounded-lg border border-gray-200 z-50 overflow-hidden">
                                       <div className="p-2.5 bg-gradient-to-r from-orange-50 to-red-50 border-b border-gray-100">
-                                        <h4 className="font-medium text-gray-900 text-xs">Add to Slider</h4>
-                                        <p className="text-xs text-gray-600 mt-0.5 truncate">Choose a slider for "{item.title}"</p>
+                                        <h4 className="font-medium text-gray-900 text-xs">Add to List</h4>
+                                        <p className="text-xs text-gray-600 mt-0.5 truncate">Choose a status for "{item.title}"</p>
                                       </div>
                                       
                                       <div className="max-h-48 overflow-y-auto custom-scrollbar" style={{
                                         scrollbarWidth: 'thin',
                                         scrollbarColor: '#d1d5db transparent'
                                       }}>
-                                        {dropdownSliders.length > 0 ? (
+                                        {dropdownStatuses.length > 0 ? (
                                           <div className="divide-y divide-gray-100">
-                                            {dropdownSliders.map((slider) => (
+                                            {dropdownStatuses.map((status) => (
                                               <button
-                                                key={`${slider.page}-${slider.id}`}
+                                                key={`${status.pageId}-${status.id}`}
                                                 className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors"
-                                                onClick={() => addDirectlyToSlider(item, slider)}
+                                                onClick={() => addDirectlyToStatus(item, status)}
                                               >
                                                 <div className="flex items-center justify-between">
                                                   <div className="flex-1 min-w-0">
                                                     <h5 className="font-medium text-gray-900 text-sm truncate">
-                                                      {slider.title}
+                                                      {status.title}
                                                     </h5>
                                                     <p className="text-xs text-gray-500 mt-0.5">
-                                                      {slider.page.charAt(0).toUpperCase() + slider.page.slice(1)} • {slider.items?.length || 0} items
+                                                      {status.pageName}
                                                     </p>
                                                   </div>
                                                   
                                                   <div className="flex items-center gap-2 ml-2">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                      slider.type === 'movies' ? 'bg-blue-100 text-blue-700' :
-                                                      slider.type === 'series' ? 'bg-green-100 text-green-700' :
-                                                      slider.type === 'anime' ? 'bg-purple-100 text-purple-700' :
+                                                      status.pageId === 'film' ? 'bg-blue-100 text-blue-700' :
+                                                      status.pageId === 'dizi' ? 'bg-green-100 text-green-700' :
+                                                      status.pageId === 'anime' ? 'bg-purple-100 text-purple-700' :
                                                       'bg-gray-100 text-gray-700'
                                                     }`}>
-                                                      {slider.type === 'movies' ? '🎬' :
-                                                       slider.type === 'series' ? '📺' :
-                                                       slider.type === 'anime' ? '🎌' : '⚡'}
+                                                      {status.pageId === 'film' ? '🎬' :
+                                                       status.pageId === 'dizi' ? '📺' :
+                                                       status.pageId === 'anime' ? '🎌' : '⚡'}
                                                     </span>
                                                     
                                                     <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -722,8 +744,8 @@ const SearchButton = () => {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                               </svg>
                                             </div>
-                                            <p className="text-sm text-gray-600 font-medium">No compatible sliders</p>
-                                            <p className="text-xs text-gray-500 mt-1">Create a slider for this content type first</p>
+                                            <p className="text-sm text-gray-600 font-medium">No compatible lists</p>
+                                            <p className="text-xs text-gray-500 mt-1">Create a list for this content type first</p>
                                           </div>
                                         )}
                                       </div>
@@ -928,7 +950,7 @@ const SearchButton = () => {
                           <button 
                             className="opacity-0 group-hover:opacity-100 p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                             onClick={(e) => handleShowDropdown(item, e)}
-                            title="Add to slider"
+                            title="Add to list"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -939,42 +961,42 @@ const SearchButton = () => {
                           {showDropdownFor === item.id && (
                             <div className="absolute top-full right-0 mt-2 w-72 bg-white shadow-2xl rounded-xl border border-gray-200 z-50 overflow-hidden">
                               <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
-                                <h4 className="font-medium text-gray-900 text-sm">Add to Slider</h4>
-                                <p className="text-xs text-gray-600 mt-0.5">Choose a slider for "{item.title}"</p>
+                                <h4 className="font-medium text-gray-900 text-sm">Add to List</h4>
+                                <p className="text-xs text-gray-600 mt-0.5">Choose a status for "{item.title}"</p>
                               </div>
                               
                               <div className="max-h-64 overflow-y-auto custom-scrollbar" style={{
                                 scrollbarWidth: 'thin',
                                 scrollbarColor: '#d1d5db transparent'
                               }}>
-                                {dropdownSliders.length > 0 ? (
+                                {dropdownStatuses.length > 0 ? (
                                   <div className="divide-y divide-gray-100">
-                                    {dropdownSliders.map((slider) => (
+                                    {dropdownStatuses.map((status) => (
                                       <button
-                                        key={`${slider.page}-${slider.id}`}
+                                        key={`${status.pageId}-${status.id}`}
                                         className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors"
-                                        onClick={() => addDirectlyToSlider(item, slider)}
+                                        onClick={() => addDirectlyToStatus(item, status)}
                                       >
                                         <div className="flex items-center justify-between">
                                           <div className="flex-1 min-w-0">
                                             <h5 className="font-medium text-gray-900 text-sm truncate">
-                                              {slider.title}
+                                              {status.title}
                                             </h5>
                                             <p className="text-xs text-gray-500 mt-0.5">
-                                              {slider.page.charAt(0).toUpperCase() + slider.page.slice(1)} • {slider.items?.length || 0} items
+                                              {status.pageName}
                                             </p>
                                           </div>
                                           
                                           <div className="flex items-center gap-2 ml-2">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                              slider.type === 'movies' ? 'bg-blue-100 text-blue-700' :
-                                              slider.type === 'series' ? 'bg-green-100 text-green-700' :
-                                              slider.type === 'anime' ? 'bg-purple-100 text-purple-700' :
+                                              status.pageId === 'film' ? 'bg-blue-100 text-blue-700' :
+                                              status.pageId === 'dizi' ? 'bg-green-100 text-green-700' :
+                                              status.pageId === 'anime' ? 'bg-purple-100 text-purple-700' :
                                               'bg-gray-100 text-gray-700'
                                             }`}>
-                                              {slider.type === 'movies' ? '🎬' :
-                                               slider.type === 'series' ? '📺' :
-                                               slider.type === 'anime' ? '🎌' : '⚡'}
+                                              {status.pageId === 'film' ? '🎬' :
+                                               status.pageId === 'dizi' ? '📺' :
+                                               status.pageId === 'anime' ? '🎌' : '⚡'}
                                             </span>
                                             
                                             <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -992,8 +1014,8 @@ const SearchButton = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                       </svg>
                                     </div>
-                                    <p className="text-sm text-gray-600 font-medium">No compatible sliders</p>
-                                    <p className="text-xs text-gray-500 mt-1">Create a slider for this content type first</p>
+                                    <p className="text-sm text-gray-600 font-medium">No compatible lists</p>
+                                    <p className="text-xs text-gray-500 mt-1">Create a list for this content type first</p>
                                   </div>
                                 )}
                               </div>

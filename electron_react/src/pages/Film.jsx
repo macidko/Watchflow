@@ -2,32 +2,69 @@ import React, { useState, useEffect } from 'react';
 import Slider from '../components/Slider';
 import SliderManager from '../components/SliderManager';
 import SearchButton from '../components/SearchButton';
-import { getPageSliders } from '../config/dataUtils';
+import DetailModal from '../components/DetailModal';
+import useContentStore from '../config/initialData';
 
 const Film = () => {
   const [showManager, setShowManager] = useState(false);
-  const [sliderData, setSliderData] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  // Zustand store'dan verileri al
+  const { 
+    getStatusesByPage, 
+    getContentsByPageAndStatus,
+    initializeStore 
+  } = useContentStore();
 
-  // JSON config'den film verilerini al
-  const loadSliders = () => {
-    const data = getPageSliders('filmler');
-    setSliderData(data);
-  };
-
+  // Initialize store on component mount
   useEffect(() => {
-    loadSliders();
-  }, []);
+    initializeStore();
+  }, [initializeStore]);
+
+  // Film sayfası için slider verilerini hazırla
+  const getSliderData = () => {
+    const filmStatuses = getStatusesByPage('film');
+    const sliders = [];
+
+    filmStatuses.forEach(status => {
+      const contents = getContentsByPageAndStatus('film', status.id);
+      sliders.push({
+        id: `film-${status.id}`,
+        title: status.title,
+        items: contents.map(content => ({
+          id: content.id,
+          apiData: content.apiData || {},
+          seasons: content.seasons || {},
+          ...content.apiData
+        }))
+      });
+    });
+
+    return sliders;
+  };
 
   // Card tıklama handler'ı
   const handleCardClick = (item) => {
-    console.log('Film card clicked:', item);
-    // Burada ileride detay sayfasına yönlendirme yapılabilir
+    setSelectedItem(item);
   };
 
   const handleManagerClose = () => {
     setShowManager(false);
-    loadSliders(); // Slider manager kapatıldığında veriyi yenile
+    // Store otomatik olarak güncellendiği için reload'a gerek yok
   };
+
+  // Loading kontrolü önce yapılmalı
+  const isLoading = !getStatusesByPage('film') || getStatusesByPage('film').length === 0;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-900 pt-28 flex items-center justify-center">
+        <span className="text-white text-xl">Yükleniyor...</span>
+      </div>
+    );
+  }
+
+  // Slider verilerini al (loading kontrolünden sonra)
+  const sliderData = getSliderData();
 
   return (
     <div className="min-h-screen bg-zinc-900 pt-28">
@@ -69,6 +106,12 @@ const Film = () => {
 
         {/* Search Button */}
         <SearchButton />
+        {selectedItem && (
+          <DetailModal
+            item={selectedItem}
+            onClose={() => setSelectedItem(null)}
+          />
+        )}
       </div>
     </div>
   );

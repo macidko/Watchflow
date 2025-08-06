@@ -2,32 +2,74 @@ import React, { useState, useEffect } from 'react';
 import Slider from '../components/Slider';
 import SliderManager from '../components/SliderManager';
 import SearchButton from '../components/SearchButton';
-import { getPageSliders } from '../config/dataUtils';
+import DetailModal from '../components/DetailModal';
+import useContentStore from '../config/initialData';
 
 const Home = () => {
   const [showManager, setShowManager] = useState(false);
-  const [sliderData, setSliderData] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  // Zustand store'dan verileri al
+  const { 
+    getPages, 
+    getStatusesByPage,
+    getContentsByPageAndStatus,
+    initializeStore 
+  } = useContentStore();
 
-  // JSON config'den anasayfa verilerini al
-  const loadSliders = () => {
-    const data = getPageSliders('anasayfa');
-    setSliderData(data);
-  };
-
+  // Initialize store on component mount
   useEffect(() => {
-    loadSliders();
-  }, []);
+    initializeStore();
+  }, [initializeStore]);
+
+  // Tüm sayfalardaki içerikleri slider formatında hazırla
+  const getSliderData = () => {
+    const pages = getPages();
+    if (!pages) return [];
+    const sliders = [];
+
+    pages.forEach(page => {
+      const statuses = getStatusesByPage(page.id);
+      statuses.forEach(status => {
+        const contents = getContentsByPageAndStatus(page.id, status.id);
+        sliders.push({
+          id: `${page.id}-${status.id}`,
+          title: `${page.title} - ${status.title}`,
+          items: contents.map(content => ({
+            id: content.id,
+            apiData: content.apiData || {},
+            seasons: content.seasons || {},
+            ...content.apiData
+          }))
+        });
+      });
+    });
+
+    return sliders;
+  };
 
   // Card tıklama handler'ı
   const handleCardClick = (item) => {
-    console.log('Card clicked:', item);
-    // Burada ileride detay sayfasına yönlendirme yapılabilir
+    setSelectedItem(item);
   };
 
   const handleManagerClose = () => {
     setShowManager(false);
-    loadSliders(); // Slider manager kapatıldığında veriyi yenile
+    // Store otomatik olarak güncellendiği için reload'a gerek yok
   };
+
+  // Loading kontrolü önce yapılmalı
+  const isLoading = !getPages() || getPages().length === 0;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-900 pt-28 flex items-center justify-center">
+        <span className="text-white text-xl">Yükleniyor...</span>
+      </div>
+    );
+  }
+
+  // Slider verilerini al (loading kontrolünden sonra)
+  const sliderData = getSliderData();
 
   return (
     <div className="min-h-screen bg-zinc-900 pt-28">
@@ -69,6 +111,13 @@ const Home = () => {
 
         {/* Search Button */}
         <SearchButton />
+        {/* Detail Modal for selected item */}
+        {selectedItem && (
+          <DetailModal
+            item={selectedItem}
+            onClose={() => setSelectedItem(null)}
+          />
+        )}
       </div>
     </div>
   );

@@ -2,32 +2,67 @@ import React, { useState, useEffect } from 'react';
 import Slider from '../components/Slider';
 import SliderManager from '../components/SliderManager';
 import SearchButton from '../components/SearchButton';
-import { getPageSliders } from '../config/dataUtils';
+import useContentStore from '../config/initialData';
+import DetailModal from '../components/DetailModal';
 
 const Anime = () => {
   const [showManager, setShowManager] = useState(false);
-  const [sliderData, setSliderData] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  // Zustand store'dan verileri al
+  const { 
+    getStatusesByPage, 
+    getContentsByPageAndStatus,
+    initializeStore 
+  } = useContentStore();
 
-  // JSON config'den anime verilerini al
-  const loadSliders = () => {
-    const data = getPageSliders('anime');
-    setSliderData(data);
-  };
-
+  // Initialize store on component mount
   useEffect(() => {
-    loadSliders();
-  }, []);
+    initializeStore();
+  }, [initializeStore]);
+
+  // Anime sayfası için slider verilerini hazırla
+  const getSliderData = () => {
+    const animeStatuses = getStatusesByPage('anime');
+    const sliders = [];
+
+    animeStatuses.forEach(status => {
+      const contents = getContentsByPageAndStatus('anime', status.id);
+      sliders.push({
+        id: `anime-${status.id}`,
+        title: status.title,
+        items: contents.map(content => ({
+          id: content.id,
+          apiData: content.apiData || {},
+          seasons: content.seasons || {},
+          ...content.apiData
+        }))
+      });
+    });
+
+    return sliders;
+  };
 
   // Card tıklama handler'ı
   const handleCardClick = (item) => {
-    console.log('Anime card clicked:', item);
-    // Burada ileride detay sayfasına yönlendirme yapılabilir
+    setSelectedItem(item);
   };
 
   const handleManagerClose = () => {
     setShowManager(false);
-    loadSliders(); // Slider manager kapatıldığında veriyi yenile
+    // Store otomatik olarak güncellendiği için reload'a gerek yok
   };
+
+  const isLoading = !getStatusesByPage('anime') || getStatusesByPage('anime').length === 0;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-900 pt-28 flex items-center justify-center">
+        <span className="text-white text-xl">Yükleniyor...</span>
+      </div>
+    );
+  }
+
+  const sliderData = getSliderData();
 
   return (
     <div className="min-h-screen bg-zinc-900 pt-28">
@@ -69,6 +104,12 @@ const Anime = () => {
 
         {/* Search Button */}
         <SearchButton />
+        {selectedItem && (
+          <DetailModal
+            item={selectedItem}
+            onClose={() => setSelectedItem(null)}
+          />
+        )}
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import { MediaTypes, MediaStatus } from '../base/MediaTypes.js';
  */
 export class AniListApi extends ApiInterface {
   constructor() {
-    super('https://graphql.anilist.co');
+    super('/anilist');
   }
 
   async search(query, options = {}) {
