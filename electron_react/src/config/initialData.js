@@ -857,6 +857,38 @@ const useContentStore = create()(
         });
       }),
 
+      // Move content between different statuses (for drag & drop)
+      moveContentBetweenStatuses: (contentItem, fromStatusId, toStatusId) => {
+        let moveSuccess = false;
+        
+        set((state) => {
+          // First, find the content by matching properties
+          const content = Object.values(state.contents).find(c => {
+            // Try to match by ID first
+            if (contentItem.id && c.id === contentItem.id) return true;
+            
+            // Fallback: match by title and other properties
+            const itemTitle = contentItem.title || contentItem.apiData?.title;
+            const contentTitle = c.apiData?.title || c.title;
+            
+            return itemTitle === contentTitle && 
+                   (contentItem.apiData?.tmdbId === c.apiData?.tmdbId ||
+                    contentItem.apiData?.kitsuId === c.apiData?.kitsuId);
+          });
+
+          if (content) {
+            console.log('Found content to move:', content);
+            content.statusId = toStatusId;
+            content.updatedAt = new Date().toISOString();
+            moveSuccess = true;
+          } else {
+            console.log('Content not found for moving');
+          }
+        });
+        
+        return moveSuccess;
+      },
+
     })),
     {
       name: 'content-tracker-storage',

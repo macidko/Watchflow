@@ -270,6 +270,81 @@ export const moveItemBetweenSliders = (fromPage, fromSliderId, toPage, toSliderI
 };
 
 /**
+ * Move card between sliders using card object
+ * @param {Object} cardItem - The card item to move
+ * @param {string} fromSliderId - Source slider ID
+ * @param {string} toSliderId - Target slider ID
+ * @param {string} page - Page name (movies, series, anime)
+ */
+export const moveCardBetweenSliders = (cardItem, fromSliderId, toSliderId, page) => {
+  console.log('moveCardBetweenSliders called with:', { cardItem, fromSliderId, toSliderId, page });
+  
+  const data = getSliderData();
+  console.log('Current slider data:', data);
+  
+  if (!data.pages?.[page]) {
+    console.log('Page not found:', page);
+    return false;
+  }
+  
+  // Find source slider
+  const sourceSlider = data.pages[page].sliders.find(s => s.id === fromSliderId);
+  if (!sourceSlider) {
+    console.log('Source slider not found:', fromSliderId);
+    return false;
+  }
+  
+  // Find target slider
+  const targetSlider = data.pages[page].sliders.find(s => s.id === toSliderId);
+  if (!targetSlider) {
+    console.log('Target slider not found:', toSliderId);
+    return false;
+  }
+  
+  console.log('Source slider items:', sourceSlider.items);
+  console.log('Target slider items before:', targetSlider.items);
+  
+  // Find item in source slider by comparing key properties
+  const itemIndex = sourceSlider.items.findIndex(item => {
+    // Compare by id if available, otherwise by title and other unique properties
+    if (cardItem.id && item.id) {
+      return item.id === cardItem.id;
+    }
+    
+    // Fallback comparison for items without ID
+    const cardTitle = cardItem.title || cardItem.apiData?.title;
+    const itemTitle = item.title || item.apiData?.title;
+    
+    return cardTitle === itemTitle && 
+           (cardItem.apiData?.tmdbId === item.apiData?.tmdbId ||
+            cardItem.apiData?.kitsuId === item.apiData?.kitsuId);
+  });
+  
+  console.log('Found item at index:', itemIndex);
+  
+  if (itemIndex === -1) {
+    console.log('Item not found in source slider');
+    return false;
+  }
+  
+  // Remove from source slider
+  const [movedItem] = sourceSlider.items.splice(itemIndex, 1);
+  console.log('Moved item:', movedItem);
+  
+  // Update item metadata
+  movedItem.addedDate = new Date().toISOString().split('T')[0];
+  
+  // Add to target slider
+  targetSlider.items.push(movedItem);
+  console.log('Target slider items after:', targetSlider.items);
+  
+  // Save immediately
+  saveSliderDataNow(data);
+  console.log('Data saved successfully');
+  return true;
+};
+
+/**
  * Add item to a slider (optimized)
  * @param {string} page - Page name
  * @param {string} sliderId - Slider ID

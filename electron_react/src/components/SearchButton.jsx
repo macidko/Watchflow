@@ -6,6 +6,7 @@ import {
   batchSearchAnime,
   MediaTypes 
 } from '../api/index.js';
+import { TmdbApi } from '../api/providers/TmdbApi.js';
 import useContentStore from '../config/initialData.js';
 
 const SearchButton = () => {
@@ -14,6 +15,7 @@ const SearchButton = () => {
     getPages,
     getStatusesByPage,
     addContent,
+    getContentsByPageAndStatus,
     initializeStore
   } = useContentStore();
 
@@ -323,12 +325,25 @@ const SearchButton = () => {
   }, [activeTab, getPages, getStatusesByPage]);
 
   // Add directly to status from dropdown - yeni store sistemi
-  const addDirectlyToStatus = (item, status) => {
-    // Prepare content data for the new store structure
-    const contentData = {
-      pageId: status.pageId,
-      statusId: status.id,
-      apiData: {
+  const addDirectlyToStatus = async (item, status) => {
+    // Duplicate check: same pageId, statusId, and providerId
+    const existing = getContentsByPageAndStatus(status.pageId, status.id).find(c => {
+      const providerKey = item.provider + 'Id';
+      return c.apiData && c.apiData[providerKey] === item.id;
+    });
+    if (existing) {
+      setToastMessage(`"${item.title}" zaten "${status.pageName} - ${status.title}" listesinde! ⚠️`);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      setShowDropdownFor(null);
+      return;
+    }
+
+    try {
+      setToastMessage(`"${item.title}" ekleniyor... ⏳`);
+      setShowToast(true);
+      
+      let detailedApiData = {
         title: item.title,
         originalTitle: item.originalTitle,
         overview: item.overview || item.description || '',
@@ -341,24 +356,60 @@ const SearchButton = () => {
         // Provider specific data
         [item.provider + 'Id']: item.id, // tmdbId, kitsuId, etc.
         provider: item.provider
-      },
-      // Initialize seasons if TV/Anime
-      seasons: (item.type === MediaTypes.TV || item.type === MediaTypes.ANIME) ? {} : undefined
-    };
+      };
 
-    try {
+      // Film için TMDB'den detaylı bilgileri çek
+      if (item.provider === 'tmdb' && status.pageId === 'film') {
+        try {
+          console.log('Fetching detailed movie data for:', item.title);
+          const tmdbApi = new TmdbApi();
+          const detailedData = await tmdbApi.getDetails(item.id, MediaTypes.MOVIE);
+          
+          // Detaylı bilgileri ekle
+          detailedApiData = {
+            ...detailedApiData,
+            runtime: detailedData.duration, // duration olarak normalize ediliyor
+            budget: detailedData.budget,
+            revenue: detailedData.revenue,
+            cast: detailedData.cast,
+            director: detailedData.director,
+            vote_average: detailedData.score // TMDB puanını kaydet
+          };
+          
+          console.log('Detailed movie data fetched:', {
+            title: item.title,
+            runtime: detailedData.duration,
+            budget: detailedData.budget,
+            revenue: detailedData.revenue,
+            castCount: detailedData.cast?.length,
+            director: detailedData.director
+          });
+        } catch (error) {
+          console.warn('Failed to fetch detailed movie data:', error);
+          // Hata olursa temel bilgilerle devam et
+        }
+      }
+
+      // Prepare content data for the new store structure
+      const contentData = {
+        pageId: status.pageId,
+        statusId: status.id,
+        apiData: detailedApiData,
+        // Initialize seasons if TV/Anime
+        seasons: (item.type === MediaTypes.TV || item.type === MediaTypes.ANIME) ? {} : undefined
+      };
+
       console.log('Adding content to store:', { 
         pageId: status.pageId, 
         statusId: status.id, 
-        title: item.title 
+        title: item.title,
+        hasDetailedData: !!detailedApiData.runtime
       });
       
       addContent(contentData);
-      
       setToastMessage(`"${item.title}" added to "${status.pageName} - ${status.title}"! ✅`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
-      
       setShowDropdownFor(null);
     } catch (error) {
       console.error('Error adding content:', error);

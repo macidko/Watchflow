@@ -82,7 +82,12 @@ export class ApiInterface {
       overview: data.overview,
       genres: data.genres,
       duration: data.duration,
-      provider: this.constructor.name.replace('Api', '').toLowerCase()
+      provider: this.constructor.name.replace('Api', '').toLowerCase(),
+      // Film detayları için ek alanlar
+      budget: data.budget,
+      revenue: data.revenue,
+      cast: data.cast,
+      director: data.director
     };
   }
 

@@ -7,15 +7,14 @@ import useContentStore from '../config/initialData';
 
 const Dizi = () => {
   const [showManager, setShowManager] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null); 
+  const [selectedItem, setSelectedItem] = useState(null);
   // Zustand store'dan verileri al
   const { 
     getStatusesByPage, 
     getContentsByPageAndStatus,
-    initializeStore 
-  } = useContentStore();
-
-  // Initialize store on component mount
+    initializeStore,
+    moveContentBetweenStatuses
+  } = useContentStore();  // Initialize store on component mount
   useEffect(() => {
     initializeStore();
   }, [initializeStore]);
@@ -45,6 +44,26 @@ const Dizi = () => {
   // Card tıklama handler'ı
   const handleCardClick = (item) => {
     setSelectedItem(item);
+  };
+
+  // Card move handler'ı
+  const handleCardMove = (cardItem, fromSliderId, toSliderId) => {
+    console.log('handleCardMove called:', { cardItem, fromSliderId, toSliderId });
+    
+    // Slider ID'lerini status ID'lerine çevir
+    // slider ID format: "dizi-statusId" (örn: "dizi-to-watch")
+    const fromStatusId = fromSliderId.replace('dizi-', '');
+    const toStatusId = toSliderId.replace('dizi-', '');
+    
+    console.log('Status IDs:', { fromStatusId, toStatusId });
+    
+    const success = moveContentBetweenStatuses(cardItem, fromStatusId, toStatusId);
+    console.log('Move result:', success);
+    
+    if (success) {
+      console.log('Move successful, no need to reinitialize store');
+      // Zustand otomatik olarak re-render yapar, initializeStore() gerek yok
+    }
   };
 
   const handleManagerClose = () => {
@@ -90,9 +109,11 @@ const Dizi = () => {
         {sliderData.map((slider) => (
           <Slider 
             key={slider.id}
+            sliderId={slider.id}
             title={slider.title} 
             items={slider.items} 
-            onCardClick={handleCardClick} 
+            onCardClick={handleCardClick}
+            onCardMove={handleCardMove}
           />
         ))}
 

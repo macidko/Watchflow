@@ -12,7 +12,8 @@ const Anime = () => {
   const { 
     getStatusesByPage, 
     getContentsByPageAndStatus,
-    initializeStore 
+    initializeStore,
+    moveContentBetweenStatuses
   } = useContentStore();
 
   // Initialize store on component mount
@@ -45,6 +46,26 @@ const Anime = () => {
   // Card tıklama handler'ı
   const handleCardClick = (item) => {
     setSelectedItem(item);
+  };
+
+  // Card move handler'ı
+  const handleCardMove = (cardItem, fromSliderId, toSliderId) => {
+    console.log('handleCardMove called:', { cardItem, fromSliderId, toSliderId });
+    
+    // Slider ID'lerini status ID'lerine çevir
+    // slider ID format: "anime-statusId" (örn: "anime-to-watch")
+    const fromStatusId = fromSliderId.replace('anime-', '');
+    const toStatusId = toSliderId.replace('anime-', '');
+    
+    console.log('Status IDs:', { fromStatusId, toStatusId });
+    
+    const success = moveContentBetweenStatuses(cardItem, fromStatusId, toStatusId);
+    console.log('Move result:', success);
+    
+    if (success) {
+      console.log('Move successful, no need to reinitialize store');
+      // Zustand otomatik olarak re-render yapar, initializeStore() gerek yok
+    }
   };
 
   const handleManagerClose = () => {
@@ -88,9 +109,11 @@ const Anime = () => {
         {sliderData.map((slider) => (
           <Slider 
             key={slider.id}
+            sliderId={slider.id}
             title={slider.title} 
             items={slider.items} 
-            onCardClick={handleCardClick} 
+            onCardClick={handleCardClick}
+            onCardMove={handleCardMove}
           />
         ))}
 

@@ -1,5 +1,6 @@
 import { ApiInterface } from '../base/ApiInterface.js';
 import { MediaTypes, MediaStatus } from '../base/MediaTypes.js';
+import { TMDB_GENRE_MAP } from '../../config/tmdbGenres.js';
 
 /**
  * TMDB API Provider
@@ -53,7 +54,7 @@ export class TmdbApi extends ApiInterface {
         imageUrl: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
         score: item.vote_average,
         overview: item.overview,
-        genres: item.genre_ids // TMDB returns genre IDs in search
+        genres: item.genre_ids?.map(id => TMDB_GENRE_MAP[id] || `Genre ${id}`) || [] // Convert genre IDs to names
       }, item.media_type || type));
     } catch (error) {
       console.error('TMDB search error:', error);
@@ -69,10 +70,42 @@ export class TmdbApi extends ApiInterface {
     const endpoint = mediaType === MediaTypes.MOVIE ? `/movie/${id}` : `/tv/${id}`;
     
     try {
-      const url = `${this.baseUrl}${endpoint}?api_key=${this.apiKey}&language=en-US`;
+      // Film için ek detaylar (credits, budget vs.) almak için append_to_response kullanıyoruz
+      const appendParam = mediaType === MediaTypes.MOVIE ? '&append_to_response=credits' : '';
+      const url = `${this.baseUrl}${endpoint}?api_key=${this.apiKey}&language=en-US${appendParam}`;
+      
+      console.log('TMDB getDetails URL:', url.replace(this.apiKey, '[API_KEY]'));
+      
       const response = await this.makeRequest(url);
       
-      return this.normalizeResponse({
+      console.log('TMDB getDetails raw response:', {
+        id: response.id,
+        title: response.title || response.name,
+        runtime: response.runtime,
+        budget: response.budget,
+        revenue: response.revenue,
+        credits: response.credits ? 'present' : 'missing',
+        creditsSize: response.credits?.cast?.length || 0
+      });
+      
+      // Film için ek detayları işle
+      let additionalDetails = {};
+      if (mediaType === MediaTypes.MOVIE) {
+        additionalDetails = {
+          budget: response.budget || 0,
+          revenue: response.revenue || 0,
+          runtime: response.runtime || 0,
+          cast: response.credits?.cast?.slice(0, 10).map(actor => ({
+            name: actor.name,
+            character: actor.character
+          })) || [],
+          director: response.credits?.crew?.find(person => person.job === 'Director')?.name || null
+        };
+        
+        console.log('TMDB processed additional details:', additionalDetails);
+      }
+      
+      const normalizedResponse = this.normalizeResponse({
         id: response.id,
         title: response.title || response.name,
         originalTitle: response.original_title || response.original_name,
@@ -84,8 +117,13 @@ export class TmdbApi extends ApiInterface {
         status: this.normalizeStatus(response.status),
         duration: response.runtime || response.episode_run_time?.[0],
         seasons: response.seasons?.length || null,
-        episodes: response.number_of_episodes || null
+        episodes: response.number_of_episodes || null,
+        ...additionalDetails // Film detaylarını ekle
       }, mediaType);
+      
+      console.log('TMDB normalized response:', normalizedResponse);
+      
+      return normalizedResponse;
     } catch (error) {
       console.error('TMDB getDetails error:', error);
       throw error;

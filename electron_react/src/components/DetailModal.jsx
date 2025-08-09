@@ -18,6 +18,18 @@ const DetailModal = ({ item, onClose }) => {
   const content = getContentById(item?.id);
   let { apiData = {}, seasons = {} } = content || {};
 
+  // Debug: Check what data we have
+  console.log('DetailModal - Current content data:', {
+    id: item?.id,
+    title: apiData?.title,
+    runtime: apiData?.runtime,
+    budget: apiData?.budget,
+    revenue: apiData?.revenue,
+    cast: apiData?.cast?.length || 'none',
+    director: apiData?.director,
+    vote_average: apiData?.vote_average
+  });
+
 const episodeCount = apiData.episodeCount || apiData.episodes;
 if (
   content?.pageId === 'anime' &&
@@ -180,6 +192,110 @@ if (
                   className="h-2 bg-blue-500 rounded-full transition-all" 
                   style={{ width: `${progress}%` }}
                 />
+              </div>
+            </div>
+          )}
+
+          {/* Film için özel detaylar */}
+          {content?.pageId === 'film' && (
+            <div className="mb-4 space-y-3">
+              {/* Film Detayları Kartı */}
+              <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-100">
+                <h3 className="text-sm font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h4a1 1 0 011 1v18a1 1 0 01-1 1H3a1 1 0 01-1-1V1a1 1 0 011-1h4a1 1 0 011 1v3m0 0h8M7 4H3" />
+                  </svg>
+                  Film Detayları
+                </h3>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Süre */}
+                  {apiData?.runtime && (
+                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-xs font-medium text-purple-700">Süre</span>
+                      </div>
+                      <span className="text-sm font-bold text-purple-900">{apiData.runtime} dk</span>
+                    </div>
+                  )}
+
+                  {/* Bütçe */}
+                  {apiData?.budget && apiData.budget > 0 && (
+                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                        </svg>
+                        <span className="text-xs font-medium text-purple-700">Bütçe</span>
+                      </div>
+                      <span className="text-sm font-bold text-purple-900">
+                        ${(apiData.budget / 1000000).toFixed(1)}M
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Hasılat */}
+                  {apiData?.revenue && apiData.revenue > 0 && (
+                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        <span className="text-xs font-medium text-purple-700">Hasılat</span>
+                      </div>
+                      <span className="text-sm font-bold text-purple-900">
+                        ${(apiData.revenue / 1000000).toFixed(1)}M
+                      </span>
+                    </div>
+                  )}
+
+                  {/* IMDB Puanı */}
+                  {(apiData?.vote_average || apiData?.rating) && (
+                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <span className="text-xs font-medium text-purple-700">Puan</span>
+                      </div>
+                      <span className="text-sm font-bold text-purple-900">
+                        {(apiData.vote_average || apiData.rating)}/10
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Oyuncular */}
+                {apiData?.cast && apiData.cast.length > 0 && (
+                  <div className="mt-3">
+                    <h4 className="text-xs font-medium text-purple-700 mb-2">Başrol Oyuncuları</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {apiData.cast.slice(0, 4).map((actor, index) => (
+                        <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                          {actor.name || actor}
+                        </span>
+                      ))}
+                      {apiData.cast.length > 4 && (
+                        <span className="px-2 py-1 bg-purple-200 text-purple-600 rounded-full text-xs">
+                          +{apiData.cast.length - 4} daha
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Yönetmen */}
+                {apiData?.director && (
+                  <div className="mt-3">
+                    <h4 className="text-xs font-medium text-purple-700 mb-1">Yönetmen</h4>
+                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                      {apiData.director}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}

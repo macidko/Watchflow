@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import './Navbar.css';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,114 +25,86 @@ const Navbar = () => {
     }
   };
 
+  const navItems = [
+    { path: '/', label: 'Ana Sayfa', icon: '🏠' },
+    { path: '/film', label: 'Filmler', icon: '🎬' },
+    { path: '/dizi', label: 'Diziler', icon: '📺' },
+    { path: '/anime', label: 'Anime', icon: '🎌' },
+    { path: '/ayarlar', label: 'Ayarlar', icon: '⚙️' }
+  ];
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-      isScrolled ? 'shadow-xl' : 'shadow-lg'
+    <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
+      isScrolled ? 'backdrop-blur-xl bg-white/10 shadow-2xl' : 'backdrop-blur-lg bg-white/5 shadow-xl'
     }`}>
-      {/* Brand Header */}
-      <div className="navbar-top w-full h-14 flex items-center justify-between px-6 bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800/50 relative">
-        <div className="logo flex items-center gap-3 cursor-pointer p-1.5 rounded-md transition-all duration-300 hover:-translate-y-0.5 group">
-          <div className="relative overflow-hidden">
-            <svg 
-              width="30" 
-              height="30" 
-              viewBox="0 0 40 40" 
-              xmlns="http://www.w3.org/2000/svg"
-              className="transition-all duration-300 hover:scale-110 hover:-rotate-2 logo-svg"
-              style={{
-                filter: 'drop-shadow(0 0 3px rgba(255, 69, 0, 0.2))',
-                animation: 'logoFloat 3s ease-in-out infinite'
-              }}
-            >
-              {/* Top shape: Bounce animation */}
-              <path 
-                fill="#ff4500"
-                d="M20 5 L5 20 L10 25 L20 15 L30 25 L35 20 L20 5"
-              >
-                <animateTransform 
-                  attributeName="transform" 
-                  type="translate"
-                  values="0,0; 0,4; 0,0" 
-                  dur="1.5s" 
-                  repeatCount="indefinite"
-                />
-              </path>
-            
-              {/* Bottom shape: Delayed bounce animation */}
-              <path 
-                fill="#ff4500"
-                d="M20 20 L10 30 L15 35 L20 30 L25 35 L30 30 L20 20"
-              >
-                <animateTransform 
-                  attributeName="transform" 
-                  type="translate"
-                  values="0,0; 0,4; 0,0" 
-                  dur="1.5s" 
-                  begin="0.5s" 
-                  repeatCount="indefinite"
-                />
-              </path>
-            </svg>
+      {/* Header */}
+      <div className="w-full h-16 flex items-center justify-between px-8 border-b border-white/10 relative">
+        {/* Logo */}
+        <div className="flex items-center gap-4 cursor-pointer group">
+          <div className="relative">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h4a1 1 0 011 1v18a1 1 0 01-1 1H3a1 1 0 01-1-1V1a1 1 0 011-1h4a1 1 0 011 1v3m0 0h8M7 4H3" />
+              </svg>
+            </div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
           </div>
-          <span className="logo-text text-lg font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent tracking-wide transition-all duration-300 group-hover:from-white group-hover:via-orange-400 group-hover:to-orange-500">
-            Watchflow
-          </span>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              WatchFlow
+            </h1>
+            <p className="text-xs text-gray-400 -mt-1">Media Tracker</p>
+          </div>
         </div>
-        
+
         {/* Window Controls */}
-        <div className="window-controls flex gap-2">
+        <div className="flex gap-2">
           <button 
             onClick={handleMinimize}
-            className="window-control-btn minimize-btn flex items-center justify-center w-9 h-9 text-gray-400 hover:text-white hover:bg-white/15 rounded-sm transition-all duration-200 text-xl"
+            className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
           >
-            -
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+            </svg>
           </button>
           <button 
             onClick={handleClose}
-            className="window-control-btn close-btn flex items-center justify-center w-9 h-9 text-gray-400 hover:text-white hover:bg-red-600 rounded-sm transition-all duration-200 text-xl"
+            className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-white hover:bg-red-500/20 rounded-lg transition-all duration-200 group"
           >
-            ×
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
       </div>
-      
-      {/* Navigation Bar */}
-      <div className="navbar-bottom w-full h-12 flex items-center justify-center gap-8 bg-zinc-800/95 backdrop-blur-xl border-b border-zinc-700/50 shadow-lg">
-        <NavTab to="/" label="Ana Sayfa" />
-        <NavTab to="/film" label="Filmler" />
-        <NavTab to="/dizi" label="Diziler" />
-        <NavTab to="/anime" label="Anime" />
-        <NavTab to="/ayarlar" label="Ayarlar" />
+
+      {/* Navigation */}
+      <div className="w-full h-14 flex items-center justify-center gap-2 px-8 border-b border-white/5">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`relative px-6 py-2 rounded-xl font-medium text-sm transition-all duration-300 group ${
+                isActive 
+                  ? 'text-white bg-gradient-to-r from-orange-500/20 to-red-600/20 border border-orange-500/30' 
+                  : 'text-gray-300 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span className="text-lg">{item.icon}</span>
+                {item.label}
+              </span>
+              {isActive && (
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-xl blur-sm"></div>
+              )}
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
 };
-
-function NavTab({ to, label }) {
-  const location = useLocation();
-  const isActive = location.pathname === to;
-  
-  return (
-    <Link
-      to={to}
-      className={`nav-tab relative px-5 py-1.5 text-sm font-medium transition-all duration-200 group flex items-center h-full ${
-        isActive
-          ? 'text-orange-400 font-semibold bg-orange-400/8 rounded-sm'
-          : 'text-gray-300 hover:text-white'
-      }`}
-    >
-      {label}
-      {/* Active underline */}
-      <div className={`absolute bottom-0 left-0 right-0 h-0.5 bg-orange-400 transition-all duration-300 ${
-        isActive 
-          ? 'opacity-100 scale-x-100 h-0.5 shadow-lg shadow-orange-400/50' 
-          : 'opacity-0 scale-x-0 group-hover:opacity-60 group-hover:scale-x-75'
-      }`} />
-      
-      {/* Click effect */}
-      <div className="absolute inset-0 rounded-sm opacity-0 transition-opacity duration-200 group-active:opacity-20 bg-white" />
-    </Link>
-  );
-}
 
 export default Navbar;
