@@ -317,6 +317,22 @@ const useContentStore = create()(
         });
       }),
 
+      toggleStatusVisibility: (pageId, statusId) => set((state) => {
+        if (state.statuses[pageId] && state.statuses[pageId][statusId]) {
+          state.statuses[pageId][statusId].visible = !state.statuses[pageId][statusId].visible;
+        }
+      }),
+
+      reorderStatuses: (pageId, statusIds) => set((state) => {
+        if (state.statuses[pageId]) {
+          statusIds.forEach((statusId, index) => {
+            if (state.statuses[pageId][statusId]) {
+              state.statuses[pageId][statusId].order = index;
+            }
+          });
+        }
+      }),
+
       // Content Actions
       getContentsByPageAndStatus: (pageId, statusId) => {
         const { contents } = get();

@@ -40,6 +40,47 @@ const SearchButton = () => {
   const [toastMessage, setToastMessage] = useState('');
   
   const inputRef = useRef(null);
+  const modalRef = useRef(null);
+
+  // Focus trap ve ESC ile kapama (hook sadece fonksiyonun başında ve koşulsuz)
+  useEffect(() => {
+    if (!showModal) return;
+    const focusableSelectors = [
+      'button', 'a[href]', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
+    ];
+    const node = modalRef.current;
+    if (!node) return;
+    // İlk odaklanabilir elemana odaklan
+    const focusables = node.querySelectorAll(focusableSelectors.join(','));
+    if (focusables.length) focusables[0].focus();
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowModal(false);
+      }
+      if (e.key === 'Tab') {
+        // Focus trap
+        const focusable = Array.from(node.querySelectorAll(focusableSelectors.join(',')));
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    node.addEventListener('keydown', handleKeyDown);
+    return () => node.removeEventListener('keydown', handleKeyDown);
+  }, [showModal]);
 
   // Initialize store on component mount
   useEffect(() => {
@@ -431,12 +472,6 @@ const SearchButton = () => {
     }
   }, [showDropdownFor]);
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      setShowModal(false);
-    }
-  };
-
   return (
     <>
       <style>{`
@@ -454,44 +489,40 @@ const SearchButton = () => {
           background-color: #9ca3af;
         }
       `}</style>
-      {/* Professional Search Trigger */}
+      {/* Minimal Dark Search Trigger */}
       <button
         onClick={() => setShowModal(true)}
-        className="fixed bottom-6 right-6 z-50 group"
-        title="Search content"
+        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 px-5 sm:px-6 py-2.5 sm:py-3 text-black rounded-xl font-semibold transition-all duration-300 ease-out shadow-xl border flex items-center gap-2 hover:scale-105 group focus-visible:outline-none focus-visible:ring-2"
+        style={{ background: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 30%, transparent)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent) 15%, transparent)' }}
+        title="Arama yap"
       >
-        <div className="relative">
-          <div className="w-14 h-14 bg-gradient-to-br from-orange-500/90 to-red-500/90 backdrop-blur-xl border border-white/30 rounded-2xl shadow-2xl hover:shadow-orange-500/25 hover:scale-105 transition-all duration-300 flex items-center justify-center">
-            <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <div className="absolute -inset-2 bg-gradient-to-r from-orange-500/30 to-red-500/30 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-          <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </div>
+  <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Ara" focusable="false">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <span>Ara</span>
       </button>
 
       {/* Professional Search Modal */}
       {showModal && (
         <div 
-          className="fixed inset-0 z-50 flex items-start justify-center p-20"
-          onKeyDown={handleKeyDown}
+          className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-20"
+          tabIndex={-1}
         >
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowModal(false)}
           />
-          
           {/* Modal */}
-          <div className="relative w-full max-w-xl max-h-[85vh] bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/20 overflow-hidden flex flex-col">
+          <div ref={modalRef} className="relative w-full max-w-xl max-h-[85vh] bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/20 overflow-hidden flex flex-col" tabIndex={0}>
+
             {/* Search Header */}
-            <div className="relative p-4 pb-3 flex-shrink-0">
+            <div className="relative p-4 sm:p-5 pb-3 flex-shrink-0">
               <div className="flex items-center gap-3">
                 {/* Horizontal Toggle Switch */}
                 <button
                   onClick={() => setIsBulkMode(!isBulkMode)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 ${
                     isBulkMode ? 'bg-blue-500' : 'bg-orange-500'
                   }`}
                 >
@@ -504,7 +535,7 @@ const SearchButton = () => {
                 
                 <div className="relative flex-1">
                   <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Arama" focusable="false">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
@@ -516,7 +547,7 @@ const SearchButton = () => {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       rows={3}
-                      className="w-full pl-10 pr-3 py-2.5 bg-gray-50/80 border border-gray-200/50 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent resize-none font-medium text-sm transition-all"
+                      className="w-full pl-10 pr-3 py-2.5 bg-gray-50/80 border border-gray-200/50 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent resize-none font-normal text-sm transition-all"
                     />
                   ) : (
                     <input
@@ -525,16 +556,16 @@ const SearchButton = () => {
                       placeholder="Search movies, TV shows, anime..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2.5 bg-gray-50/80 border border-gray-200/50 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-transparent font-medium text-sm transition-all"
+                      className="w-full pl-10 pr-3 py-2.5 bg-gray-50/80 border border-gray-200/50 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-transparent font-normal text-sm transition-all"
                     />
                   )}
                   
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/70"
                     >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Temizle" focusable="false">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
@@ -543,16 +574,16 @@ const SearchButton = () => {
                 
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/70"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Kapat" focusable="false">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
               
               {/* Category Pills */}
-              <div className="flex gap-1.5 mt-3">
+              <div className="flex gap-1.5 mt-2 sm:mt-3">
                 {[
                   { key: 'all', label: 'All', icon: '⚡' },
                   { key: 'movies', label: 'Movies', icon: '🎬' },
@@ -562,7 +593,7 @@ const SearchButton = () => {
                   <button
                     key={key}
                     onClick={() => setActiveTab(key)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/70 ${
                       activeTab === key
                         ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg'
                         : 'bg-gray-100/80 text-gray-700 hover:bg-gray-200/80 hover:shadow-sm'
@@ -583,7 +614,7 @@ const SearchButton = () => {
                   ? 'calc(85vh - 120px)' 
                   : 'auto',
                 minHeight: hasSearchQuery && filteredResults.length === 0 && !isLoading && !searchError 
-                  ? '200px' 
+                  ? '180px' 
                   : 'auto',
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#d1d5db transparent'
@@ -608,7 +639,7 @@ const SearchButton = () => {
                       <p className="text-gray-500 text-xs mb-3">{searchError}</p>
                       <button 
                         onClick={() => performSearch(searchQuery, activeTab)}
-                        className="px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-xs font-medium"
+                        className="px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/70"
                       >
                         Try Again
                       </button>
@@ -627,7 +658,7 @@ const SearchButton = () => {
                             )}
                           </p>
                           {isBulkMode && filteredResults.length > 0 && (
-                            <button className="text-xs px-2 py-1 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors font-medium">
+                            <button className="text-xs px-2 py-1 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/70">
                               Add All
                             </button>
                           )}
@@ -729,7 +760,7 @@ const SearchButton = () => {
                               <div className="flex flex-col gap-1">
                                 <div className="relative">
                                   <button 
-                                    className="opacity-0 group-hover:opacity-100 p-1.5 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
+                                    className="opacity-0 group-hover:opacity-100 p-1.5 text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/70"
                                     onClick={(e) => handleShowDropdown(item, e)}
                                     title="Add to list"
                                   >
@@ -742,8 +773,8 @@ const SearchButton = () => {
                                   {showDropdownFor === item.id && (
                                     <div className="absolute top-full right-0 mt-1 w-64 bg-white shadow-2xl rounded-lg border border-gray-200 z-50 overflow-hidden">
                                       <div className="p-2.5 bg-gradient-to-r from-orange-50 to-red-50 border-b border-gray-100">
-                                        <h4 className="font-medium text-gray-900 text-xs">Add to List</h4>
-                                        <p className="text-xs text-gray-600 mt-0.5 truncate">Choose a status for "{item.title}"</p>
+                                        <h4 className="font-semibold text-gray-900 text-xs">Listeye Ekle</h4>
+                                        <p className="text-xs text-gray-500 mt-0.5 truncate">"{item.title}" için bir durum seçin</p>
                                       </div>
                                       
                                       <div className="max-h-48 overflow-y-auto custom-scrollbar" style={{
@@ -755,7 +786,7 @@ const SearchButton = () => {
                                             {dropdownStatuses.map((status) => (
                                               <button
                                                 key={`${status.pageId}-${status.id}`}
-                                                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                                                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/70"
                                                 onClick={() => addDirectlyToStatus(item, status)}
                                               >
                                                 <div className="flex items-center justify-between">
@@ -791,12 +822,12 @@ const SearchButton = () => {
                                         ) : (
                                           <div className="p-6 text-center">
                                             <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                                              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Uyarı" focusable="false">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                               </svg>
                                             </div>
-                                            <p className="text-sm text-gray-600 font-medium">No compatible lists</p>
-                                            <p className="text-xs text-gray-500 mt-1">Create a list for this content type first</p>
+                                            <p className="text-sm text-gray-500 font-normal">Uygun liste yok</p>
+                                            <p className="text-xs text-gray-400 mt-1">Bu içerik türü için önce bir liste oluşturun</p>
                                           </div>
                                         )}
                                       </div>
@@ -806,7 +837,7 @@ const SearchButton = () => {
                                 
                                 {isBulkMode && item.hasAlternatives && (
                                   <button 
-                                    className="opacity-0 group-hover:opacity-100 p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                    className="opacity-0 group-hover:opacity-100 p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70"
                                     onClick={() => showAlternativesModal(item.originalQuery)}
                                     title={`Show ${item.alternativeCount} more results`}
                                   >
@@ -828,8 +859,8 @@ const SearchButton = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                       </div>
-                      <h3 className="text-gray-900 font-medium mb-1 text-sm">No results found</h3>
-                      <p className="text-gray-500 text-xs">Try different keywords or check your spelling</p>
+                      <h3 className="text-gray-900 font-normal mb-1 text-sm">Sonuç bulunamadı</h3>
+                      <p className="text-gray-500 text-xs">Farklı anahtar kelimeler deneyin veya yazımınızı kontrol edin</p>
                     </div>
                   )}
                 </>
@@ -840,8 +871,8 @@ const SearchButton = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-gray-900 font-medium mb-1 text-sm">Start searching</h3>
-                  <p className="text-gray-500 text-xs mb-4">Find your favorite movies, TV shows, and anime</p>
+                  <h3 className="text-gray-900 font-normal mb-1 text-sm">Aramaya başlayın</h3>
+                  <p className="text-gray-500 text-xs mb-4">Favori film, dizi ve animelerinizi bulun</p>
                   
                   {/* Quick suggestions */}
                   <div className="flex flex-wrap justify-center gap-1.5">
@@ -855,7 +886,7 @@ const SearchButton = () => {
                       <button
                         key={term}
                         onClick={() => setSearchQuery(term)}
-                        className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full hover:bg-gray-200 transition-colors font-medium"
+                        className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full hover:bg-gray-200 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/70"
                         title={`Search for ${type}: ${term}`}
                       >
                         {term}
@@ -884,18 +915,19 @@ const SearchButton = () => {
             <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    Alternative Results
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Alternatif Sonuçlar
                   </h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    All results for: <span className="font-medium text-blue-600">"{selectedAlternatives.query}"</span>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Tüm sonuçlar: <span className="font-normal text-blue-600">"{selectedAlternatives.query}"</span>
                   </p>
                 </div>
                 <button
                   onClick={() => setShowAlternatives(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/70"
+                  aria-label="Kapat"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Kapat" focusable="false">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -938,10 +970,10 @@ const SearchButton = () => {
                         <div className="flex-1 min-w-0">
                           {/* Confidence and Rank */}
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium">
+                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-normal">
                               #{index + 1}
                             </span>
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            <span className={`text-xs px-2 py-1 rounded-full font-normal ${
                               item.confidence > 0.8 ? 'bg-green-100 text-green-700' :
                               item.confidence > 0.6 ? 'bg-yellow-100 text-yellow-700' :
                               'bg-orange-100 text-orange-700'
@@ -949,7 +981,7 @@ const SearchButton = () => {
                               {Math.round(item.confidence * 100)}% match
                             </span>
                             {index === 0 && (
-                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-normal">
                                 Best Match
                               </span>
                             )}
@@ -958,7 +990,7 @@ const SearchButton = () => {
                           <h3 className="font-semibold text-gray-900 text-base mb-1 group-hover:text-blue-600 transition-colors">
                             {item.title}
                             {item.originalTitle && item.originalTitle !== item.title && (
-                              <span className="ml-2 text-sm text-gray-500 font-normal">
+                              <span className="ml-2 text-sm text-gray-400 font-normal">
                                 ({item.originalTitle})
                               </span>
                             )}
@@ -976,7 +1008,7 @@ const SearchButton = () => {
                                 <svg className="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
                                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
-                                <span className="font-medium">{typeof item.score === 'number' ? item.score.toFixed(1) : item.score}</span>
+                                <span className="font-normal">{typeof item.score === 'number' ? item.score.toFixed(1) : item.score}</span>
                               </div>
                             )}
                             {item.provider && (
@@ -987,7 +1019,7 @@ const SearchButton = () => {
                           </div>
 
                           {item.overview && (
-                            <p className="text-sm text-gray-600 overflow-hidden" style={{
+                            <p className="text-sm text-gray-500 overflow-hidden" style={{
                               display: '-webkit-box',
                               WebkitLineClamp: 3,
                               WebkitBoxOrient: 'vertical'
@@ -999,11 +1031,11 @@ const SearchButton = () => {
                         
                         <div className="relative">
                           <button 
-                            className="opacity-0 group-hover:opacity-100 p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                            className="opacity-0 group-hover:opacity-100 p-2 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70"
                             onClick={(e) => handleShowDropdown(item, e)}
                             title="Add to list"
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Listeye ekle" focusable="false">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
                           </button>
@@ -1012,8 +1044,8 @@ const SearchButton = () => {
                           {showDropdownFor === item.id && (
                             <div className="absolute top-full right-0 mt-2 w-72 bg-white shadow-2xl rounded-xl border border-gray-200 z-50 overflow-hidden">
                               <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
-                                <h4 className="font-medium text-gray-900 text-sm">Add to List</h4>
-                                <p className="text-xs text-gray-600 mt-0.5">Choose a status for "{item.title}"</p>
+                                        <h4 className="font-semibold text-gray-900 text-sm">Listeye Ekle</h4>
+                                        <p className="text-xs text-gray-500 mt-0.5">"{item.title}" için bir durum seçin</p>
                               </div>
                               
                               <div className="max-h-64 overflow-y-auto custom-scrollbar" style={{
@@ -1025,7 +1057,7 @@ const SearchButton = () => {
                                     {dropdownStatuses.map((status) => (
                                       <button
                                         key={`${status.pageId}-${status.id}`}
-                                        className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                                        className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70"
                                         onClick={() => addDirectlyToStatus(item, status)}
                                       >
                                         <div className="flex items-center justify-between">
@@ -1061,12 +1093,12 @@ const SearchButton = () => {
                                 ) : (
                                   <div className="p-6 text-center">
                                     <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Uyarı" focusable="false">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                       </svg>
                                     </div>
-                                    <p className="text-sm text-gray-600 font-medium">No compatible lists</p>
-                                    <p className="text-xs text-gray-500 mt-1">Create a list for this content type first</p>
+                                    <p className="text-sm text-gray-500 font-normal">Uygun liste yok</p>
+                                    <p className="text-xs text-gray-400 mt-1">Bu içerik türü için önce bir liste oluşturun</p>
                                   </div>
                                 )}
                               </div>
@@ -1084,8 +1116,8 @@ const SearchButton = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-gray-900 font-medium mb-2">No alternatives found</h3>
-                  <p className="text-gray-500 text-sm">No other results available for this query</p>
+                  <h3 className="text-gray-900 font-normal mb-2">Alternatif bulunamadı</h3>
+                  <p className="text-gray-500 text-sm">Bu sorgu için başka sonuç yok</p>
                 </div>
               )}
             </div>
@@ -1093,14 +1125,15 @@ const SearchButton = () => {
             {/* Footer */}
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                  {selectedAlternatives.results.length} total result{selectedAlternatives.results.length !== 1 ? 's' : ''} found
+                <p className="text-sm text-gray-500">
+                  {selectedAlternatives.results.length} toplam sonuç bulundu
                 </p>
                 <button
                   onClick={() => setShowAlternatives(false)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70"
+                  aria-label="Kapat"
                 >
-                  Close
+                  Kapat
                 </button>
               </div>
             </div>
@@ -1125,9 +1158,9 @@ const SearchButton = () => {
               </div>
               <button
                 onClick={() => setShowToast(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-md transition-colors flex-shrink-0"
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-md transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/70"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Kapat" focusable="false">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>

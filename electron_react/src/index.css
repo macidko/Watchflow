@@ -3,13 +3,14 @@
 /* CSS Custom Properties from Electron App */
 :root {
   /* Ana renkler */
-  --primary-bg: #121212;
+  --primary-bg: #0b0b0b;
   --secondary-bg: #1e1e1e;
   --primary-text: #ffffff;
   --secondary-text: #b3b3b3;
-  --accent-color: #ff4500;
-  --accent-color-rgb: 255, 69, 0;
-  --hover-color: #ff6a33;
+  --accent: #A7F129; /* unified accent (lime-500 uyumlu, marka rengi) */
+  --accent-lime: var(--accent); /* legacy destek */
+  --accent-lime-rgb: 167, 241, 41;
+  --hover-color: #d6f58a;
   --border-color: #2a2a2a;
   
   /* UI Bileşenleri */
@@ -24,13 +25,14 @@
   --success-color: #4caf50;
   
   /* Gölgeler */
-  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
+  --popup-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+  --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.36);
+  --card-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.45);
   
   /* Animasyonlar */
   --popup-animation-time: 0.2s;
-  --transition-standard: all 0.2s ease;
+  --transition-standard: all .22s cubic-bezier(.2,.8,.2,1);
   
   /* Yuvarlak köşeler */
   --border-radius-sm: 4px;
@@ -86,4 +88,61 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-color-hover);
+}
+
+/* Custom animations for professional touches */
+@keyframes shimmer {
+  0% { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(200%) skewX(-12deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes subtle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-subtle-bounce {
+  animation: subtle-bounce 1s ease-in-out infinite;
+}
+
+/* Professional hover effects */
+.card-hover-lift {
+  transition: var(--transition-standard);
+  will-change: transform, box-shadow;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.button-magnetic {
+  transition: var(--transition-standard);
+}
+
+.button-magnetic:hover {
+  transform: translateY(-2px) scale(1.03);
+  filter: brightness(1.06);
 }

@@ -1,8 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import useContentStore from '../config/initialData';
 
+
 const DetailModal = ({ item, onClose }) => {
+  const modalRef = useRef(null);
   const {
     getContentById,
     markEpisodeWatched,
@@ -17,6 +19,55 @@ const DetailModal = ({ item, onClose }) => {
   // Store'dan güncel content'i al
   const content = getContentById(item?.id);
   let { apiData = {}, seasons = {} } = content || {};
+
+  // Tüm useEffect hook'ları component fonksiyonunun başında, return'dan önce çağrılır
+  useEffect(() => {
+    const focusableSelectors = [
+      'button', 'a[href]', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
+    ];
+    const node = modalRef.current;
+    if (!node) return;
+    // İlk odaklanabilir elemana odaklan
+    const focusables = node.querySelectorAll(focusableSelectors.join(','));
+    if (focusables.length) focusables[0].focus();
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+      if (e.key === 'Tab') {
+        // Focus trap
+        const focusable = Array.from(node.querySelectorAll(focusableSelectors.join(',')));
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    node.addEventListener('keydown', handleKeyDown);
+    return () => node.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (item && (!seasons || Object.keys(seasons).length === 0)) {
+      if (content?.pageId === 'dizi' || content?.pageId === 'anime') {
+        let fetchId = item.id;
+        fetchAndCacheSeasonData(fetchId);
+      }
+    }
+    // Hook her zaman çağrılır, koşul içeriye taşındı
+  }, [item, content?.pageId, fetchAndCacheSeasonData, seasons]);
 
   // Debug: Check what data we have
   console.log('DetailModal - Current content data:', {
@@ -58,11 +109,14 @@ if (
         fetchAndCacheSeasonData(fetchId);
       }
     }
-  }, [item, content?.pageId, fetchAndCacheSeasonData]);
+    // Hook her zaman çağrılır, koşul içeriye taşındı
+  }, [item, content?.pageId, fetchAndCacheSeasonData, seasons]);
 
   // Kapsamlı, modern UI: yeni renkler, kartlar, badge'ler, animasyonlu butonlar
   const [descExpanded, setDescExpanded] = React.useState(false);
 
+
+  // Tüm useEffect hook'ları return'dan önce olmalı
   if (!item) return null;
 
   // Bölüm işaretleme
@@ -101,16 +155,54 @@ if (
   const totalCount = Object.values(seasons).reduce((acc, s) => acc + (s.episodeCount || 0), 0);
   const progress = totalCount > 0 ? Math.round((watchedCount / totalCount) * 100) : 0;
 
+  // Focus trap ve ESC ile kapama
+  useEffect(() => {
+    const focusableSelectors = [
+      'button', 'a[href]', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
+    ];
+    const node = modalRef.current;
+    if (!node) return;
+    // İlk odaklanabilir elemana odaklan
+    const focusables = node.querySelectorAll(focusableSelectors.join(','));
+    if (focusables.length) focusables[0].focus();
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+      if (e.key === 'Tab') {
+        // Focus trap
+        const focusable = Array.from(node.querySelectorAll(focusableSelectors.join(',')));
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    node.addEventListener('keydown', handleKeyDown);
+    return () => node.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-20">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-20" tabIndex={-1}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm" onClick={onClose} />
-      
       {/* Modal - Kompakt tasarım */}
-      <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col" style={{maxHeight: 'calc(100vh - 10rem)'}}>
+      <div ref={modalRef} className="relative w-full max-w-md bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col" style={{maxHeight: 'calc(100vh - 5rem)'}} tabIndex={0}>
         {/* Header */}
-        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-gray-200 flex-shrink-0">
-          <div className="flex items-start gap-3">
+        <div className="p-4 sm:p-5 border-b border-gray-200 flex-shrink-0" style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--accent) 2%, white), color-mix(in srgb, var(--accent) 1%, #eef2ff))' }}>
+          <div className="flex items-start gap-2 sm:gap-3">
             {/* Poster - Küçük */}
             <div className="flex-shrink-0">
               {apiData?.poster ? (
@@ -125,14 +217,16 @@ if (
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
-                <h2 className="font-semibold text-gray-900 text-base mb-1 truncate pr-2">
+                <h2 className="font-medium text-gray-900 text-base mb-1 truncate pr-2">
                   {apiData?.title || 'Başlık Yok'}
                 </h2>
                 <button 
                   onClick={onClose} 
-                  className="p-1 text-gray-400 hover:text-gray-600 rounded-md transition-colors"
+                  className="p-1 rounded-md transition-colors"
+                  style={{ color: '#9ca3af' }}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
+                    <title>Kapat</title>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -141,12 +235,12 @@ if (
               {/* Meta badges - Kompakt */}
               <div className="flex flex-wrap gap-1 mb-2">
                 {apiData?.rating && (
-                  <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                  <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ background: 'color-mix(in srgb, var(--accent) 10%, #fef9c3)', color: 'color-mix(in srgb, var(--accent) 60%, #facc15)' }}>
                     ⭐ {apiData.rating}
                   </span>
                 )}
                 {apiData?.releaseDate && (
-                  <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                  <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ background: '#f3f4f6', color: '#374151' }}>
                     {apiData.releaseDate}
                   </span>
                 )}
@@ -200,7 +294,7 @@ if (
           {content?.pageId === 'film' && (
             <div className="mb-4 space-y-3">
               {/* Film Detayları Kartı */}
-              <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-100">
+              <div className="rounded-lg p-4 border" style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--accent) 2%, white), color-mix(in srgb, var(--accent) 1%, #eef2ff))', borderColor: 'color-mix(in srgb, var(--accent) 10%, #ede9fe)' }}>
                 <h3 className="text-sm font-semibold text-purple-900 mb-3 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h4a1 1 0 011 1v18a1 1 0 01-1 1H3a1 1 0 01-1-1V1a1 1 0 011-1h4a1 1 0 011 1v3m0 0h8M7 4H3" />
@@ -311,11 +405,11 @@ if (
                 return (
                   <div key={season.seasonNumber} className="bg-white/95 backdrop-blur-sm rounded-xl border border-orange-100 shadow-lg overflow-hidden">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 border-b border-orange-100">
+                    <div className="p-4 border-b" style={{ background: 'linear-gradient(90deg, color-mix(in srgb, var(--accent) 2%, #fff7ed), color-mix(in srgb, var(--accent) 1%, #fef2f2))', borderColor: 'color-mix(in srgb, var(--accent) 10%, #fed7aa)' }}>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
-                            <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-sm">
+                            <span className="text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-sm" style={{ background: 'var(--accent)' }}>
                               {content?.pageId === 'anime' ? 'Bölümler' : `S${season.seasonNumber}`}
                             </span>
                             <span className="text-sm font-semibold text-gray-900">
@@ -365,8 +459,8 @@ if (
                           <div 
                             className={`h-2 rounded-full transition-all duration-500 ${
                               seasonProgress === 100 
-                                ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
-                                : 'bg-gradient-to-r from-orange-500 to-red-500'
+                                ? 'bg-[color:var(--accent)]' 
+                                : 'bg-[color:var(--accent)]'
                             }`}
                             style={{ width: `${seasonProgress}%` }}
                           />
@@ -384,7 +478,7 @@ if (
                               onClick={() => handleEpisodeToggle(season.seasonNumber, ep)}
                               className={`group relative w-8 h-8 rounded-lg text-xs font-bold flex items-center justify-center transition-all duration-200 ${
                                 isWatched
-                                  ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg hover:shadow-xl hover:scale-110 border-2 border-green-400' 
+                                  ? 'bg-[color:var(--accent)] text-white shadow-lg hover:shadow-xl hover:scale-110 border-2 border-[color:var(--accent)]' 
                                   : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700 hover:scale-110 shadow-sm hover:shadow-md'
                               }`}
                               title={`Bölüm ${ep}${isWatched ? ' - İzlendi' : ' - İzlenmedi'}`}
@@ -409,7 +503,7 @@ if (
                         <span>Bölümlere tıklayarak işaretleyin</span>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full"></div>
+                            <div className="w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }}></div>
                             <span>İzlendi</span>
                           </div>
                           <div className="flex items-center gap-1">
