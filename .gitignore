@@ -80,6 +80,8 @@ electron_app/*.cert
 /installers
 
 # Electron React App
+electron_react/plan.txt
+
 ## Bağımlılıklar
 electron_react/node_modules/
 electron_react/npm-debug.log*
