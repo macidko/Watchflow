@@ -2,6 +2,8 @@ import './App.css';
 import Navbar from './components/Navbar';
 import SearchButton from './components/SearchButton';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { ToastProvider } from './contexts/ToastContext';
+import { DragProvider } from './contexts/DragContext';
 import Home from './pages/Home';
 import Film from './pages/Film';
 import Dizi from './pages/Dizi';
@@ -31,9 +33,13 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <ToastProvider>
+      <DragProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </DragProvider>
+    </ToastProvider>
   );
 }
 

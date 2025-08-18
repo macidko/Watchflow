@@ -280,23 +280,44 @@ const useContentStore = create()(
           .sort((a, b) => a.order - b.order);
       },
 
-      addStatus: (pageId, statusData) => set((state) => {
-        if (!state.statuses[pageId]) {
-          state.statuses[pageId] = {};
-        }
+      // SliderManager için tüm status'leri döndür (gizli olanlar dahil)
+      getAllStatusesByPage: (pageId) => {
+        const { statuses } = get();
+        if (!statuses[pageId]) return [];
         
-        const id = statusData.id || `status_${Date.now()}`;
-        state.statuses[pageId][id] = {
-          id,
-          pageId,
-          title: statusData.title,
-          order: statusData.order || Object.keys(state.statuses[pageId]).length,
-          visible: true,
-          type: statusData.type || "custom",
-          createdAt: new Date().toISOString(),
-          ...statusData
-        };
-      }),
+        return Object.values(statuses[pageId])
+          .sort((a, b) => a.order - b.order);
+      },
+
+      addStatus: (pageId, statusData) => {
+        let success = false;
+        set((state) => {
+          if (!state.statuses[pageId]) {
+            state.statuses[pageId] = {};
+          }
+          
+          // Aynı isimde status var mı kontrol et
+          const existingStatus = Object.values(state.statuses[pageId]).find(
+            status => status.title.toLowerCase() === statusData.title.toLowerCase()
+          );
+          
+          if (!existingStatus) {
+            const id = statusData.id || `status_${Date.now()}`;
+            state.statuses[pageId][id] = {
+              id,
+              pageId,
+              title: statusData.title,
+              order: statusData.order || Object.keys(state.statuses[pageId]).length,
+              visible: true,
+              type: statusData.type || "custom",
+              createdAt: new Date().toISOString(),
+              ...statusData
+            };
+            success = true;
+          }
+        });
+        return success;
+      },
 
       updateStatus: (pageId, statusId, updates) => set((state) => {
         if (state.statuses[pageId] && state.statuses[pageId][statusId]) {
@@ -304,18 +325,39 @@ const useContentStore = create()(
         }
       }),
 
-      deleteStatus: (pageId, statusId) => set((state) => {
-        if (state.statuses[pageId]) {
-          delete state.statuses[pageId][statusId];
-        }
-        // İlgili status'taki tüm içerikleri sil
-        Object.keys(state.contents).forEach(contentId => {
-          if (state.contents[contentId].pageId === pageId && 
-              state.contents[contentId].statusId === statusId) {
-            delete state.contents[contentId];
+      deleteStatus: (pageId, statusId) => {
+        let canDelete = false;
+        set((state) => {
+          if (state.statuses[pageId] && state.statuses[pageId][statusId]) {
+            // Önce bu status'ta içerik var mı kontrol et
+            const hasContent = Object.values(state.contents).some(content => 
+              content.pageId === pageId && content.statusId === statusId
+            );
+            
+            if (!hasContent) {
+              delete state.statuses[pageId][statusId];
+              canDelete = true;
+            }
           }
         });
-      }),
+        return canDelete;
+      },
+
+      // Status'un boş olup olmadığını kontrol et
+      isStatusEmpty: (pageId, statusId) => {
+        const { contents } = get();
+        return !Object.values(contents).some(content => 
+          content.pageId === pageId && content.statusId === statusId
+        );
+      },
+
+      // Status'ta kaç içerik olduğunu döndür
+      getStatusContentCount: (pageId, statusId) => {
+        const { contents } = get();
+        return Object.values(contents).filter(content => 
+          content.pageId === pageId && content.statusId === statusId
+        ).length;
+      },
 
       toggleStatusVisibility: (pageId, statusId) => set((state) => {
         if (state.statuses[pageId] && state.statuses[pageId][statusId]) {
@@ -352,9 +394,16 @@ const useContentStore = create()(
       },
 
       addContent: (contentData) => set((state) => {
+        const apiData = contentData.apiData || {};
+        // Duplicate kontrolü: aynı tmdbId veya kitsuId ile içerik varsa ekleme
+        const isDuplicate = Object.values(state.contents).some(c => {
+          if (apiData.tmdbId && c.apiData?.tmdbId === apiData.tmdbId) return true;
+          if (apiData.kitsuId && c.apiData?.kitsuId === apiData.kitsuId) return true;
+          return false;
+        });
+        if (isDuplicate) return;
         const id = contentData.id || `content_${Date.now()}`;
         const now = new Date().toISOString();
-        let apiData = contentData.apiData || {};
 
         // Kitsu'dan gelen içerik için genre bilgisini çek
         if (apiData.kitsuId) {
@@ -874,34 +923,33 @@ const useContentStore = create()(
       }),
 
       // Move content between different statuses (for drag & drop)
-      moveContentBetweenStatuses: (contentItem, fromStatusId, toStatusId) => {
+      moveContentBetweenStatuses: (contentItem, fromStatusId, toStatusId, targetPageId = null) => {
         let moveSuccess = false;
-        
         set((state) => {
           // First, find the content by matching properties
           const content = Object.values(state.contents).find(c => {
             // Try to match by ID first
             if (contentItem.id && c.id === contentItem.id) return true;
-            
             // Fallback: match by title and other properties
             const itemTitle = contentItem.title || contentItem.apiData?.title;
             const contentTitle = c.apiData?.title || c.title;
-            
             return itemTitle === contentTitle && 
                    (contentItem.apiData?.tmdbId === c.apiData?.tmdbId ||
                     contentItem.apiData?.kitsuId === c.apiData?.kitsuId);
           });
-
           if (content) {
             console.log('Found content to move:', content);
             content.statusId = toStatusId;
+            // pageId'yi de güncelle - eğer targetPageId verilmişse onu kullan, yoksa mevcut pageId'yi koru
+            if (targetPageId) {
+              content.pageId = targetPageId;
+            }
             content.updatedAt = new Date().toISOString();
             moveSuccess = true;
           } else {
             console.log('Content not found for moving');
           }
         });
-        
         return moveSuccess;
       },
 

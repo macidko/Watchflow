@@ -3,14 +3,13 @@
 /* CSS Custom Properties from Electron App */
 :root {
   /* Ana renkler */
-  --primary-bg: #0b0b0b;
+  --primary-bg: #121212;
   --secondary-bg: #1e1e1e;
   --primary-text: #ffffff;
   --secondary-text: #b3b3b3;
-  --accent: #A7F129; /* unified accent (lime-500 uyumlu, marka rengi) */
-  --accent-lime: var(--accent); /* legacy destek */
-  --accent-lime-rgb: 167, 241, 41;
-  --hover-color: #d6f58a;
+  --accent-color: #ff4500;
+  --accent-color-rgb: 255, 69, 0;
+  --hover-color: #ff6a33;
   --border-color: #2a2a2a;
   
   /* UI Bileşenleri */
@@ -23,16 +22,17 @@
   --tag-bg: rgba(50, 50, 54, 0.8);
   --overlay-bg: rgba(0, 0, 0, 0.8);
   --success-color: #4caf50;
+  --danger-color: #ef4444;
+  --danger-color-rgb: 239, 68, 68;
   
   /* Gölgeler */
-  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
-  --popup-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
-  --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.36);
-  --card-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.45);
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   
   /* Animasyonlar */
   --popup-animation-time: 0.2s;
-  --transition-standard: all .22s cubic-bezier(.2,.8,.2,1);
+  --transition-standard: all 0.2s ease;
   
   /* Yuvarlak köşeler */
   --border-radius-sm: 4px;
@@ -90,6 +90,13 @@ body {
   background: var(--border-color-hover);
 }
 
+/* No-scroll sınıfı - sürükleme sırasında scrollu kilitler */
+html.no-scroll {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
 /* Custom animations for professional touches */
 @keyframes shimmer {
   0% { transform: translateX(-100%) skewX(-12deg); }
@@ -145,4 +152,143 @@ body {
 .button-magnetic:hover {
   transform: translateY(-2px) scale(1.03);
   filter: brightness(1.06);
+}
+
+/* Sliders grid layout and compact view during drag */
+.sliders {
+  transition: min-height 300ms cubic-bezier(.2,.9,.2,1), gap 220ms ease;
+  will-change: min-height, gap;
+}
+
+/* Normal/List mode - Default view, one slider per row */
+.sliders.normal {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* Grid mode - Multiple sliders per row */
+.sliders.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.sliders.grid > .slider-root {
+  box-sizing: border-box;
+  flex: 0 0 calc(50% - 10px);
+  max-width: calc(50% - 10px);
+  transition: transform 240ms ease, opacity 240ms ease;
+  transform-origin: top left;
+  will-change: transform, opacity;
+}
+
+/* Compact mode - During drag operation */
+.sliders.compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.sliders.compact > .slider-root {
+  box-sizing: border-box;
+  flex: 0 0 calc(50% - 10px);
+  max-width: calc(50% - 10px);
+  margin-bottom: 20px;
+  transform: scale(0.985);
+  opacity: 0.98;
+  transition: transform 260ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease;
+  will-change: transform, opacity;
+}
+
+.sliders.compact > .slider-root.is-source {
+  flex: 0 0 100%;
+  max-width: 100%;
+  order: -1;
+  transform: none;
+  opacity: 1;
+}
+
+/* Compact mode - enhanced visuals for shrunken sliders */
+.sliders.compact > .slider-root:not(.is-source) {
+  background: linear-gradient(135deg, var(--card-bg) 0%, color-mix(in srgb, var(--card-bg) 95%, var(--accent-color)) 100%);
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, var(--accent-color));
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+}
+
+.sliders.compact > .slider-root:not(.is-source):hover {
+  border-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 4px 16px color-mix(in srgb, var(--accent-color) 15%, transparent);
+  transform: scale(0.99) translateY(-2px);
+}
+
+.sliders.compact > .slider-root:not(.is-source) .slider-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-text);
+  opacity: 0.9;
+  margin-bottom: 6px;
+}
+
+.sliders.compact > .slider-root:not(.is-source) .slider-title::after {
+  height: 2px;
+  width: 24px;
+  background: color-mix(in srgb, var(--accent-color) 50%, transparent);
+}
+
+/* Compact slider header adjustments */
+.sliders.compact > .slider-root:not(.is-source) .flex:first-child {
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+/* Compact slider content area */
+.sliders.compact > .slider-root:not(.is-source) .slider-content {
+  padding: 8px 12px 12px;
+  gap: 8px;
+  min-height: 140px;
+}
+
+/* Badge/count styling in compact mode */
+.sliders.compact > .slider-root:not(.is-source) .flex:first-child > div:last-child {
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent-color) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 30%, transparent);
+}
+
+/* Make compact sliders visually smaller */
+.sliders.compact .slider-root .mb-10,
+.sliders.grid .slider-root .mb-10 {
+  margin-bottom: 8px; /* reduce spacing inside compact mode */
+}
+
+/* Ensure inner horizontal sliders don't force page scroll */
+.sliders.compact .slider-root .flex,
+.sliders.grid .slider-root .flex {
+  overflow-x: auto;
+}
+
+/* Slider hover animation */
+.slider-root {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.sliders.compact .slider-root:hover,
+.sliders.grid .slider-root:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow);
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 768px) {
+  .sliders.grid .slider-root {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
 }

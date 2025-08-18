@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import useContentStore from '../config/initialData';
+import { useToast } from '../contexts/ToastContext';
 
 // Custom hook for debouncing
 const useDebounce = (callback, delay) => {
@@ -28,6 +29,7 @@ const SliderManager = ({ page, onClose }) => {
   const [newSliderType, setNewSliderType] = useState('film');
   const addInputRef = useRef(null);
   const modalRef = useRef(null);
+  const { showToast } = useToast();
   // Focus trap ve ESC ile kapama
   useEffect(() => {
     const focusableSelectors = [
@@ -69,16 +71,18 @@ const SliderManager = ({ page, onClose }) => {
 
   // Zustand store'dan fonksiyonları al
   const { 
-    getStatusesByPage, 
+    getAllStatusesByPage, 
     addStatus,
     updateStatus,
     deleteStatus,
     toggleStatusVisibility,
-    reorderStatuses
+    reorderStatuses,
+    isStatusEmpty,
+    getStatusContentCount
   } = useContentStore();
 
-  // Slider verilerini Zustand'dan al
-  const sliders = getStatusesByPage(page) || [];
+  // Slider verilerini Zustand'dan al (gizli olanlar dahil)
+  const sliders = getAllStatusesByPage(page) || [];
 
   // Debounced title update
   const debouncedTitleUpdate = useDebounce((statusId, newTitle) => {
@@ -126,13 +130,22 @@ const SliderManager = ({ page, onClose }) => {
       if (addInputRef.current) addInputRef.current.focus();
       return;
     }
+    
     setAddError('');
-    addStatus(page, {
-      title: newSliderTitle,
+    const success = addStatus(page, {
+      title: newSliderTitle.trim(),
       type: 'custom'
     });
-    setNewSliderTitle('');
-    setShowAddForm(false);
+    
+    if (success) {
+      setNewSliderTitle('');
+      setShowAddForm(false);
+      showToast('Yeni slider başarıyla eklendi.', 'success');
+    } else {
+      setAddError('Bu isimde bir slider zaten var. Farklı bir isim seçin.');
+      showToast('Bu isimde bir slider zaten mevcut.', 'warning');
+      if (addInputRef.current) addInputRef.current.focus();
+    }
   };
 
   const handleToggleVisibility = (sliderId) => {
@@ -140,8 +153,25 @@ const SliderManager = ({ page, onClose }) => {
   };
 
   const handleDeleteSlider = (sliderId) => {
+    const contentCount = getStatusContentCount(page, sliderId);
+    
+    if (contentCount > 0) {
+      // Toast mesajı göster
+      showToast(
+        `Bu slider silinemez! İçinde ${contentCount} içerik var. Önce slider'ı boşaltın.`,
+        'warning',
+        4000
+      );
+      return;
+    }
+    
     if (window.confirm('Bu slider\'ı silmek istediğinizden emin misiniz?')) {
-      deleteStatus(page, sliderId);
+      const success = deleteStatus(page, sliderId);
+      if (success) {
+        showToast('Slider başarıyla silindi.', 'success');
+      } else {
+        showToast('Slider silinemedi. Lütfen tekrar deneyin.', 'error');
+      }
     }
   };
 
@@ -154,22 +184,23 @@ const SliderManager = ({ page, onClose }) => {
   const isAddValid = newSliderTitle.trim().length >= 3;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-2 sm:px-0" tabIndex={-1} onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm px-2 sm:px-0" tabIndex={-1} onClick={onClose} style={{ background: 'var(--overlay-bg)' }}>
       <div
         ref={modalRef}
-        className="relative w-full max-w-lg bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-700 p-6 sm:p-8 flex flex-col gap-5 sm:gap-6"
+  className="relative w-full max-w-lg rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col gap-5 sm:gap-6"
+  style={{ background: 'var(--primary-bg)', border: '1px solid var(--border-color)' }}
         tabIndex={0}
         onClick={e => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between mb-1 sm:mb-2 gap-2">
-          <h2 className="text-xl font-semibold text-white drop-shadow-lg">
+          <h2 className="text-xl font-semibold drop-shadow-lg" style={{ color: 'var(--primary-text)' }}>
             Listeleri Yönet
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-neutral-800 text-neutral-300 hover:text-white hover:bg-neutral-700 transition-all focus-visible:outline-none focus-visible:ring-2"
-            style={{ boxShadow: '0 0 0 2px var(--accent)' }}
+                className="p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2"
+                style={{ background: 'var(--secondary-bg)', color: 'var(--secondary-text)', boxShadow: '0 0 0 2px var(--accent-color)' }}
             title="Kapat"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,15 +214,15 @@ const SliderManager = ({ page, onClose }) => {
           {sliders.map((slider, idx) => (
             <div
               key={slider.id}
-              className={`flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 rounded-xl border bg-neutral-800/80 shadow-md transition-all duration-300 ${draggedItem === slider.id ? 'ring-2' : 'hover:shadow-lg hover:bg-neutral-700/90'}`}
-              style={draggedItem === slider.id ? { boxShadow: '0 0 0 2px var(--accent)' } : { borderColor: '#52525b' }}
+              className={`flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 rounded-xl transition-all duration-300 ${draggedItem === slider.id ? 'ring-2' : ''}`}
+              style={draggedItem === slider.id ? { boxShadow: '0 0 0 2px var(--accent-color)', background: 'var(--secondary-bg)', border: '1px solid var(--accent-color)' } : { background: 'var(--secondary-bg)', border: '1px solid var(--border-color)' }}
               draggable
               onDragStart={e => handleDragStart(e, slider.id)}
               onDragOver={handleDragOver}
               onDrop={e => handleDrop(e, idx)}
             >
               {/* Drag Icon */}
-              <span className="mr-3 cursor-grab text-neutral-500 hover:text-neutral-300 transition-all" title="Sürükle">
+              <span className="mr-3 cursor-grab transition-all" style={{ color: 'var(--secondary-text)' }} title="Sürükle">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <circle cx="6" cy="7" r="1.5" />
                   <circle cx="6" cy="12" r="1.5" />
@@ -206,17 +237,18 @@ const SliderManager = ({ page, onClose }) => {
                   type="text"
                   value={slider.title}
                   onChange={e => debouncedTitleUpdate(slider.id, e.target.value)}
-                  className="bg-transparent text-lg font-normal text-white border-none outline-none px-1.5 py-1 rounded-md focus:bg-gray-900/60 focus:ring-2 transition-all"
+                  className="text-lg font-normal border-none outline-none px-1.5 py-1 rounded-md transition-all"
+                    style={{ color: 'var(--primary-text)', background: 'transparent' }}
                 />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs px-2 py-1 bg-gray-700 text-gray-500 rounded-full">
+                <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--secondary-bg)', color: 'var(--secondary-text)' }}>
                   {slider.type}
                 </span>
                 <button
                   onClick={() => handleToggleVisibility(slider.id)}
                   className={`p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2`}
-                  style={slider.visible ? { background: 'color-mix(in srgb, var(--accent) 20%, transparent)', color: 'var(--accent)' } : { background: '#374151', color: '#6b7280' }}
+                  style={slider.visible ? { background: 'color-mix(in srgb, var(--success-color) 20%, transparent)', color: 'var(--success-color)' } : { background: 'var(--secondary-bg)', color: 'var(--secondary-text)' }}
                   title={slider.visible ? 'Gizle' : 'Göster'}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +262,7 @@ const SliderManager = ({ page, onClose }) => {
                 <button
                   onClick={() => handleDeleteSlider(slider.id)}
                   className="p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2"
-                  style={{ background: 'color-mix(in srgb, var(--accent) 20%, transparent)', color: 'var(--accent)' }}
+                  style={{ background: 'color-mix(in srgb, var(--danger-color) 20%, transparent)', color: 'var(--danger-color)' }}
                   title="Sil"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -241,7 +273,7 @@ const SliderManager = ({ page, onClose }) => {
             </div>
           ))}
           {sliders.length === 0 && (
-            <div className="text-center text-gray-400 py-8">
+            <div className="text-center py-8" style={{ color: 'var(--secondary-text)' }}>
               Bu sayfada henüz liste bulunmuyor.
             </div>
           )}
@@ -251,17 +283,17 @@ const SliderManager = ({ page, onClose }) => {
           <div className="flex justify-end mt-5">
             <button
               onClick={() => setShowAddForm(true)}
-              className="px-5 py-2 text-black font-medium rounded-xl shadow-lg transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2"
-              style={{ background: 'var(--accent)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent) 25%, transparent)' }}
+              className="px-5 py-2 font-medium rounded-xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2"
+              style={{ background: 'var(--accent-color)', color: 'var(--primary-text)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent)' }}
             >
               + Yeni Liste
             </button>
           </div>
           {showAddForm && (
-            <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div className="bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-700 p-8 w-full max-w-sm flex flex-col gap-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Yeni Liste Oluştur</h3>
-                <div className="flex flex-col gap-4">
+            <div className="fixed inset-0 z-60 flex items-center justify-center backdrop-blur-sm" style={{ background: 'var(--overlay-bg)' }}>
+              <div style={{ background: 'var(--primary-bg)', border: '1px solid var(--border-color)', borderRadius: '16px', boxShadow: 'var(--popup-shadow)', padding: '32px', width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>Yeni Liste Oluştur</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <input
                     ref={addInputRef}
                     type="text"
@@ -271,27 +303,27 @@ const SliderManager = ({ page, onClose }) => {
                       if (addError) setAddError('');
                     }}
                     placeholder="Liste adı... (en az 3 karakter)"
-                    className={`bg-neutral-800 text-white px-4 py-2 rounded-lg border ${addError ? 'border-red-500' : 'border-neutral-700'} focus:ring-2 focus:ring-neutral-400 outline-none`}
+                    style={{ background: 'var(--input-bg)', color: 'var(--primary-text)', padding: '12px 16px', borderRadius: '12px', border: addError ? `1px solid var(--danger-color)` : `1px solid var(--border-color)`, outline: 'none' }}
                     aria-label="Yeni liste adı"
                     aria-invalid={!!addError}
                   />
                   {addError && (
-                    <span className="text-red-500 text-xs mt-1">{addError}</span>
+                    <span style={{ color: 'var(--danger-color)', fontSize: 12, marginTop: 4 }}>{addError}</span>
                   )}
                   <select
                     value={newSliderType}
                     onChange={e => setNewSliderType(e.target.value)}
-                    className="bg-neutral-800 text-white px-4 py-2 rounded-lg border border-neutral-700 focus:ring-2 focus:ring-neutral-400 outline-none"
+                    style={{ background: 'var(--input-bg)', color: 'var(--primary-text)', padding: '12px 16px', borderRadius: '12px', border: `1px solid var(--border-color)`, outline: 'none' }}
                   >
                     <option value="film">Filmler</option>
                     <option value="dizi">Diziler</option>
                     <option value="anime">Anime</option>
                   </select>
                 </div>
-                <div className="flex gap-2 mt-2">
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                   <button
                     onClick={() => isAddValid && handleAddSlider()}
-                    className={`flex-1 px-4 py-2 ${isAddValid ? 'bg-lime-500 hover:bg-lime-400 text-black shadow-lg hover:shadow-lime-500/25 hover:scale-105' : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'} font-normal rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-400`}
+                    style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', background: isAddValid ? 'var(--accent-color)' : 'var(--secondary-bg)', color: isAddValid ? 'var(--primary-text)' : 'var(--secondary-text)', border: 'none', cursor: isAddValid ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}
                     aria-disabled={!isAddValid}
                     disabled={!isAddValid}
                   >
@@ -299,7 +331,7 @@ const SliderManager = ({ page, onClose }) => {
                   </button>
                   <button
                     onClick={() => setShowAddForm(false)}
-                    className="flex-1 px-4 py-2 bg-neutral-700 text-neutral-300 rounded-xl hover:bg-neutral-600 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+                    style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', background: 'var(--secondary-bg)', color: 'var(--secondary-text)', border: `1px solid var(--border-color)` }}
                   >
                     İptal
                   </button>

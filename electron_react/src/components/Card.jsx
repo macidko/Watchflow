@@ -1,8 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useDrag } from '../contexts/DragContext';
 
-const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId }) => {
+const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQuickMove }) => {
   const [imgError, setImgError] = useState(false);
-  
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const { startDrag } = useDrag();
+
+  // Dropdown dışına tıklandığında kapat
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
+
   // Yeni veri yapısına göre field mapping
   const poster = item.poster || item.imageUrl || (item.apiData?.poster);
   const title = item.title || (item.apiData?.title);
@@ -14,16 +35,25 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId }) =
 
   const handleDragStart = (e) => {
     if (onDragStart) {
+      // İlk olarak dataTransfer'i ayarla (bu sırada preventDefault yapmadan)
       e.dataTransfer.setData('text/plain', JSON.stringify({
         item,
         sourceSlider: sliderId
       }));
       e.dataTransfer.effectAllowed = 'move';
+      
+      // Layout thrashing'i önlemek için global state değişikliğini bir sonraki animasyon frame'ine ertele
+      // Bu sayede layout değişiminden kaynaklı scroll jump'ı minimize edilebilir
+      requestAnimationFrame(() => {
+        startDrag(item, sliderId); // Global drag state'i başlat - sliderId'yi de gönder
+      });
+      
       onDragStart(item, sliderId);
     }
   };
 
   const handleDragEnd = () => {
+    // Do not end global drag here — let drop handler on target finalize and clear state.
     if (onDragEnd) {
       onDragEnd();
     }
@@ -78,6 +108,41 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId }) =
                 </div>
               </div>
             )}
+
+            {/* Quick Move Button */}
+            <div className="absolute top-3 left-3" ref={dropdownRef}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDropdown(!showDropdown);
+                }}
+                className="w-7 h-7 bg-black/80 backdrop-blur-sm rounded-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/90 transition-all opacity-0 group-hover:opacity-100"
+                title="Hızlı taşı"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              {showDropdown && onQuickMove && (
+                <div className="absolute top-8 left-0 bg-neutral-800 rounded-lg shadow-lg border border-neutral-700 py-1 z-50 min-w-40">
+                  {onQuickMove.availableSliders?.map((slider) => (
+                    <button
+                      key={slider.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onQuickMove.handler(item, sliderId, slider.id);
+                        setShowDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-white hover:bg-neutral-700 transition-colors"
+                    >
+                      {slider.title}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Content Overlay - Bottom */}
             <div className="absolute bottom-0 left-0 right-0 p-2.5">
