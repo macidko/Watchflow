@@ -8,11 +8,12 @@ import Home from './pages/Home';
 import Film from './pages/Film';
 import Dizi from './pages/Dizi';
 import Anime from './pages/Anime';
+import Takvim from './pages/Takvim';
 import Ayarlar from './pages/Ayarlar';
 
 function AppContent() {
   const location = useLocation();
-  const showSearchButton = location.pathname !== '/ayarlar';
+  const showSearchButton = location.pathname !== '/ayarlar' && location.pathname !== '/takvim';
 
   return (
     <>
@@ -24,6 +25,7 @@ function AppContent() {
           <Route path="/film" element={<Film />} />
           <Route path="/dizi" element={<Dizi />} />
           <Route path="/anime" element={<Anime />} />
+          <Route path="/takvim" element={<Takvim />} />
           <Route path="/ayarlar" element={<Ayarlar />} />
         </Routes>
       </div>

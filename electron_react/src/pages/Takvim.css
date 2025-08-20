@@ -1,0 +1,163 @@
+/* Takvim Sayfası Stilleri */
+.takvim-container {
+  padding: 80px 20px 20px 20px;
+  background: var(--primary-bg);
+  min-height: 100vh;
+  color: var(--primary-text);
+}
+
+.takvim-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.takvim-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-text);
+  margin-bottom: 8px;
+}
+
+.takvim-header p {
+  color: var(--secondary-text);
+  font-size: 1rem;
+}
+
+.takvim-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* FullCalendar Dark Theme Overrides */
+.fc {
+  background: var(--card-bg);
+  color: var(--primary-text);
+}
+
+.fc-theme-standard .fc-scrollgrid {
+  border-color: var(--border-color);
+}
+
+.fc-theme-standard th,
+.fc-theme-standard td {
+  border-color: var(--border-color);
+}
+
+.fc-col-header-cell {
+  background: var(--secondary-bg);
+  color: var(--primary-text);
+}
+
+.fc-daygrid-day {
+  background: var(--card-bg);
+}
+
+.fc-daygrid-day:hover {
+  background: var(--secondary-bg);
+}
+
+.fc-day-today {
+  background: rgba(255, 69, 0, 0.1) !important;
+}
+
+.fc-button-primary {
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: white !important;
+}
+
+.fc-button-primary:hover {
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  opacity: 0.8;
+}
+
+.fc-button-primary:disabled {
+  background: var(--secondary-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--secondary-text) !important;
+}
+
+.fc-toolbar-title {
+  color: var(--primary-text) !important;
+  font-weight: 600;
+}
+
+.fc-event {
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  padding: 2px 6px !important;
+  margin: 1px 0 !important;
+}
+
+.fc-event-title {
+  font-weight: 500;
+}
+
+.fc-more-link {
+  color: var(--accent-color) !important;
+  font-weight: 500;
+}
+
+.fc-daygrid-day-number {
+  color: var(--primary-text);
+  padding: 8px;
+  font-weight: 500;
+}
+
+.fc-day-other .fc-daygrid-day-number {
+  color: var(--secondary-text);
+  opacity: 0.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .takvim-container {
+    padding: 80px 10px 10px 10px;
+  }
+  
+  .takvim-content {
+    padding: 15px;
+  }
+  
+  .fc-toolbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .fc-button-group {
+    flex-wrap: wrap;
+  }
+  
+  .fc-event {
+    font-size: 11px !important;
+  }
+}
+
+/* Scroll Bar Styling */
+.fc-scrollgrid-sync-table::-webkit-scrollbar {
+  width: 8px;
+}
+
+.fc-scrollgrid-sync-table::-webkit-scrollbar-track {
+  background: var(--secondary-bg);
+  border-radius: 4px;
+}
+
+.fc-scrollgrid-sync-table::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.fc-scrollgrid-sync-table::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
