@@ -395,6 +395,10 @@ const useContentStore = create()(
 
       addContent: (contentData) => set((state) => {
         const apiData = contentData.apiData || {};
+        // Relations alanı varsa, doğrudan ekle
+        if (contentData.apiData && contentData.apiData.relations) {
+          apiData.relations = contentData.apiData.relations;
+        }
         // Duplicate kontrolü: aynı tmdbId veya kitsuId ile içerik varsa ekleme
         const isDuplicate = Object.values(state.contents).some(c => {
           if (apiData.tmdbId && c.apiData?.tmdbId === apiData.tmdbId) return true;
@@ -409,7 +413,7 @@ const useContentStore = create()(
         if (apiData.kitsuId) {
           (async () => {
             try {
-              const url = `https://kitsu.io/api/edge/anime/${apiData.kitsuId}?include=genres`;
+                const url = `https://kitsu.io/api/edge/anime/${apiData.kitsuId}?include=genres`;
               const response = await fetch(url, {
                 headers: {
                   'Accept': 'application/vnd.api+json'
@@ -446,7 +450,8 @@ const useContentStore = create()(
                 };
               }
             } catch (err) {
-              state.contents[id] = {
+                  console.error('Sezon güncelleme butonundan gelen hata:', err);
+                  state.contents[id] = {
                 id,
                 pageId: contentData.pageId,
                 statusId: contentData.statusId,
@@ -478,6 +483,13 @@ const useContentStore = create()(
 
       updateContent: (contentId, updates) => set((state) => {
         if (state.contents[contentId]) {
+          // relations güncellemesi varsa apiData'ya da yaz
+          if (updates.apiData && updates.apiData.relations) {
+            state.contents[contentId].apiData = {
+              ...state.contents[contentId].apiData,
+              relations: updates.apiData.relations
+            };
+          }
           Object.assign(state.contents[contentId], {
             ...updates,
             updatedAt: new Date().toISOString()
@@ -572,8 +584,75 @@ const useContentStore = create()(
       },
 
       // API'den sezon/bölüm bilgilerini al ve cache'le
-      fetchAndCacheSeasonData: async (contentId) => {
-        console.log('fetchAndCacheSeasonData çağrıldı:', contentId);
+      // Relations bilgisini fetch edip güncelle
+      fetchAndUpdateRelations: async (contentId) => {
+        const { contents } = get();
+        const content = contents[contentId];
+        
+        if (!content || !content.apiData) return;
+        
+        try {
+          let updatedApiData = null;
+          
+          // Provider'a göre relations fetch et
+          if (content.apiData.tmdbId) {
+            const { TmdbApi } = await import('../api/providers/TmdbApi.js');
+            const api = new TmdbApi();
+            updatedApiData = await api.getDetails(content.apiData.tmdbId);
+          } else if (content.apiData.kitsuId) {
+            const { KitsuApi } = await import('../api/providers/KitsuApi.js');
+            const api = new KitsuApi();
+            updatedApiData = await api.getDetails(content.apiData.kitsuId);
+          } else if (content.apiData.anilistId) {
+            const { AniListApi } = await import('../api/providers/AniListApi.js');
+            const api = new AniListApi();
+            updatedApiData = await api.getDetails(content.apiData.anilistId);
+          } else if (content.apiData.jikanId) {
+            const { JikanApi } = await import('../api/providers/JikanApi.js');
+            const api = new JikanApi();
+            updatedApiData = await api.getDetails(content.apiData.jikanId);
+          }
+          
+          if (updatedApiData && updatedApiData.relations) {
+            // Relations bilgisini güncelle
+            set((state) => {
+              if (state.contents[contentId]) {
+                state.contents[contentId].apiData.relations = updatedApiData.relations;
+                state.contents[contentId].updatedAt = new Date().toISOString();
+              }
+            });
+            console.log('Relations güncellendi:', contentId, updatedApiData.relations);
+          }
+        } catch (error) {
+          console.error('Relations fetch hatası:', error);
+        }
+      },
+
+      // Dev helper: fetch relations for all contents and log the results
+      debugFetchAllRelations: async () => {
+        const { contents } = get();
+        const ids = Object.keys(contents || {});
+        console.log('Debug: starting fetchAndUpdateRelations for', ids.length, 'contents');
+        for (const id of ids) {
+          try {
+            const content = contents[id];
+            if (!content || !content.apiData) continue;
+            // Only try providers that we can handle
+            if (content.apiData.tmdbId || content.apiData.kitsuId || content.apiData.anilistId || content.apiData.jikanId) {
+              console.log(`Debug: fetching relations for ${id} (${content.apiData.title || content.id})`);
+              await get().fetchAndUpdateRelations(id);
+              const updated = get().contents[id];
+              console.log(`Debug: relations for ${id}:`, updated?.apiData?.relations);
+            }
+          } catch (err) {
+            console.error('Debug: fetch relations failed for', id, err);
+          }
+        }
+        console.log('Debug: finished fetching relations for all contents');
+      },
+
+      fetchAndCacheSeasonData: async (contentId, force = false) => {
+        console.log('fetchAndCacheSeasonData çağrıldı:', contentId, 'force=', force);
         const { contents } = get();
         const content = contents[contentId];
         
@@ -584,8 +663,8 @@ const useContentStore = create()(
         
         console.log('Content bulundu:', content);
         
-        // Zaten sezon verisi varsa API çağrısı yapma
-        if (content.seasons && Object.keys(content.seasons).length > 0) {
+        // Zaten sezon verisi varsa ve force belirtilmemişse API çağrısı yapma
+        if (!force && content.seasons && Object.keys(content.seasons).length > 0) {
           console.log('Sezon verisi zaten var, cache kullanılıyor:', content.seasons);
           return content.seasons;
         }
@@ -878,10 +957,30 @@ const useContentStore = create()(
 
           console.log('Oluşturulan sezon verisi:', seasonData);
 
-          // Store'da güncelle
+          // Store'da güncelle (mevcut watchedEpisodes korunacak şekilde birleştir)
           set((state) => {
             if (state.contents[contentId]) {
-              state.contents[contentId].seasons = seasonData;
+              const existing = state.contents[contentId].seasons || {};
+              const merged = Object.assign({}, existing);
+
+              // Overwrite or add seasons from fetched data, but preserve watchedEpisodes if present
+              Object.keys(seasonData).forEach(seasonKey => {
+                const newSeason = seasonData[seasonKey] || {};
+                const existingSeason = existing[seasonKey] || {};
+                merged[seasonKey] = Object.assign({}, newSeason, {
+                  // preserve existing watchedEpisodes array when available
+                  watchedEpisodes: Array.isArray(existingSeason.watchedEpisodes)
+                    ? Array.from(new Set([...(existingSeason.watchedEpisodes || []), ...(newSeason.watchedEpisodes || [])]))
+                    : (newSeason.watchedEpisodes || [])
+                });
+              });
+
+              // Keep any existing seasons that weren't present in the fetched data
+              Object.keys(existing).forEach(seasonKey => {
+                if (!merged[seasonKey]) merged[seasonKey] = existing[seasonKey];
+              });
+
+              state.contents[contentId].seasons = merged;
               state.contents[contentId].updatedAt = new Date().toISOString();
             }
           });

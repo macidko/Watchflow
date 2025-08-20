@@ -1,5 +1,7 @@
+
 import { ApiInterface } from '../base/ApiInterface.js';
 import { MediaTypes, MediaStatus } from '../base/MediaTypes.js';
+import { normalizeRelations } from '../utils/normalizeRelations.js';
 
 /**
  * Jikan API Provider
@@ -43,22 +45,25 @@ export class JikanApi extends ApiInterface {
 
       const item = response.data;
       
-      return this.normalizeResponse({
-        id: item.mal_id,
-        title: item.title,
-        originalTitle: item.title_japanese,
-        year: item.aired?.from ? new Date(item.aired.from).getFullYear() : null,
-        imageUrl: item.images?.jpg?.large_image_url || item.images?.jpg?.image_url,
-        score: item.score,
-        status: this.normalizeStatus(item.status),
-        episodes: item.episodes,
-        overview: item.synopsis,
-        genres: item.genres?.map(g => g.name) || [],
-        duration: item.duration ? this.parseDuration(item.duration) : null,
-        studios: item.studios?.map(s => s.name) || [],
-        source: item.source,
-        rating: item.rating
-      }, MediaTypes.ANIME);
+      return {
+        ...this.normalizeResponse({
+          id: item.mal_id,
+          title: item.title,
+          originalTitle: item.title_japanese,
+          year: item.aired?.from ? new Date(item.aired.from).getFullYear() : null,
+          imageUrl: item.images?.jpg?.large_image_url || item.images?.jpg?.image_url,
+          score: item.score,
+          status: this.normalizeStatus(item.status),
+          episodes: item.episodes,
+          overview: item.synopsis,
+          genres: item.genres?.map(g => g.name) || [],
+          duration: item.duration ? this.parseDuration(item.duration) : null,
+          studios: item.studios?.map(s => s.name) || [],
+          source: item.source,
+          rating: item.rating
+        }, MediaTypes.ANIME),
+        relations: normalizeRelations(item, 'jikan')
+      };
     });
   }
 

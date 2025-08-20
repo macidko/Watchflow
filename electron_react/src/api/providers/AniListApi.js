@@ -1,5 +1,7 @@
+
 import { ApiInterface } from '../base/ApiInterface.js';
 import { MediaTypes, MediaStatus } from '../base/MediaTypes.js';
+import { normalizeRelations } from '../utils/normalizeRelations.js';
 
 /**
  * AniList API Provider
@@ -109,25 +111,22 @@ export class AniListApi extends ApiInterface {
       const media = response?.data?.Media;
       if (!media) throw new Error('Anime not found');
 
-      return this.normalizeResponse({
-        id: media.id,
-        title: media.title.english || media.title.romaji,
-        originalTitle: media.title.romaji,
-        imageUrl: media.coverImage?.large,
-        episodes: media.episodes,
-        status: this.normalizeStatus(media.status),
-        overview: media.description,
-        genres: media.genres,
-        score: media.averageScore ? media.averageScore / 10 : null,
-        year: media.startDate?.year,
-        duration: media.duration,
-        relations: media.relations?.edges?.map(edge => ({
-          type: edge.relationType,
-          title: edge.node.title.english || edge.node.title.romaji,
-          id: edge.node.id,
-          format: edge.node.format
-        })) || []
-      }, MediaTypes.ANIME);
+      return {
+        ...this.normalizeResponse({
+          id: media.id,
+          title: media.title.english || media.title.romaji,
+          originalTitle: media.title.romaji,
+          imageUrl: media.coverImage?.large,
+          episodes: media.episodes,
+          status: this.normalizeStatus(media.status),
+          overview: media.description,
+          genres: media.genres,
+          score: media.averageScore ? media.averageScore / 10 : null,
+          year: media.startDate?.year,
+          duration: media.duration
+        }, MediaTypes.ANIME),
+        relations: normalizeRelations(media, 'anilist')
+      };
     } catch (error) {
       console.error('AniList getDetails error:', error);
       throw error;

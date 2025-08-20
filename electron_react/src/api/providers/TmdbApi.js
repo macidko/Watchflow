@@ -1,6 +1,8 @@
+
 import { ApiInterface } from '../base/ApiInterface.js';
 import { MediaTypes, MediaStatus } from '../base/MediaTypes.js';
 import { TMDB_GENRE_MAP } from '../../config/tmdbGenres.js';
+import { normalizeRelations } from '../utils/normalizeRelations.js';
 
 /**
  * TMDB API Provider
@@ -71,7 +73,8 @@ export class TmdbApi extends ApiInterface {
     
     try {
       // Film için ek detaylar (credits, budget vs.) almak için append_to_response kullanıyoruz
-      const appendParam = mediaType === MediaTypes.MOVIE ? '&append_to_response=credits' : '';
+  // Include recommendations and similar in the details response so we can show related items for movies/TV
+  const appendParam = '&append_to_response=credits,recommendations,similar';
       const url = `${this.baseUrl}${endpoint}?api_key=${this.apiKey}&language=en-US${appendParam}`;
       
       console.log('TMDB getDetails URL:', url.replace(this.apiKey, '[API_KEY]'));
@@ -123,7 +126,11 @@ export class TmdbApi extends ApiInterface {
       
       console.log('TMDB normalized response:', normalizedResponse);
       
-      return normalizedResponse;
+      // relations alanını ekle
+      return {
+        ...normalizedResponse,
+        relations: normalizeRelations(response, 'tmdb')
+      };
     } catch (error) {
       console.error('TMDB getDetails error:', error);
       throw error;

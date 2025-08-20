@@ -1,5 +1,7 @@
+
 import { ApiInterface } from '../base/ApiInterface.js';
 import { MediaTypes, MediaStatus } from '../base/MediaTypes.js';
+import { normalizeRelations } from '../utils/normalizeRelations.js';
 
 /**
  * Kitsu API Provider
@@ -63,20 +65,23 @@ export class KitsuApi extends ApiInterface {
         ?.filter(inc => inc.type === 'genres' || inc.type === 'categories')
         ?.map(genre => genre.attributes.name) || [];
 
-      return this.normalizeResponse({
-        id: item.id,
-        title: attrs.titles?.en_jp || attrs.canonicalTitle || attrs.titles?.en,
-        originalTitle: attrs.titles?.ja_jp,
-        year: attrs.startDate ? new Date(attrs.startDate).getFullYear() : null,
-        imageUrl: attrs.posterImage?.original || attrs.posterImage?.large,
-        score: attrs.averageRating ? parseFloat(attrs.averageRating) / 10 : null,
-        status: this.normalizeStatus(attrs.status),
-        episodes: attrs.episodeCount,
-        overview: attrs.synopsis,
-        genres,
-        duration: attrs.episodeLength,
-        totalLength: attrs.totalLength
-      }, MediaTypes.ANIME);
+      return {
+        ...this.normalizeResponse({
+          id: item.id,
+          title: attrs.titles?.en_jp || attrs.canonicalTitle || attrs.titles?.en,
+          originalTitle: attrs.titles?.ja_jp,
+          year: attrs.startDate ? new Date(attrs.startDate).getFullYear() : null,
+          imageUrl: attrs.posterImage?.original || attrs.posterImage?.large,
+          score: attrs.averageRating ? parseFloat(attrs.averageRating) / 10 : null,
+          status: this.normalizeStatus(attrs.status),
+          episodes: attrs.episodeCount,
+          overview: attrs.synopsis,
+          genres,
+          duration: attrs.episodeLength,
+          totalLength: attrs.totalLength
+        }, MediaTypes.ANIME),
+        relations: normalizeRelations(item, 'kitsu')
+      };
     } catch (error) {
       console.error('Kitsu getDetails error:', error);
       throw error;

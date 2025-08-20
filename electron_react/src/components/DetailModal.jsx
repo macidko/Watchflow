@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import useContentStore from '../config/initialData';
-
 
 const DetailModal = ({ item, onClose }) => {
   const modalRef = useRef(null);
@@ -12,14 +11,30 @@ const DetailModal = ({ item, onClose }) => {
     markSeasonUnwatched,
     deleteContent,
     moveContentToStatus,
-    fetchAndCacheSeasonData
+    fetchAndCacheSeasonData,
+    fetchAndUpdateRelations
   } = useContentStore();
 
   // Store'dan güncel content'i al
   const content = getContentById(item?.id);
   let { apiData = {}, seasons = {} } = content || {};
 
-  // Tüm useEffect hook'ları component fonksiyonunun başında, return'dan önce çağrılır
+  useEffect(() => {
+    if (!item) return;
+    if (!seasons || Object.keys(seasons).length === 0) {
+      if (content?.pageId === 'dizi' || content?.pageId === 'anime') {
+        let fetchId = item.id;
+        fetchAndCacheSeasonData(fetchId);
+      }
+    }
+    // Relations bilgisi yoksa fetch et
+    if (!apiData?.relations) {
+      fetchAndUpdateRelations(item.id);
+    }
+  }, [item, content?.pageId, fetchAndCacheSeasonData, seasons, apiData?.relations, fetchAndUpdateRelations]);
+
+
+  // Debug: Check what data we have
   useEffect(() => {
     const focusableSelectors = [
       'button', 'a[href]', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
@@ -58,27 +73,10 @@ const DetailModal = ({ item, onClose }) => {
     return () => node.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  useEffect(() => {
-    if (item && (!seasons || Object.keys(seasons).length === 0)) {
-      if (content?.pageId === 'dizi' || content?.pageId === 'anime') {
-        let fetchId = item.id;
-        fetchAndCacheSeasonData(fetchId);
-      }
-    }
-    // Hook her zaman çağrılır, koşul içeriye taşındı
-  }, [item, content?.pageId, fetchAndCacheSeasonData, seasons]);
 
-  // Debug: Check what data we have
-  console.log('DetailModal - Current content data:', {
-    id: item?.id,
-    title: apiData?.title,
-    runtime: apiData?.runtime,
-    budget: apiData?.budget,
-    revenue: apiData?.revenue,
-    cast: apiData?.cast?.length || 'none',
-    director: apiData?.director,
-    vote_average: apiData?.vote_average
-  });
+
+  // debug removed
+  const [relationsError, setRelationsError] = React.useState(null);
 
 const episodeCount = apiData.episodeCount || apiData.episodes;
 // Anime için seasons fallback işlemi koşulsuz yapılır, hook dışında
@@ -101,22 +99,43 @@ if (
     }
   };
 }
+
+
+  // Kapsamlı, modern UI: yeni renkler, kartlar, badge'ler, animasyonlu butonlar
+  const [descExpanded, setDescExpanded] = React.useState(false);
+  const [relationsLoading, setRelationsLoading] = React.useState(false);
+  const [seasonsLoading, setSeasonsLoading] = React.useState(false);
+  const [seasonsError, setSeasonsError] = React.useState(null);
+
+  // Memoize relations flattening - hooks must be top-level
+  const flatRelations = useMemo(() => {
+    const out = [];
+    if (!apiData?.relations) return out;
+    const pageId = content?.pageId;
+    Object.entries(apiData.relations).forEach(([relType, relArr]) => {
+      if (relType === 'status') return;
+      // Only include 'related' for TV/Film (dizi/film). Keep prequel/sequel for anime/providers that provide them.
+      if (relType === 'related' && !(pageId === 'dizi' || pageId === 'film')) return;
+      if (Array.isArray(relArr) && relArr.length > 0) {
+        relArr.forEach(r => out.push(Object.assign({}, r, { relType })));
+      }
+    });
+    return out;
+  }, [apiData?.relations, content?.pageId]);
+
+
+  // Tüm useEffect hook'ları return'dan önce olmalı
+
+  // useEffect her zaman çağrılır, koşul içeride
   useEffect(() => {
-    if (item && (!seasons || Object.keys(seasons).length === 0)) {
+    if (!item) return;
+    if (!seasons || Object.keys(seasons).length === 0) {
       if (content?.pageId === 'dizi' || content?.pageId === 'anime') {
         let fetchId = item.id;
         fetchAndCacheSeasonData(fetchId);
       }
     }
-    // Hook her zaman çağrılır, koşul içeriye taşındı
   }, [item, content?.pageId, fetchAndCacheSeasonData, seasons]);
-
-  // Kapsamlı, modern UI: yeni renkler, kartlar, badge'ler, animasyonlu butonlar
-  const [descExpanded, setDescExpanded] = React.useState(false);
-
-
-  // Tüm useEffect hook'ları return'dan önce olmalı
-  if (!item) return null;
 
   // Bölüm işaretleme
   const handleEpisodeToggle = (seasonNumber, episodeNumber) => {
@@ -193,8 +212,10 @@ if (
     return () => node.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  if (!item) return null;
+
   return (
-  <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-20" tabIndex={-1}>
+  <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-20" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title" tabIndex={-1}>
       {/* Backdrop */}
   <div className="absolute inset-0" style={{background: 'var(--overlay-bg, rgba(0,0,0,0.8))', backdropFilter: 'blur(2px)'}} onClick={onClose} />
       {/* Modal - Kompakt tasarım */}
@@ -215,7 +236,7 @@ if (
   }}>
           <div className="flex items-start gap-2 sm:gap-3">
             {/* Poster - Küçük */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 relative">
               {apiData?.poster ? (
                 <img src={apiData.poster} alt={apiData.title} className="w-16 h-24 object-cover rounded-lg shadow border" style={{borderColor: 'var(--border-color, #2a2a2a)'}} />
               ) : (
@@ -224,13 +245,29 @@ if (
                 </div>
               )}
             </div>
-            
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
-                <h2 className="font-medium text-base mb-1 truncate pr-2" style={{color: 'var(--primary-text, #fff)'}}>
-                  {apiData?.title || 'Başlık Yok'}
-                </h2>
+                <div className="flex items-center gap-2 min-w-0">
+                  <h2 id="detail-modal-title" className="font-medium text-base mb-1 truncate pr-2" style={{color: 'var(--primary-text, #fff)'}}>
+                    {apiData?.title || 'Başlık Yok'}
+                  </h2>
+                  {/* Status badge başlığın hemen sağında, animasyonsuz */}
+                  {apiData?.relations?.status && (
+                    <span className="ml-1 px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-2"
+                      style={{
+                        background: apiData.relations.status === 'finished' ? 'linear-gradient(90deg,#16a34a,#22d3ee)' : apiData.relations.status === 'airing' ? 'linear-gradient(90deg,#f59e42,#fbbf24)' : 'linear-gradient(90deg,#64748b,#334155)',
+                        color: '#fff',
+                        borderColor: apiData.relations.status === 'finished' ? '#16a34a' : apiData.relations.status === 'airing' ? '#f59e42' : '#64748b',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                        zIndex: 2
+                      }}
+                      title={apiData.relations.status === 'finished' ? 'Tamamlandı' : apiData.relations.status === 'airing' ? 'Devam Ediyor' : apiData.relations.status}
+                    >
+                      {apiData.relations.status === 'finished' ? 'Tamamlandı' : apiData.relations.status === 'airing' ? 'Devam Ediyor' : apiData.relations.status}
+                    </span>
+                  )}
+                </div>
                 <button 
                   onClick={onClose} 
                   className="p-1 rounded-md transition-colors"
@@ -242,7 +279,6 @@ if (
                   </svg>
                 </button>
               </div>
-              
               {/* Meta badges - Kompakt */}
               <div className="flex flex-wrap gap-1 mb-2">
                 {apiData?.rating && (
@@ -256,7 +292,6 @@ if (
                   </span>
                 )}
               </div>
-              
               {/* Description - Kompakt */}
               {apiData?.overview && (
                 <p className={`text-sm opacity-80 ${descExpanded ? '' : 'overflow-hidden'}`} 
@@ -291,7 +326,28 @@ if (
             <div className="mb-4">
               <div className="flex items-center justify-between text-xs" style={{color: 'var(--secondary-text, #b3b3b3)'}}>
                 <span>{watchedCount}/{totalCount} bölüm</span>
-                <span className="font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>%{progress}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>%{progress}</span>
+                  <button
+                    onClick={async () => {
+                      setSeasonsError(null);
+                      try {
+                        setSeasonsLoading(true);
+                        await fetchAndCacheSeasonData(item.id, true);
+                      } catch (err) {
+                        console.error(err);
+                        setSeasonsError('Sezonlar güncellenemedi');
+                      } finally {
+                        setSeasonsLoading(false);
+                      }
+                    }}
+                    disabled={seasonsLoading}
+                    className="text-xs px-2 py-1 rounded bg-[#374151] hover:bg-[#4b5563] text-white"
+                    title="Sezon bilgilerini güncelle"
+                  >
+                    {seasonsLoading ? 'Güncelleniyor...' : 'Sezonları Güncelle'}
+                  </button>
+                </div>
               </div>
               <div className="w-full h-2 rounded-full overflow-hidden" style={{background: 'var(--border-color, #2a2a2a)'}}>
                 <div 
@@ -299,6 +355,7 @@ if (
                   style={{ width: `${progress}%`, background: 'var(--accent-color, #ff4500)' }}
                 />
               </div>
+              {seasonsError && <div className="text-xs text-red-400 mt-2">{seasonsError}</div>}
             </div>
           )}
 
@@ -569,6 +626,99 @@ if (
                   {apiData.provider}
                 </span>
               )}
+            </div>
+          )}
+
+          {/* Relations: thin, single-row items (one per line) with poster fallback and add button; no horizontal scroll. */}
+          {apiData?.relations && (
+            <div className="mb-4" aria-label="İlişkili içerikler">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-semibold mb-2" style={{color: 'var(--accent-color, #ff4500)'}}>İlişkili İçerikler</h4>
+                <div>
+                  <button
+                    onClick={async () => {
+                      setRelationsError(null);
+                      try {
+                        setRelationsLoading(true);
+                        await fetchAndUpdateRelations(item.id);
+                      } catch (err) {
+                        console.error(err);
+                        setRelationsError('Güncelleme başarısız oldu');
+                      } finally {
+                        setRelationsLoading(false);
+                      }
+                    }}
+                    disabled={relationsLoading}
+                    className="text-xs px-2 py-1 rounded bg-[#374151] hover:bg-[#4b5563] text-white"
+                    title="İlişkileri güncelle"
+                  >
+                    {relationsLoading ? 'Güncelleniyor...' : 'Güncelle'}
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                {flatRelations.length > 0 ? flatRelations.map((rel, idx) => {
+                  const key = rel.id || rel.title || idx;
+                  // poster fallback candidates
+                  const src = rel.poster || rel.image || rel.cover || rel.poster_path || rel.thumbnail || '';
+                  return (
+                    <div key={key} className="w-full rounded-md border bg-[#23272f] p-2 flex items-center gap-3" style={{borderColor:'var(--border-color,#2a2a2a)', minHeight: '56px'}}>
+                      <div className="w-12 h-12 rounded-sm overflow-hidden bg-[#181c22] flex-shrink-0 flex items-center justify-center">
+                        {src ? (
+                          <img
+                            src={src}
+                            alt={rel.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '' }}
+                          />
+                        ) : (
+                          <span className="text-lg opacity-30">🎬</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11px] text-[#cbd5e1] mb-0" style={{background:'transparent'}}>
+                          {rel.relType === 'prequel' ? 'Öncesi' : rel.relType === 'sequel' ? 'Devamı' : rel.relType}
+                        </div>
+                        <div className="font-medium text-sm truncate" style={{color: 'var(--primary-text, #fff)'}}>{rel.title}</div>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <button aria-label={`Ekle ${rel.title}`} className="px-3 py-1 rounded-md bg-[#16a34a] hover:bg-[#10b981] text-white text-sm shadow" title="İçeriği ekle">
+                          + Ekle
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <div className="rounded-lg p-4 border bg-[#23272f] flex flex-col items-center justify-center min-h-[120px]" style={{borderColor:'var(--border-color,#2a2a2a)'}}>
+                    <div className="mb-2 text-lg" style={{color:'var(--secondary-text,#9ca3af)'}}>İlişkili içerik bulunamadı</div>
+                    <div className="text-sm opacity-70 mb-3">Prequel veya sequel bilgisi mevcut değil.</div>
+                    <div>
+                      <button
+                        onClick={async () => {
+                          setRelationsError(null);
+                          try {
+                            setRelationsLoading(true);
+                            await fetchAndUpdateRelations(item.id);
+                          } catch (err) {
+                            console.error('Relations fetch failed', err);
+                            setRelationsError('Tekrar deneme başarısız oldu');
+                          } finally {
+                            setRelationsLoading(false);
+                          }
+                        }}
+                        disabled={relationsLoading}
+                        className="px-3 py-1 rounded-md bg-[#2563eb] hover:bg-[#3b82f6] text-white text-sm shadow"
+                        title="Tekrar dene"
+                      >
+                        {relationsLoading ? 'Tekrar deneniyor...' : 'Tekrar Dene'}
+                      </button>
+                      {relationsError && (
+                        <div className="text-xs text-red-400 mt-2">{relationsError}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
