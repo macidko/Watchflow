@@ -81,6 +81,15 @@ export class TmdbApi extends ApiInterface {
       
       const response = await this.makeRequest(url);
       
+      // TMDB response'u debug et - özellikle next_episode_to_air alanı için
+      console.log('TMDB getDetails raw response (next episode check):', {
+        id: response.id,
+        title: response.title || response.name,
+        next_episode_to_air: response.next_episode_to_air,
+        status: response.status,
+        type: mediaType
+      });
+      
       console.log('TMDB getDetails raw response:', {
         id: response.id,
         title: response.title || response.name,

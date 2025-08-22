@@ -1,6 +1,43 @@
 
-const Ayarlar = () => (
-  <div style={{ minHeight: '100vh', background: 'var(--primary-bg)' }}>
+function downloadZustandStore() {
+  const data = localStorage.getItem('zustand-store');
+  if (!data) return alert('Kayıt bulunamadı!');
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'watchflow-icerikler.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+
+import React, { useState } from 'react';
+
+
+
+const Ayarlar = () => {
+  const [showStorage, setShowStorage] = useState(false);
+  const [storageDump, setStorageDump] = useState([]);
+
+  function handleShowStorage() {
+    const arr = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      arr.push({ key, value: localStorage.getItem(key) });
+    }
+    setStorageDump(arr);
+    setShowStorage(true);
+  }
+
+  function handleHideStorage() {
+    setShowStorage(false);
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--primary-bg)' }}>
     {/* Header */}
     <div style={{ paddingTop: 112, paddingBottom: 40, paddingLeft: 16, paddingRight: 16 }}>
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
@@ -32,10 +69,71 @@ const Ayarlar = () => (
             <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>
               Ayarlar sayfası şu anda geliştirme aşamasında. Yakında uygulama tercihlerini buradan yönetebileceksin.
             </p>
+            <button
+              onClick={downloadZustandStore}
+              style={{
+                marginTop: 16,
+                padding: '10px 24px',
+                background: 'var(--accent-color)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 16,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+              }}
+            >
+              İçerik JSON'unu İndir
+            </button>
+            <br />
+            <button
+              onClick={showStorage ? handleHideStorage : handleShowStorage}
+              style={{
+                marginTop: 16,
+                padding: '8px 20px',
+                background: showStorage ? 'var(--danger-color, #e53935)' : 'var(--secondary-bg)',
+                color: showStorage ? 'white' : 'var(--primary-text)',
+                border: 'none',
+                borderRadius: 8,
+                fontWeight: 500,
+                fontSize: 15,
+                cursor: 'pointer',
+                marginLeft: 8
+              }}
+            >
+              {showStorage ? 'Gizle' : 'Tüm LocalStorage İçeriğini Göster'}
+            </button>
+            {showStorage && (
+              <div style={{
+                marginTop: 24,
+                textAlign: 'left',
+                background: 'var(--card-bg)',
+                borderRadius: 8,
+                padding: 16,
+                maxHeight: 400,
+                overflow: 'auto',
+                fontSize: 13,
+                color: 'var(--primary-text)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+              }}>
+                <b>LocalStorage Dump:</b>
+                <ul style={{ paddingLeft: 16 }}>
+                  {storageDump.length === 0 && <li>Boş</li>}
+                  {storageDump.map(({ key, value }) => (
+                    <li key={key} style={{ marginBottom: 8 }}>
+                      <span style={{ color: '#888' }}>{key}:</span>
+                      <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', background: 'none', margin: 0 }}>{value}</pre>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   </div>
 );
+}
 export default Ayarlar;

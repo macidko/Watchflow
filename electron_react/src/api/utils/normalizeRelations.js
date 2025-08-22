@@ -51,13 +51,31 @@ export function normalizeRelations(raw, provider) {
       }
     });
 
+    // TMDB next episode mapping
+    let nextEpisode = null;
+    if (raw.next_episode_to_air) {
+      nextEpisode = {
+        episodeNumber: raw.next_episode_to_air.episode_number,
+        airDate: raw.next_episode_to_air.air_date
+      };
+    } else if (raw.nextAiringEpisode) {
+      // fallback (ör. normalize edilmiş veri gelirse)
+      nextEpisode = {
+        episodeNumber: raw.nextAiringEpisode.episode,
+        airDate: raw.nextAiringEpisode.airingAt ? new Date(raw.nextAiringEpisode.airingAt * 1000).toISOString().slice(0,10) : null
+      };
+    }
+    
+    console.log('TMDB normalizeRelations debug:', {
+      rawNextEpisode: raw.next_episode_to_air,
+      normalizedNextEpisode: nextEpisode,
+      status: raw.status
+    });
+
     return {
       status: raw.status === 'Ended' ? 'finished' : (raw.status === 'Returning Series' ? 'airing' : (raw.status === 'Planned' ? 'upcoming' : 'cancelled')),
       nextSeason: isSeries && raw.seasons ? getNextSeason(raw.seasons) : null,
-      nextEpisode: raw.next_episode_to_air ? {
-        episodeNumber: raw.next_episode_to_air.episode_number,
-        airDate: raw.next_episode_to_air.air_date
-      } : null,
+      nextEpisode,
       prequel: [],
       sequel: [],
       related,
@@ -65,34 +83,81 @@ export function normalizeRelations(raw, provider) {
     };
   }
   if (provider === 'anilist') {
-    console.log('AniList normalizeRelations raw data:', raw);
+    // AniList next episode mapping
+    let nextEpisode = null;
+    if (raw.nextAiringEpisode) {
+      nextEpisode = {
+        episodeNumber: raw.nextAiringEpisode.episode,
+        airDate: raw.nextAiringEpisode.airingAt ? new Date(raw.nextAiringEpisode.airingAt * 1000).toISOString().slice(0,10) : null
+      };
+    }
+    
+    console.log('AniList normalizeRelations debug:', {
+      rawNextAiring: raw.nextAiringEpisode,
+      normalizedNextEpisode: nextEpisode,
+      status: raw.status
+    });
+    
     return {
       status: mapAniListStatus(raw.status),
       nextSeason: null, // AniList'te sezon bilgisi yok
-      nextEpisode: raw.nextAiringEpisode ? {
-        episodeNumber: raw.nextAiringEpisode.episode,
-        airDate: raw.nextAiringEpisode.airingAt ? new Date(raw.nextAiringEpisode.airingAt * 1000).toISOString().slice(0,10) : null
-      } : null,
+      nextEpisode,
       prequel: (raw.relations?.edges || []).filter(r => r.relationType === 'PREQUEL').map(edge => mapAniListRelation(edge.node)),
       sequel: (raw.relations?.edges || []).filter(r => r.relationType === 'SEQUEL').map(edge => mapAniListRelation(edge.node)),
       collection: null
     };
   }
   if (provider === 'kitsu') {
+    // Kitsu next episode mapping (örnek: airingEpisode veya custom alanlar varsa)
+    let nextEpisode = null;
+    if (raw.airingEpisode) {
+      nextEpisode = {
+        episodeNumber: raw.airingEpisode.number,
+        airDate: raw.airingEpisode.airdate || null
+      };
+    }
+    
+    console.log('Kitsu normalizeRelations debug:', {
+      rawAiringEpisode: raw.airingEpisode,
+      normalizedNextEpisode: nextEpisode,
+      status: raw.status
+    });
+    
     return {
       status: mapKitsuStatus(raw.status),
       nextSeason: null,
-      nextEpisode: null,
+      nextEpisode,
       prequel: raw.relationships?.prequel?.data ? [mapKitsuRelation(raw.relationships.prequel.data)] : [],
       sequel: raw.relationships?.sequel?.data ? [mapKitsuRelation(raw.relationships.sequel.data)] : [],
       collection: null
     };
   }
   if (provider === 'jikan') {
+    // Jikan next episode mapping (örnek: broadcast veya upcomingEpisode varsa)
+    let nextEpisode = null;
+    if (raw.broadcast && raw.broadcast.episode && raw.broadcast.airdate) {
+      nextEpisode = {
+        episodeNumber: raw.broadcast.episode,
+        airDate: raw.broadcast.airdate
+      };
+    } else if (raw.upcomingEpisode) {
+      nextEpisode = {
+        episodeNumber: raw.upcomingEpisode.episode,
+        airDate: raw.upcomingEpisode.airdate
+      };
+    }
+    
+    console.log('Jikan normalizeRelations debug:', {
+      rawBroadcast: raw.broadcast,
+      rawUpcomingEpisode: raw.upcomingEpisode,
+      normalizedNextEpisode: nextEpisode,
+      status: raw.status
+    });
+    
     return {
       status: mapJikanStatus(raw.status),
       nextSeason: null,
-      nextEpisode: null,
+      nextEpisode,
       prequel: raw.related?.Prequel ? raw.related.Prequel.map(mapJikanRelation) : [],
       sequel: raw.related?.Sequel ? raw.related.Sequel.map(mapJikanRelation) : [],
       collection: null

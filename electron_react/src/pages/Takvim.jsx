@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getNextEpisodeFromSchedule } from '../utils/episodeScheduler';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -27,45 +28,96 @@ const Takvim = () => {
     });
 
     Object.values(contents || {}).forEach(content => {
-      const { apiData, pageId } = content;
+      const { apiData, pageId, statusId } = content;
+      // İzleniyor ve tamamlanmamış içerikler için schedule'dan gelecek bölümleri ekle
+      const isWatching = statusId === 'watching';
+      const isCompleted = apiData?.status === 'completed' || apiData?.status === 'finished' || apiData?.status === 'ended';
 
-      // Yayın tarihini etkinlik olarak ekle
-      if (apiData?.releaseDate && apiData?.title) {
-        calendarEvents.push({
-          id: `release-${content.id}`,
-          title: `📅 ${apiData.title}`,
-          start: apiData.releaseDate,
-          allDay: true,
-          backgroundColor: pageId === 'film' ? '#ff6b6b' : pageId === 'dizi' ? '#4ecdc4' : '#45b7d1',
-          borderColor: 'transparent',
-          textColor: 'white'
+      // Schedule'dan gelecek bölümler
+        if (isWatching && !isCompleted && Array.isArray(apiData?.schedule) && apiData?.title) { 
+        const now = new Date();
+        apiData.schedule.forEach(ep => {
+          const airDate = new Date(ep.airDate);
+          if (airDate > now) {
+              let bgColor = '#1976d2';
+              if (pageId === 'film') bgColor = '#ff6b6b';
+              else if (pageId === 'dizi') bgColor = '#43a047';
+              else if (pageId === 'anime') bgColor = '#45b7d1';
+              calendarEvents.push({
+                id: `scheduled-ep-${content.id}-${ep.episode}`,
+                title: `🗓️ ${apiData.title} - ${ep.episode}. Bölüm (Tahmini)` ,
+                start: ep.airDate,
+                allDay: false,
+                backgroundColor: bgColor,
+                borderColor: 'transparent',
+                textColor: 'white',
+                description: 'Tahmini yayın tarihi (schedule)'
+              });
+          }
         });
+      }
+
+      // Yayın tarihini etkinlik olarak ekle (sadece gelecekteki tarihler)
+      if (apiData?.releaseDate && apiData?.title) {
+        const releaseYear = parseInt(apiData.releaseDate);
+        const currentYear = new Date().getFullYear();
+        
+        // Sadece gelecek yıllar veya bu yıl olan içerikleri göster
+        if (releaseYear >= currentYear) {
+            let bgColor = '#1976d2';
+            if (pageId === 'film') bgColor = '#ff6b6b';
+            else if (pageId === 'dizi') bgColor = '#43a047';
+            else if (pageId === 'anime') bgColor = '#45b7d1';
+            calendarEvents.push({
+              id: `release-${content.id}`,
+              title: `📅 ${apiData.title}`,
+              start: `${releaseYear}-01-01`,
+              allDay: true,
+              backgroundColor: bgColor,
+              borderColor: 'transparent',
+              textColor: 'white'
+            });
+        }
       }
 
       // Sonraki bölüm tarihini ekle (eğer varsa)
       if (apiData?.relations?.nextEpisode?.airDate && apiData?.title) {
-        calendarEvents.push({
-          id: `next-episode-${content.id}`,
-          title: `🎬 ${apiData.title} - Yeni Bölüm`,
-          start: apiData.relations.nextEpisode.airDate,
-          allDay: false,
-          backgroundColor: '#ffa726',
-          borderColor: 'transparent',
-          textColor: 'white'
-        });
+        const airDate = apiData.relations.nextEpisode.airDate;
+        // Tarih formatını düzelt: '2025-08-23' -> '2025-08-23T00:00:00'
+        const formattedDate = airDate.includes('T') ? airDate : `${airDate}T20:00:00`;
+          let bgColor = '#ffa726';
+          if (pageId === 'film') bgColor = '#ff6b6b';
+          else if (pageId === 'dizi') bgColor = '#43a047';
+          else if (pageId === 'anime') bgColor = '#45b7d1';
+          calendarEvents.push({
+            id: `next-episode-${content.id}`,
+            title: `🎬 ${apiData.title} - ${apiData.relations.nextEpisode.episodeNumber}. Bölüm`,
+            start: formattedDate,
+            allDay: false,
+            backgroundColor: bgColor,
+            borderColor: 'transparent',
+            textColor: 'white'
+          });
       }
 
       // Sezon sonraki tarihini ekle (eğer varsa)
       if (apiData?.relations?.nextSeason?.airDate && apiData?.title) {
-        calendarEvents.push({
-          id: `next-season-${content.id}`,
-          title: `🎭 ${apiData.title} - Yeni Sezon`,
-          start: apiData.relations.nextSeason.airDate,
-          allDay: true,
-          backgroundColor: '#9c27b0',
-          borderColor: 'transparent',
-          textColor: 'white'
-        });
+        const airDate = apiData.relations.nextSeason.airDate;
+        // Tarih formatını düzelt
+        const formattedDate = airDate.includes('T') ? airDate : `${airDate}T00:00:00`;
+          let bgColor = '#9c27b0';
+          if (pageId === 'film') bgColor = '#ff6b6b';
+          else if (pageId === 'dizi') bgColor = '#43a047';
+          else if (pageId === 'anime') bgColor = '#45b7d1';
+          calendarEvents.push({
+            id: `next-season-${content.id}`,
+            title: `🎭 ${apiData.title} - ${apiData.relations.nextSeason.seasonNumber}. Sezon`,
+            start: formattedDate,
+            allDay: true,
+            backgroundColor: bgColor,
+            borderColor: 'transparent',
+            textColor: 'white'
+          });
       }
     });
 
@@ -101,6 +153,7 @@ const Takvim = () => {
           eventClick={handleEventClick}
           height="calc(100vh - 200px)"
           locale="tr"
+          firstDay={1}
           buttonText={{
             today: 'Bugün',
             month: 'Ay',

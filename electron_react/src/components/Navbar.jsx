@@ -1,4 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getUpcomingEpisodeNotifications } from '../services/notificationService';
+import NotificationPanel from './NotificationPanel';
+import useContentStore from '../config/initialData';
 import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
@@ -88,6 +91,95 @@ const Navbar = () => {
     }
   ];
 
+
+  // Bildirim paneli state
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [hasUnread, setHasUnread] = useState(false);
+  // Bildirim okundu bilgisini localStorage'da sakla
+  const NOTIF_KEY = 'wf-last-seen-notification-count';
+  const { contents } = useContentStore();
+
+  // Takvim events üretimi (Takvim.jsx ile aynı mantık)
+  useEffect(() => {
+    const calendarEvents = [];
+    Object.values(contents || {}).forEach(content => {
+      const { apiData, pageId, statusId } = content;
+      const isWatching = statusId === 'watching';
+      const isCompleted = apiData?.status === 'completed' || apiData?.status === 'finished' || apiData?.status === 'ended';
+
+      // Schedule'dan gelecek bölümler
+      if (isWatching && !isCompleted && Array.isArray(apiData?.schedule) && apiData?.title) {
+        const now = new Date();
+        apiData.schedule.forEach(ep => {
+          const airDate = new Date(ep.airDate);
+          if (airDate > now) {
+            calendarEvents.push({
+              id: `scheduled-ep-${content.id}-${ep.episode}`,
+              title: `🗓️ ${apiData.title} - ${ep.episode}. Bölüm (Tahmini)` ,
+              start: ep.airDate,
+              allDay: false
+            });
+          }
+        });
+      }
+      // Yayın tarihi
+      if (apiData?.releaseDate && apiData?.title) {
+        const releaseYear = parseInt(apiData.releaseDate);
+        const currentYear = new Date().getFullYear();
+        if (releaseYear >= currentYear) {
+          calendarEvents.push({
+            id: `release-${content.id}`,
+            title: `📅 ${apiData.title}`,
+            start: `${releaseYear}-01-01`,
+            allDay: true
+          });
+        }
+      }
+      // Sonraki bölüm
+      if (apiData?.relations?.nextEpisode?.airDate && apiData?.title) {
+        const airDate = apiData.relations.nextEpisode.airDate;
+        const formattedDate = airDate.includes('T') ? airDate : `${airDate}T20:00:00`;
+        calendarEvents.push({
+          id: `next-episode-${content.id}`,
+          title: `🎬 ${apiData.title} - ${apiData.relations.nextEpisode.episodeNumber}. Bölüm`,
+          start: formattedDate,
+          allDay: false
+        });
+      }
+      // Sonraki sezon
+      if (apiData?.relations?.nextSeason?.airDate && apiData?.title) {
+        const airDate = apiData.relations.nextSeason.airDate;
+        const formattedDate = airDate.includes('T') ? airDate : `${airDate}T00:00:00`;
+        calendarEvents.push({
+          id: `next-season-${content.id}`,
+          title: `🎭 ${apiData.title} - ${apiData.relations.nextSeason.seasonNumber}. Sezon`,
+          start: formattedDate,
+          allDay: true
+        });
+      }
+    });
+    const newNotifications = getUpcomingEpisodeNotifications(calendarEvents);
+    setNotifications(newNotifications);
+    // localStorage'dan son okunan bildirim sayısını al
+    const lastSeenCount = parseInt(localStorage.getItem(NOTIF_KEY) || '0', 10);
+    // Eğer yeni bildirim sayısı önceki kayıttan fazlaysa unread göster
+    setHasUnread(newNotifications.length > lastSeenCount);
+    // Bildirimler sıfırsa unread'i de sıfırla
+    if (newNotifications.length === 0) localStorage.setItem(NOTIF_KEY, '0');
+  }, [contents]);
+
+  const handleNotificationClick = () => {
+    setShowNotifications((prev) => {
+      // Panel açılırken unread'i sıfırla ve localStorage'a bildir
+      if (!prev) {
+        setHasUnread(false);
+        localStorage.setItem(NOTIF_KEY, notifications.length.toString());
+      }
+      return !prev;
+    });
+  };
+
   return (
     <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, background: 'var(--primary-bg)', borderBottom: '1px solid var(--border-color)', boxShadow: '0 2px 8px 0 rgba(0,0,0,0.18)' }}>
       {/* Header */}
@@ -98,7 +190,33 @@ const Navbar = () => {
           <span style={{ fontWeight: 700, fontSize: 18, color: 'var(--primary-text)', letterSpacing: 0.5 }}>Watchflow</span>
         </div>
         {/* Window Controls */}
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center', position: 'relative' }}>
+          {/* Bildirim ikonu */}
+          <button
+            onClick={handleNotificationClick}
+            style={{
+              width: 32,
+              height: 32,
+              color: 'var(--secondary-text)',
+              background: 'none',
+              border: 'none',
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              position: 'relative',
+              marginRight: 10
+            }}
+            aria-label="Bildirimler"
+          >
+            <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+            {notifications.length > 0 && hasUnread && (
+              <span style={{ position: 'absolute', top: 2, right: 2, background: '#ff5252', color: 'white', borderRadius: '50%', width: 15, height: 15, fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{notifications.length}</span>
+            )}
+          </button>
+          {/* Bildirim paneli component */}
+          <NotificationPanel open={showNotifications} onClose={() => setShowNotifications(false)} notifications={notifications} />
           <button onClick={handleMinimize} style={{ width: 28, height: 28, color: 'var(--secondary-text)', background: 'none', border: 'none', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" /></svg>
           </button>

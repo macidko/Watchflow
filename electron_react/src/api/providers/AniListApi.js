@@ -85,6 +85,7 @@ export class AniListApi extends ApiInterface {
           endDate { year month day }
           duration
           format
+          nextAiringEpisode { episode airingAt }
           relations {
             edges {
               relationType
