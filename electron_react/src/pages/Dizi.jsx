@@ -7,6 +7,8 @@ import ViewSwitcher from '../components/ViewSwitcher';
 import useContentStore from '../config/initialData';
 import { useDrag } from '../contexts/DragContext';
 import useViewMode from '../hooks/useViewMode';
+import { CATEGORIES, PAGES } from '../config/constants';
+import { t } from '../i18n';
 
 const Dizi = () => {
   // Ana içeriğe atla için ref
@@ -97,7 +99,7 @@ const Dizi = () => {
   style={{ background: 'var(--accent-color)', color: 'var(--primary-text)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 70%, transparent)', outlineColor: 'color-mix(in srgb, var(--accent-color) 70%, transparent)' }}
         tabIndex={0}
       >
-        İçeriğe atla
+        {t('common.skipToContent')}
       </a>
   <div style={{ minHeight: '100vh', background: 'var(--primary-bg)' }}>
       {/* Header */}
@@ -105,12 +107,12 @@ const Dizi = () => {
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <h1 style={{ fontSize: 30, fontWeight: 600, color: 'var(--primary-text)' }}>Diziler</h1>
-              <p style={{ fontSize: 18, color: 'var(--secondary-text)' }}>İzlediğin ve izleyeceğin dizileri organize et</p>
+              <h1 style={{ fontSize: 30, fontWeight: 600, color: 'var(--primary-text)' }}>{t('pages.dizi.title')}</h1>
+              <p style={{ fontSize: 18, color: 'var(--secondary-text)' }}>{t('pages.dizi.description')}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
                 <div style={{ height: 4, width: 64, borderRadius: 999, boxShadow: 'var(--card-shadow)', background: 'linear-gradient(90deg, var(--accent-color) 60%, transparent 100%)' }}></div>
                 <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 400 }}>
-                  {sliders.reduce((total, slider) => total + slider.items.length, 0)} Dizi
+                  {sliders.reduce((total, slider) => total + slider.items.length, 0)} {t('pages.dizi.count')}
                 </span>
               </div>
             </div>
@@ -118,17 +120,17 @@ const Dizi = () => {
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <ViewSwitcher viewMode={viewMode} toggleViewMode={toggleViewMode} />
               <SearchButton 
-                category="dizi" 
+                category={CATEGORIES.DIZI} 
                 style={{ background: 'var(--accent-color)', color: 'var(--primary-text)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent)' }}
               />
               <button
                 onClick={() => setShowManager(true)}
                 style={{ padding: '12px 24px', color: 'var(--primary-text)', background: 'var(--accent-color)', borderRadius: 16, fontWeight: 500, border: '1px solid color-mix(in srgb, var(--accent-color) 50%, transparent)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent)', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.3s' }}
               >
-                <svg style={{ width: 20, height: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Listeler" focusable="false">
+                <svg style={{ width: 20, height: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.lists')} focusable="false">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                 </svg>
-                Listeler
+                {t('common.lists')}
               </button>
             </div>
           </div>
@@ -145,17 +147,17 @@ const Dizi = () => {
                 <div style={{ width: 80, height: 80, margin: '0 auto', marginBottom: 24, background: 'var(--card-bg)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg style={{ width: 40, height: 40, color: 'var(--secondary-text)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <svg style={{ width: 32, height: 32, margin: '0 auto 8px auto' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
-                      <title>Dizi Yok</title>
+                      <title>{t('pages.dizi.empty.noContentTitle')}</title>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                   </svg>
                 </div>
-                <h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 16 }}>Henüz Dizi Yok</h2>
+                <h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 16 }}>{t('pages.dizi.empty.noContentTitle')}</h2>
                 <p style={{ color: 'var(--secondary-text)', marginBottom: 24 }}>
-                  Dizi koleksiyonunu oluşturmaya başla! Arama yaparak diziler ekleyebilir ve listeler oluşturabilirsin.
+                  {t('pages.dizi.empty.noContentDescription')}
                 </p>
                 <SearchButton 
-                  category="dizi" 
+                  category={CATEGORIES.DIZI} 
                   style={{ background: 'var(--accent-color)', color: 'var(--primary-text)' }}
                 />
               </div>
@@ -183,7 +185,7 @@ const Dizi = () => {
       {showManager && (
         <SliderManager 
           onClose={() => setShowManager(false)}
-          page="dizi"
+          page={PAGES.DIZI}
         />
       )}
 

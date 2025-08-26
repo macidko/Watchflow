@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Card from './Card';
 import CardSkeleton from './CardSkeleton';
 import { useDrag } from '../contexts/DragContext';
+import { t } from '../i18n';
 
 const Slider = ({ title, items = [], onCardClick, onCardMove, sliderId, isLoading = false, onQuickMove, rootRef }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -325,15 +326,15 @@ const Slider = ({ title, items = [], onCardClick, onCardMove, sliderId, isLoadin
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <h3 className="text-lg font-normal mb-2" style={{ color: 'var(--primary-text)' }}>Liste Boş</h3>
+              <h3 className="text-lg font-normal mb-2" style={{ color: 'var(--primary-text)' }}>{t('components.slider.emptyState.title')}</h3>
               <p className="text-sm mb-4" style={{ color: 'var(--secondary-text)' }}>
-                Henüz bu kategoride içerik yok. Arama yaparak içerik ekleyebilir veya başka listelerden sürükleyebilirsiniz.
+                {t('components.slider.emptyState.description')}
               </p>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm" style={{ background: 'color-mix(in srgb, var(--accent-color) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--accent-color) 20%, transparent)', color: 'var(--accent-color)' }}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--accent-color)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span style={{ color: 'var(--accent-color)' }}>Sürükle & Bırak</span>
+                <span style={{ color: 'var(--accent-color)' }}>{t('components.slider.emptyState.dragDrop')}</span>
               </div>
             </div>
           </div>

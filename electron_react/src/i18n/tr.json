@@ -1,0 +1,244 @@
+{
+  "navigation": {
+    "home": "Ana Sayfa",
+    "movies": "Filmler", 
+    "series": "Diziler",
+    "anime": "Anime",
+    "calendar": "Takvim",
+    "settings": "Ayarlar"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "close": "Kapat",
+    "cancel": "İptal",
+    "add": "Ekle",
+    "show": "Göster",
+    "hide": "Gizle",
+    "showMore": "Daha fazla",
+    "showLess": "Daha az",
+    "updating": "Güncelleniyor...",
+    "skipToContent": "İçeriğe atla",
+    "lists": "Listeler",
+    "content": "İçerik",
+    "search": "Arama",
+    "movies": "Filmler",
+    "series": "Diziler", 
+    "anime": "Anime"
+  },
+  "pages": {
+    "home": {
+      "title": "Ana Sayfa",
+      "description": "Tüm koleksiyonunuzun özeti",
+      "mainContentLabel": "Ana Sayfa Ana İçerik",
+      "collectionSlidersLabel": "Koleksiyon Sliders",
+      "totalContent": "Toplam {{count}} İçerik",
+      "empty": {
+        "noContentTitle": "Henüz İçerik Yok",
+        "noContentDescription": "Koleksiyonunu oluşturmaya başla! Arama yaparak içerik ekleyebilir ve listeler oluşturabilirsin."
+      }
+    },
+    "film": {
+      "title": "Filmler",
+      "description": "İzlediğin ve izleyeceğin filmleri organize et",
+      "count": "Film",
+      "empty": {
+        "noContentTitle": "Henüz Film Yok",
+        "noContentDescription": "Film koleksiyonunu oluşturmaya başla! Arama yaparak filmler ekleyebilir ve listeler oluşturabilirsin."
+      }
+    },
+    "dizi": {
+      "title": "Diziler", 
+      "description": "İzlediğin ve izleyeceğin dizileri organize et",
+      "count": "Dizi",
+      "empty": {
+        "noContentTitle": "Henüz Dizi Yok",
+        "noContentDescription": "Dizi koleksiyonunu oluşturmaya başla! Arama yaparak diziler ekleyebilir ve listeler oluşturabilirsin."
+      }
+    },
+    "anime": {
+      "title": "Anime",
+      "description": "İzlediğin ve izleyeceğin animeleri organize et",
+      "count": "Anime",
+      "empty": {
+        "noContentTitle": "Henüz Anime Yok",
+        "noContentDescription": "Anime koleksiyonunu oluşturmaya başla! Arama yaparak animeler ekleyebilir ve listeler oluşturabilirsin."
+      }
+    },
+    "takvim": {
+      "title": "İçerik Takvimi",
+      "description": "Film, dizi ve anime yayın tarihlerinizi takip edin"
+    },
+    "settings": {
+      "title": "Ayarlar",
+      "description": "Uygulama tercihlerini yönet",
+      "developing": "Ayarlar Geliştiriliyor",
+      "developingDescription": "Ayarlar sayfası şu anda geliştirme aşamasında. Yakında uygulama tercihlerini buradan yönetebileceksin.",
+      "downloadJson": "İçerik JSON'unu İndir",
+      "showLocalStorage": "Tüm LocalStorage İçeriğini Göster"
+    }
+  },
+  "components": {
+    "navbar": {
+      "lists": "Listeler"
+    },
+    "viewSwitcher": {
+      "listView": "Liste görünümü",
+      "gridView": "Grid görünümü"
+    },
+    "slider": {
+      "scrollLeft": "Sola kaydır",
+      "scrollRight": "Sağa kaydır", 
+      "empty": "Boş",
+      "emptyState": {
+        "title": "Liste Boş",
+        "description": "Henüz bu kategoride içerik yok. Arama yaparak içerik ekleyebilir veya başka listelerden sürükleyebilirsiniz.",
+        "dragDrop": "Sürükle & Bırak"
+      }
+    },
+    "search": {
+      "tabs": {
+        "all": "Tümü",
+        "movies": "Filmler", 
+        "series": "Diziler",
+        "anime": "Anime"
+      },
+      "placeholder": {
+        "title": "Aramaya başlayın",
+        "subtitle": "Favori film, dizi ve animelerinizi bulun"
+      },
+      "searchButton": "Ara",
+      "noResults": "Sonuç bulunamadı"
+    },
+    "sliderManager": {
+      "title": "Listeleri Yönet",
+      "newList": "+ Yeni Liste",
+      "newListModal": {
+        "title": "Yeni Liste Oluştur",
+        "placeholder": "Liste adı... (en az 3 karakter)",
+        "minLengthError": "Lütfen en az 3 karakterlik bir başlık girin.",
+        "successMessage": "Yeni slider başarıyla eklendi.",
+        "duplicateError": "Bu isimde bir slider zaten var. Farklı bir isim seçin.",
+        "duplicateToast": "Bu isimde bir slider zaten mevcut."
+      },
+      "deleteModal": {
+        "cantDeleteWarning": "Bu slider silinemez! İçinde {contentCount} içerik var. Önce slider'ı boşaltın.",
+        "confirmMessage": "Bu slider'ı silmek istediğinizden emin misiniz?",
+        "successMessage": "Slider başarıyla silindi.",
+        "errorMessage": "Slider silinemedi. Lütfen tekrar deneyin."
+      },
+      "noLists": "Bu sayfada henüz liste bulunmuyor.",
+      "deleteConfirm": "Bu slider'ı silmek istediğinizden emin misiniz?",
+      "cannotDelete": "Bu slider silinemez! İçinde {count} içerik var. Önce slider'ı boşaltın.",
+      "deleteSuccess": "Slider başarıyla silindi.",
+      "deleteFail": "Slider silinemedi. Lütfen tekrar deneyin.",
+      "buttons": {
+        "add": "Ekle",
+        "titleTooShort": "Başlık kısa"
+      }
+    },
+    "detailModal": {
+      "titleMissing": "Başlık Yok",
+      "updateSeasons": "Sezonları Güncelle",
+      "updateSeasonsTitle": "Sezon bilgilerini güncelle",
+      "duration": "Süre",
+      "budget": "Bütçe"
+    },
+    "statusBadge": {
+      "finished": "Tamamlandı",
+      "airing": "Devam Ediyor",
+      "completed": "Tamamlandı",
+      "ended": "Bitti"
+    }
+  },
+  "calendar": {
+    "locale": "tr",
+    "initialView": "dayGridMonth",
+    "headerToolbar": {
+      "left": "prev,next today",
+      "center": "title",
+      "right": "dayGridMonth,timeGridWeek,timeGridDay"
+    },
+    "buttonText": {
+      "today": "Bugün",
+      "month": "Ay", 
+      "week": "Hafta",
+      "day": "Gün"
+    },
+    "moreLinkText": "daha fazla",
+    "noEventsText": "Gösterilecek etkinlik yok",
+    "eventDisplay": "block",
+    "allDayText": "Tüm gün",
+    "slotMinTime": "06:00:00",
+    "slotMaxTime": "24:00:00",
+    "dayHeaderFormat": {
+      "weekday": "long"
+    },
+    "events": {
+      "dummyTitle": "🧪 Dummy Etkinlik (Test)",
+      "dummyDescription": "Bu sadece test amaçlı bir dummy etkinliktir.",
+      "scheduleDescription": "Tahmini yayın tarihi (schedule)"
+    }
+  },
+  "notifications": {
+    "types": {
+      "episode": "episode"
+    },
+    "messages": {
+      "todaySuffix": " bugün yayınlandı!",
+      "tomorrowSuffix": " yarın yayınlanacak!"
+    }
+  },
+  "schedule": {
+    "status": {
+      "ok": "ok",
+      "expired": "expired"
+    }
+  },
+  "storage": {
+    "keys": {
+      "zustand": "zustand-store"
+    }
+  },
+  "downloads": {
+    "contentsFilename": "watchflow-icerikler.json"
+  },
+  "alerts": {
+    "noRecord": "Kayıt bulunamadı!"
+  },
+  "colors": {
+    "default": "#1976d2",
+    "film": "#ff6b6b",
+    "dizi": "#43a047", 
+    "anime": "#45b7d1",
+    "nextEpisode": "#ffa726",
+    "nextSeason": "#9c27b0",
+    "dummyBg": "#607d8b",
+    "white": "white",
+    "transparent": "transparent"
+  },
+  "dates": {
+    "defaultScheduleTime": "T20:00:00",
+    "startOfDay": "T00:00:00"
+  },
+  "dummy": {
+    "eventId": "dummy-1",
+    "eventTitle": "🧪 Dummy Etkinlik (Test)",
+    "eventDate": "2025-08-25",
+    "eventDescription": "Bu sadece test amaçlı bir dummy etkinliktir."
+  },
+  "logs": {
+    "dateClicked": "Tarih tıklandı:",
+    "eventClicked": "Etkinlik tıklandı:"
+  },
+  "categories": {
+    "all": "all",
+    "film": "film",
+    "dizi": "dizi"
+  },
+  "pageIds": {
+    "home": "anasayfa",
+    "film": "film",
+    "dizi": "dizi", 
+    "anime": "anime"
+  }
+}

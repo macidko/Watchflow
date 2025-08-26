@@ -5,6 +5,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import useContentStore from '../config/initialData';
+import { t } from '../i18n';
 import './Takvim.css';
 
 const Takvim = () => {
@@ -135,8 +136,8 @@ const Takvim = () => {
   return (
     <div className="takvim-container">
       <div className="takvim-header">
-        <h1>İçerik Takvimi</h1>
-        <p>Film, dizi ve anime yayın tarihlerinizi takip edin</p>
+        <h1>{t('pages.takvim.title')}</h1>
+        <p>{t('pages.takvim.description')}</p>
       </div>
       
       <div className="takvim-content">

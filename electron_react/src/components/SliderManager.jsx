@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import useContentStore from '../config/initialData';
 import { useToast } from '../contexts/ToastContext';
+import { t } from '../i18n';
+import { validateTitle } from '../utils/validation';
 
 // Custom hook for debouncing
 const useDebounce = (callback, delay) => {
@@ -77,7 +79,6 @@ const SliderManager = ({ page, onClose }) => {
     deleteStatus,
     toggleStatusVisibility,
     reorderStatuses,
-    isStatusEmpty,
     getStatusContentCount
   } = useContentStore();
 
@@ -125,25 +126,27 @@ const SliderManager = ({ page, onClose }) => {
   };
 
   const handleAddSlider = () => {
-    if (!newSliderTitle.trim() || newSliderTitle.trim().length < 3) {
-      setAddError('Lütfen en az 3 karakterlik bir başlık girin.');
-      if (addInputRef.current) addInputRef.current.focus();
-      return;
-    }
-    
-    setAddError('');
-    const success = addStatus(page, {
-      title: newSliderTitle.trim(),
-      type: 'custom'
-    });
-    
-    if (success) {
-      setNewSliderTitle('');
-      setShowAddForm(false);
-      showToast('Yeni slider başarıyla eklendi.', 'success');
-    } else {
-      setAddError('Bu isimde bir slider zaten var. Farklı bir isim seçin.');
-      showToast('Bu isimde bir slider zaten mevcut.', 'warning');
+    try {
+      const validatedTitle = validateTitle(newSliderTitle);
+      
+      setAddError('');
+      const success = addStatus(page, {
+        title: validatedTitle,
+        type: 'custom'
+      });
+      
+      if (success) {
+        setNewSliderTitle('');
+        setShowAddForm(false);
+        showToast(t('components.sliderManager.newListModal.successMessage'), 'success');
+      } else {
+        setAddError(t('components.sliderManager.newListModal.duplicateError'));
+        showToast(t('components.sliderManager.newListModal.duplicateToast'), 'warning');
+        if (addInputRef.current) addInputRef.current.focus();
+      }
+    } catch (error) {
+      setAddError(error.message);
+      showToast(error.message, 'warning');
       if (addInputRef.current) addInputRef.current.focus();
     }
   };
@@ -315,9 +318,9 @@ const SliderManager = ({ page, onClose }) => {
                     onChange={e => setNewSliderType(e.target.value)}
                     style={{ background: 'var(--input-bg)', color: 'var(--primary-text)', padding: '12px 16px', borderRadius: '12px', border: `1px solid var(--border-color)`, outline: 'none' }}
                   >
-                    <option value="film">Filmler</option>
-                    <option value="dizi">Diziler</option>
-                    <option value="anime">Anime</option>
+                    <option value="film">{t('common.movies')}</option>
+                    <option value="dizi">{t('common.series')}</option>
+                    <option value="anime">{t('common.anime')}</option>
                   </select>
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
@@ -327,7 +330,7 @@ const SliderManager = ({ page, onClose }) => {
                     aria-disabled={!isAddValid}
                     disabled={!isAddValid}
                   >
-                    {isAddValid ? 'Ekle' : 'Başlık kısa'}
+                    {isAddValid ? t('components.sliderManager.buttons.add') : t('components.sliderManager.buttons.titleTooShort')}
                   </button>
                   <button
                     onClick={() => setShowAddForm(false)}

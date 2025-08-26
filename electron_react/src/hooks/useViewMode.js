@@ -10,9 +10,14 @@ function useViewMode(pageType = 'default') {
   
   // Component mount edildiğinde localStorage'dan tercihi yükle
   useEffect(() => {
-    const savedViewMode = localStorage.getItem(storageKey);
-    if (savedViewMode && ['normal', 'grid'].includes(savedViewMode)) {
-      setViewMode(savedViewMode);
+    try {
+      const savedViewMode = localStorage.getItem(storageKey);
+      if (savedViewMode && ['normal', 'grid'].includes(savedViewMode)) {
+        setViewMode(savedViewMode);
+      }
+    } catch (error) {
+      console.error('localStorage access error in useViewMode:', error);
+      // Hata durumunda varsayılan değeri kullan
     }
   }, [storageKey]);
   
@@ -20,7 +25,12 @@ function useViewMode(pageType = 'default') {
   const toggleViewMode = () => {
     const newMode = viewMode === 'normal' ? 'grid' : 'normal';
     setViewMode(newMode);
-    localStorage.setItem(storageKey, newMode);
+    try {
+      localStorage.setItem(storageKey, newMode);
+    } catch (error) {
+      console.error('localStorage write error in useViewMode:', error);
+      // Hata durumunda sadece state'i güncelle
+    }
   };
   
   return { viewMode, toggleViewMode };

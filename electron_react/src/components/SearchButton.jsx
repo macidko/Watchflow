@@ -8,6 +8,8 @@ import {
 } from '../api/index.js';
 import { TmdbApi } from '../api/providers/TmdbApi.js';
 import useContentStore from '../config/initialData.js';
+import { validateSearchQuery } from '../utils/validation.js';
+import { t } from '../i18n';
 
 const SearchButton = () => {
   // Store
@@ -16,8 +18,7 @@ const SearchButton = () => {
     getStatusesByPage,
     addContent,
     getContentsByPageAndStatus,
-    initializeStore,
-    getAllStatusesByPage
+    initializeStore
   } = useContentStore();
 
   // Local state
@@ -122,20 +123,17 @@ const SearchButton = () => {
 
   // Arama fonksiyonu - gerçek API çağrıları
   const performSearch = useCallback(async (query, category = 'all') => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    setIsLoading(true);
-    setSearchError('');
-
     try {
+      const validatedQuery = validateSearchQuery(query);
+      
+      setIsLoading(true);
+      setSearchError('');
+
       let results = [];
 
       if (isBulkMode) {
         // Toplu arama modu - Smart Result Limiting
-        const queries = query.split('\n').filter(q => q.trim());
+        const queries = validatedQuery.split('\n').filter(q => q.trim());
         if (queries.length === 0) {
           setSearchResults([]);
           return;
@@ -284,6 +282,19 @@ const SearchButton = () => {
 
       setSearchResults(uniqueResults);
     } catch (error) {
+      // Check if this is a validation error
+      if (error.message === 'Search query cannot be empty') {
+        setSearchResults([]);
+        return;
+      }
+      
+      if (error.message.includes('Search query')) {
+        setSearchError(error.message);
+        setSearchResults([]);
+        setIsLoading(false);
+        return;
+      }
+      
       console.error('Search failed:', error);
       setSearchError('Search failed. Please try again.');
       setSearchResults([]);
@@ -572,9 +583,9 @@ const SearchButton = () => {
         onClick={() => setShowModal(true)}
         className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all duration-300 ease-out shadow-xl border flex items-center gap-2 hover:scale-105 group focus-visible:outline-none focus-visible:ring-2"
         style={{ color: 'var(--primary-text)', background: 'var(--accent-color)', borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 15%, transparent)' }}
-        title="Arama yap"
+        title={t('components.search.searchButton')}
       >
-  <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Ara" focusable="false">
+  <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('components.search.searchButton')} focusable="false">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <span>Ara</span>
@@ -651,9 +662,9 @@ const SearchButton = () => {
                         disabled={isLoading}
                         className="p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 rounded"
                         style={{ color: 'var(--accent-color)' }}
-                        title="Arama Yap (Enter)"
+                        title={t('common.search')}
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Ara" focusable="false">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.search')} focusable="false">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                       </button>
@@ -1088,8 +1099,8 @@ const SearchButton = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
-                  <h3 className="font-normal mb-1 text-sm" style={{ color: 'var(--primary-text)' }}>Aramaya başlayın</h3>
-                  <p className="text-xs" style={{ color: 'var(--secondary-text)', marginBottom: '1rem' }}>Favori film, dizi ve animelerinizi bulun</p>
+                  <h3 className="font-normal mb-1 text-sm" style={{ color: 'var(--primary-text)' }}>{t('components.search.placeholder.title')}</h3>
+                  <p className="text-xs" style={{ color: 'var(--secondary-text)', marginBottom: '1rem' }}>{t('components.search.placeholder.subtitle')}</p>
                   
                   {/* Quick suggestions */}
                   <div className="flex flex-wrap justify-center gap-1.5">

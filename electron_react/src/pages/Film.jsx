@@ -7,6 +7,8 @@ import ViewSwitcher from '../components/ViewSwitcher';
 import useContentStore from '../config/initialData';
 import { useDrag } from '../contexts/DragContext';
 import useViewMode from '../hooks/useViewMode';
+import { CATEGORIES, PAGES } from '../config/constants';
+import { useTranslation, t } from '../i18n';
 
 const Film = () => {
   // Ana içeriğe atla için ref
@@ -101,7 +103,7 @@ const Film = () => {
   style={{ background: 'var(--accent-color)', color: 'var(--primary-text)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 70%, transparent)', outlineColor: 'color-mix(in srgb, var(--accent-color) 70%, transparent)' }}
         tabIndex={0}
       >
-        İçeriğe atla
+        {t('common.skipToContent')}
       </a>
   <div style={{ minHeight: '100vh', background: 'var(--primary-bg)' }}>
       {/* Header */}
@@ -109,12 +111,12 @@ const Film = () => {
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <h1 style={{ fontSize: 30, fontWeight: 600, color: 'var(--primary-text)' }}>Filmler</h1>
-              <p style={{ fontSize: 18, color: 'var(--secondary-text)' }}>İzlediğin ve izleyeceğin filmleri organize et</p>
+              <h1 style={{ fontSize: 30, fontWeight: 600, color: 'var(--primary-text)' }}>{t('pages.film.title')}</h1>
+              <p style={{ fontSize: 18, color: 'var(--secondary-text)' }}>{t('pages.film.description')}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
                 <div style={{ height: 4, width: 64, borderRadius: 999, boxShadow: 'var(--card-shadow)', background: 'linear-gradient(90deg, var(--accent-color) 60%, transparent 100%)' }}></div>
                 <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 400 }}>
-                  {sliders.reduce((total, slider) => total + slider.items.length, 0)} Film
+                  {sliders.reduce((total, slider) => total + slider.items.length, 0)} {t('pages.film.count')}
                 </span>
               </div>
             </div>
@@ -122,17 +124,17 @@ const Film = () => {
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <ViewSwitcher viewMode={viewMode} toggleViewMode={toggleViewMode} />
               <SearchButton 
-                category="film" 
+                category={CATEGORIES.FILM} 
                 style={{ background: 'var(--accent-color)', color: 'var(--primary-text)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent)' }}
               />
               <button
                 onClick={() => setShowManager(true)}
                 style={{ padding: '12px 24px', color: 'var(--primary-text)', background: 'var(--accent-color)', borderRadius: 16, fontWeight: 500, border: '1px solid color-mix(in srgb, var(--accent-color) 50%, transparent)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent)', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.3s' }}
               >
-                <svg style={{ width: 20, height: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Listeler" focusable="false">
+                <svg style={{ width: 20, height: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.lists')} focusable="false">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                 </svg>
-                Listeler
+                {t('common.lists')}
               </button>
             </div>
           </div>
@@ -149,17 +151,17 @@ const Film = () => {
                 <div style={{ width: 80, height: 80, margin: '0 auto', marginBottom: 24, background: 'var(--card-bg)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg style={{ width: 40, height: 40, color: 'var(--secondary-text)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <svg style={{ width: 32, height: 32, margin: '0 auto 8px auto' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
-                      <title>Film Yok</title>
+                      <title>{t('pages.film.empty.noContentTitle')}</title>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h4a1 1 0 011 1v18a1 1 0 01-1 1H3a1 1 0 01-1-1V1a1 1 0 011-1h4a1 1 0 011 1v3m0 0h8M7 4H3" />
                     </svg>
                   </svg>
                 </div>
-                <h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 16 }}>Henüz Film Yok</h2>
+                <h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 16 }}>{t('pages.film.empty.noContentTitle')}</h2>
                 <p style={{ color: 'var(--secondary-text)', marginBottom: 24 }}>
-                  Film koleksiyonunu oluşturmaya başla! Arama yaparak filmler ekleyebilir ve listeler oluşturabilirsin.
+                  {t('pages.film.empty.noContentDescription')}
                 </p>
                 <SearchButton 
-                  category="film" 
+                  category={CATEGORIES.FILM} 
                   style={{ background: 'var(--accent-color)', color: 'var(--primary-text)' }}
                 />
               </div>
@@ -186,7 +188,7 @@ const Film = () => {
       {/* Modals */}
       {showManager && (
         <SliderManager 
-          page="film" 
+          page={PAGES.FILM} 
           onClose={() => setShowManager(false)} 
         />
       )}
