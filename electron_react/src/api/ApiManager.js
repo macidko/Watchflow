@@ -73,7 +73,6 @@ export class ApiManager {
   async search(query, mediaType, options = {}) {
     const { 
       useFirstProvider = false,
-      timeout = this.config.defaultTimeout,
       enableFallback = true 
     } = options;
 
@@ -264,7 +263,7 @@ export class ApiManager {
 
         return results;
       } catch (error) {
-        console.warn('Optimized batch search failed, falling back to sequential');
+        console.warn('Optimized batch search failed, falling back to sequential', error.message);
       }
     }
 

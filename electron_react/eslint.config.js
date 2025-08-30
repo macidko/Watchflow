@@ -23,7 +23,20 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['preload.js', 'src/main/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
+    files: ['src/api/test.js'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
     },
   },
 ])

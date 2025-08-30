@@ -199,21 +199,21 @@ export async function searchWithOptions() {
 export async function errorHandlingExample() {
   try {
     // Geçersiz arama
-    const emptyResults = await searchAnime('');
+    await searchAnime('');
   } catch (error) {
     console.log('Empty query error handled:', error.message);
   }
 
   try {
     // Timeout örneği
-    const timeoutResults = await searchAnime('Test', { timeout: 1 }); // 1ms timeout
+    await searchAnime('Test', { timeout: 1 }); // 1ms timeout
   } catch (error) {
     console.log('Timeout error handled:', error.message);
   }
 
   try {
     // Geçersiz provider
-    const invalidProvider = await searchWithProvider(
+    await searchWithProvider(
       'Test', 
       'invalid_provider', 
       MediaTypes.ANIME
