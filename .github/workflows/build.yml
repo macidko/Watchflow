@@ -84,11 +84,9 @@ jobs:
           prerelease: false
       - name: Upload Release Assets
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-        uses: actions/upload-release-asset@v1
+        run: |
+          echo "Uploading assets from: electron_react/dist-electron/"
+          ls -la electron_react/dist-electron/
+          gh release upload ${{ github.ref_name }} electron_react/dist-electron/*.exe --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: electron_react/dist-electron/*.exe
-          asset_name: Watchflow-Setup.exe
-          asset_content_type: application/octet-stream
