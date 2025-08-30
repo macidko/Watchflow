@@ -3,7 +3,7 @@ import Navbar from './components/Navbar';
 import SearchButton from './components/SearchButton';
 import ThemeLoader from './components/ThemeLoader';
 import LayoutController from './components/LayoutController';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ToastProvider } from './contexts/ToastContext';
 import { DragProvider } from './contexts/DragContext';
 import Home from './pages/Home';

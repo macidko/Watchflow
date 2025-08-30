@@ -14,7 +14,26 @@ function createWindow() {
     },
   });
 
-  win.loadURL('http://localhost:5173'); // Vite dev server
+
+  const isDev = !app.isPackaged;
+  
+  // Debug: Log the environment and paths
+  console.log('isDev:', isDev);
+  console.log('__dirname:', __dirname);
+  console.log('app.isPackaged:', app.isPackaged);
+  console.log('process.resourcesPath:', process.resourcesPath);
+  
+  if (isDev) {
+    console.log('Loading dev server...');
+    win.loadURL('http://localhost:5173');
+  } else {
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    console.log('Loading file:', indexPath);
+    win.loadFile(indexPath);
+  }
+  
+  // Open DevTools for debugging
+  win.webContents.openDevTools();
 
   // IPC handlers for window controls
   ipcMain.handle('minimize-window', () => {

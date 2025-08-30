@@ -35,6 +35,79 @@
     "warning": "Warning",
     "info": "Info"
   },
+  "components": {
+    "navbar": {
+      "lists": "Lists"
+    },
+    "viewSwitcher": {
+      "listView": "List view",
+      "gridView": "Grid view"
+    },
+    "slider": {
+      "scrollLeft": "Scroll left",
+      "scrollRight": "Scroll right", 
+      "empty": "Empty",
+      "emptyState": {
+        "title": "List Empty",
+        "description": "No content in this category yet. You can search for content or drag items from other lists.",
+        "dragDrop": "Drag & Drop"
+      }
+    },
+    "search": {
+      "tabs": {
+        "all": "All",
+        "movies": "Movies", 
+        "series": "Series",
+        "anime": "Anime"
+      },
+      "placeholder": {
+        "title": "Start searching",
+        "subtitle": "Find your favorite movies, series and anime"
+      },
+      "searchButton": "Search",
+      "noResults": "No results found"
+    },
+    "sliderManager": {
+      "title": "Manage Lists",
+      "newList": "+ New List",
+      "newListModal": {
+        "title": "Create New List",
+        "placeholder": "List name... (at least 3 characters)",
+        "minLengthError": "Please enter a title with at least 3 characters.",
+        "successMessage": "New list added successfully.",
+        "duplicateError": "A list with this name already exists. Please choose a different name.",
+        "duplicateToast": "A list with this name already exists."
+      },
+      "deleteModal": {
+        "cantDeleteWarning": "This list cannot be deleted! It contains {contentCount} items. Please empty the list first.",
+        "confirmMessage": "Are you sure you want to delete this list?",
+        "successMessage": "List deleted successfully.",
+        "errorMessage": "List could not be deleted. Please try again."
+      },
+      "noLists": "No lists found on this page yet.",
+      "deleteConfirm": "Are you sure you want to delete this list?",
+      "cannotDelete": "This list cannot be deleted! It contains {count} items. Please empty the list first.",
+      "deleteSuccess": "List deleted successfully.",
+      "deleteFail": "List could not be deleted. Please try again.",
+      "buttons": {
+        "add": "Add",
+        "titleTooShort": "Title too short"
+      }
+    },
+    "detailModal": {
+      "titleMissing": "Title Missing",
+      "updateSeasons": "Update Seasons",
+      "updateSeasonsTitle": "Update season information",
+      "duration": "Duration",
+      "budget": "Budget"
+    },
+    "statusBadge": {
+      "finished": "Finished",
+      "airing": "Airing",
+      "completed": "Completed",
+      "ended": "Ended"
+    }
+  },
   "pages": {
     "home": {
       "title": "Home",
@@ -73,6 +146,10 @@
         "noContentTitle": "No Anime Yet",
         "noContentDescription": "Start building your anime collection! You can search for anime and create lists."
       }
+    },
+    "takvim": {
+      "title": "Content Calendar",
+      "description": "Track your movie, series and anime release dates"
     },
     "settings": {
       "title": "Settings",
@@ -153,15 +230,35 @@
         "github": "GitHub Repository",
         "license": "License"
       }
+    }
+  },
+  "calendar": {
+    "locale": "en",
+    "initialView": "dayGridMonth",
+    "headerToolbar": {
+      "left": "prev,next today",
+      "center": "title",
+      "right": "dayGridMonth,timeGridWeek,timeGridDay"
     },
-    "calendar": {
-      "title": "Calendar",
-      "description": "Track your watching schedule",
-      "events": "Events",
-      "empty": {
-        "noEvents": "No events scheduled",
-        "addEvents": "Add events to see them here"
-      }
+    "buttonText": {
+      "today": "Today",
+      "month": "Month", 
+      "week": "Week",
+      "day": "Day"
+    },
+    "moreLinkText": "more",
+    "noEventsText": "No events to display",
+    "eventDisplay": "block",
+    "allDayText": "All day",
+    "slotMinTime": "06:00:00",
+    "slotMaxTime": "24:00:00",
+    "dayHeaderFormat": {
+      "weekday": "long"
+    },
+    "events": {
+      "dummyTitle": "🧪 Dummy Event (Test)",
+      "dummyDescription": "This is just a test dummy event.",
+      "scheduleDescription": "Estimated release date (schedule)"
     }
   },
   "toast": {
@@ -175,17 +272,6 @@
     "settingsSaved": "Settings saved",
     "languageChanged": "Language changed to {{language}}",
     "themeChanged": "Theme changed to {{theme}}"
-  },
-  "search": {
-    "placeholder": "Search movies, series, anime...",
-    "noResults": "No results found",
-    "searching": "Searching...",
-    "tabs": {
-      "all": "All",
-      "movies": "Movies", 
-      "series": "Series",
-      "anime": "Anime"
-    }
   },
   "modals": {
     "confirmDelete": {
@@ -201,22 +287,28 @@
       "cancel": "Cancel"
     }
   },
-  "lists": {
-    "izliyorum": "Watching",
-    "izleyecegim": "Plan to Watch", 
-    "izledim": "Completed",
-    "biraktim": "Dropped",
-    "beklemede": "On Hold"
-  },
-  "status": {
-    "completed": "Completed",
-    "watching": "Watching",
-    "planToWatch": "Plan to Watch",
-    "dropped": "Dropped",
-    "onHold": "On Hold"
-  },
   "downloads": {
     "contentsFilename": "watchflow-contents.json"
+  },
+  "notifications": {
+    "types": {
+      "episode": "episode"
+    },
+    "messages": {
+      "todaySuffix": " is released today!",
+      "tomorrowSuffix": " will be released tomorrow!"
+    }
+  },
+  "schedule": {
+    "status": {
+      "ok": "ok",
+      "expired": "expired"
+    }
+  },
+  "storage": {
+    "keys": {
+      "zustand": "zustand-store"
+    }
   },
   "alerts": {
     "noRecord": "No record found!",

@@ -118,18 +118,17 @@ const AdvancedViewSwitcher = ({ onLayoutChange }) => {
         .advanced-view-switcher {
           display: flex;
           align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
+          gap: 8px;
         }
         
         .switcher-container {
           display: flex;
           align-items: center;
-          background: var(--card-bg);
-          border-radius: 16px;
-          padding: 4px;
-          border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
-          box-shadow: var(--card-shadow);
+          background: var(--secondary-bg);
+          border-radius: 12px;
+          padding: 2px;
+          border: 1px solid var(--border-color);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .preset-dropdown {
@@ -139,52 +138,47 @@ const AdvancedViewSwitcher = ({ onLayoutChange }) => {
         .preset-button {
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 8px 12px;
-          border: 1px solid var(--border-color);
-          background: var(--secondary-bg);
+          gap: 6px;
+          padding: 6px 10px;
+          border: none;
+          background: transparent;
           color: var(--primary-text);
-          border-radius: 12px;
+          border-radius: 8px;
           cursor: pointer;
           transition: all 0.2s;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 500;
         }
         
         .preset-button:hover {
-          border-color: var(--accent-color);
-          background: color-mix(in srgb, var(--accent-color) 10%, var(--secondary-bg));
+          background: var(--hover-bg);
         }
         
         .preset-menu {
           position: absolute;
           top: 100%;
-          left: 0;
           right: 0;
           background: var(--card-bg);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
+          border-radius: 8px;
           box-shadow: var(--popup-shadow);
           z-index: 100;
           margin-top: 4px;
+          min-width: 180px;
           overflow: hidden;
         }
         
         .preset-item {
           display: block;
           width: 100%;
-          padding: 12px 16px;
+          padding: 8px 12px;
           text-align: left;
           border: none;
           background: none;
           color: var(--primary-text);
           cursor: pointer;
           transition: all 0.2s;
-          border-bottom: 1px solid var(--border-color);
-        }
-        
-        .preset-item:last-child {
-          border-bottom: none;
+          font-size: 13px;
         }
         
         .preset-item:hover {
@@ -192,219 +186,249 @@ const AdvancedViewSwitcher = ({ onLayoutChange }) => {
         }
         
         .preset-item.active {
-          background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+          background: color-mix(in srgb, var(--accent-color) 8%, transparent);
           color: var(--accent-color);
+          font-weight: 500;
         }
         
-        .control-group {
+        .mode-switcher {
           display: flex;
           align-items: center;
-          gap: 8px;
-          background: var(--secondary-bg);
-          border-radius: 12px;
-          padding: 4px;
-          border: 1px solid var(--border-color);
+          gap: 2px;
         }
         
-        .control-button {
+        .mode-button {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 8px;
+          width: 32px;
+          height: 32px;
           border: none;
           background: transparent;
           color: var(--text-muted);
           cursor: pointer;
           transition: all 0.2s;
-          border-radius: 8px;
-          min-width: 36px;
-          min-height: 36px;
+          border-radius: 6px;
         }
         
-        .control-button:hover {
+        .mode-button:hover {
           background: var(--hover-bg);
           color: var(--primary-text);
         }
         
-        .control-button.active {
+        .mode-button.active {
           background: var(--accent-color);
           color: white;
         }
         
-        .control-button.active:hover {
-          background: var(--hover-color);
-        }
-        
-        .toggle-advanced {
+        .settings-toggle {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 36px;
-          height: 36px;
-          border: 1px solid var(--border-color);
-          background: var(--secondary-bg);
+          width: 32px;
+          height: 32px;
+          border: none;
+          background: transparent;
           color: var(--text-muted);
-          border-radius: 8px;
+          border-radius: 6px;
           cursor: pointer;
           transition: all 0.2s;
         }
         
-        .toggle-advanced:hover {
-          border-color: var(--accent-color);
-          color: var(--accent-color);
+        .settings-toggle:hover {
+          background: var(--hover-bg);
+          color: var(--primary-text);
         }
         
-        .toggle-advanced.active {
+        .settings-toggle.active {
+          background: var(--accent-color);
+          color: white;
+        }
+        
+        .advanced-panel {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          box-shadow: var(--popup-shadow);
+          z-index: 100;
+          margin-top: 8px;
+          padding: 16px;
+          min-width: 280px;
+        }
+        
+        .advanced-section {
+          margin-bottom: 16px;
+        }
+        
+        .advanced-section:last-child {
+          margin-bottom: 0;
+        }
+        
+        .section-title {
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text-muted);
+          margin-bottom: 8px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .option-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+          gap: 4px;
+        }
+        
+        .option-button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border: 1px solid var(--border-color);
+          background: var(--secondary-bg);
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.2s;
+          border-radius: 8px;
+          font-size: 16px;
+        }
+        
+        .option-button:hover {
+          border-color: var(--accent-color);
+          background: color-mix(in srgb, var(--accent-color) 5%, var(--secondary-bg));
+          color: var(--primary-text);
+        }
+        
+        .option-button.active {
           background: var(--accent-color);
           border-color: var(--accent-color);
           color: white;
         }
         
-        .advanced-controls {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-        
-        .control-label {
-          font-size: 12px;
-          color: var(--text-muted);
-          margin-right: 4px;
-        }
-        
         @media (max-width: 768px) {
           .advanced-view-switcher {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
           }
           
-          .advanced-controls {
-            justify-content: center;
+          .advanced-panel {
+            position: fixed;
+            top: auto;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            margin-top: 0;
           }
         }
       `}</style>
 
-      {/* Quick Preset Selector */}
-      <div className="preset-dropdown">
-        <button 
-          className="preset-button"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-        >
-          <span>📋</span>
-          <span>{currentLayout.preset || 'CUSTOM'}</span>
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        
-        {showAdvanced && (
-          <div className="preset-menu">
-            {Object.keys(LAYOUT_PRESETS).map(presetName => (
-              <button
-                key={presetName}
-                className={`preset-item ${currentLayout.preset === presetName ? 'active' : ''}`}
-                onClick={() => {
-                  handlePresetChange(presetName);
-                  setShowAdvanced(false);
-                }}
-              >
-                <div style={{ fontWeight: 500, marginBottom: '2px' }}>
-                  {presetName.replace('_', ' ')}
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                  {LAYOUT_PRESETS[presetName].mode} • {LAYOUT_PRESETS[presetName].cardSize} • {LAYOUT_PRESETS[presetName].style}
-                </div>
-              </button>
-            ))}
-            <button
-              className="preset-item"
-              onClick={() => {
-                resetToDefault();
-                setShowAdvanced(false);
-              }}
-            >
-              <div style={{ fontWeight: 500, color: 'var(--accent-color)' }}>
-                🔄 Reset to Default
-              </div>
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Quick Mode Switcher */}
-      <div className="control-group">
-        <span className="control-label">Mode</span>
-        {Object.values(LAYOUT_MODES).slice(0, 4).map(mode => (
-          <button
-            key={mode}
-            className={`control-button ${currentLayout.mode === mode ? 'active' : ''}`}
-            onClick={() => handleModeChange(mode)}
-            title={mode.charAt(0).toUpperCase() + mode.slice(1)}
+      <div className="switcher-container">
+        {/* Preset Selector */}
+        <div className="preset-dropdown">
+          <button 
+            className="preset-button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
           >
-            {layoutIcons[mode]}
+            <span>⚙️</span>
+            <span>{currentLayout.preset || 'Layout'}</span>
           </button>
-        ))}
+        </div>
+
+        {/* Quick Mode Switcher */}
+        <div className="mode-switcher">
+          {Object.values(LAYOUT_MODES).slice(0, 4).map(mode => (
+            <button
+              key={mode}
+              className={`mode-button ${currentLayout.mode === mode ? 'active' : ''}`}
+              onClick={() => handleModeChange(mode)}
+              title={`${mode.charAt(0).toUpperCase() + mode.slice(1)} Layout`}
+            >
+              {layoutIcons[mode]}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Advanced Controls Toggle */}
-      <button 
-        className={`toggle-advanced ${showAdvanced ? 'active' : ''}`}
-        onClick={() => setShowAdvanced(!showAdvanced)}
-        title="Advanced Options"
-      >
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-        </svg>
-      </button>
-
-      {/* Advanced Controls */}
+      {/* Advanced Panel */}
       {showAdvanced && (
-        <div className="advanced-controls">
-          {/* Card Size */}
-          <div className="control-group">
-            <span className="control-label">Size</span>
-            {Object.values(CARD_SIZES).map(size => (
-              <button
-                key={size}
-                className={`control-button ${currentLayout.cardSize === size ? 'active' : ''}`}
-                onClick={() => handleCardSizeChange(size)}
-                title={size.charAt(0).toUpperCase() + size.slice(1)}
-              >
-                <span style={{ fontSize: '14px' }}>{sizeIcons[size]}</span>
-              </button>
-            ))}
+        <div className="advanced-panel">
+          {/* Size Options */}
+          <div className="advanced-section">
+            <div className="section-title">Card Size</div>
+            <div className="option-grid">
+              {Object.values(CARD_SIZES).map(size => (
+                <button
+                  key={size}
+                  className={`option-button ${currentLayout.cardSize === size ? 'active' : ''}`}
+                  onClick={() => handleCardSizeChange(size)}
+                  title={size.charAt(0).toUpperCase() + size.slice(1)}
+                >
+                  {sizeIcons[size]}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Density */}
-          <div className="control-group">
-            <span className="control-label">Density</span>
-            {Object.values(SLIDER_DENSITIES).map(density => (
-              <button
-                key={density}
-                className={`control-button ${currentLayout.density === density ? 'active' : ''}`}
-                onClick={() => handleDensityChange(density)}
-                title={density.charAt(0).toUpperCase() + density.slice(1)}
-              >
-                <span style={{ fontSize: '14px' }}>{densityIcons[density]}</span>
-              </button>
-            ))}
+          {/* Density Options */}
+          <div className="advanced-section">
+            <div className="section-title">Spacing</div>
+            <div className="option-grid">
+              {Object.values(SLIDER_DENSITIES).map(density => (
+                <button
+                  key={density}
+                  className={`option-button ${currentLayout.density === density ? 'active' : ''}`}
+                  onClick={() => handleDensityChange(density)}
+                  title={density.charAt(0).toUpperCase() + density.slice(1)}
+                >
+                  {densityIcons[density]}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Style */}
-          <div className="control-group">
-            <span className="control-label">Style</span>
-            {Object.values(CARD_STYLES).map(style => (
+          {/* Style Options */}
+          <div className="advanced-section">
+            <div className="section-title">Style</div>
+            <div className="option-grid">
+              {Object.values(CARD_STYLES).map(style => (
+                <button
+                  key={style}
+                  className={`option-button ${currentLayout.style === style ? 'active' : ''}`}
+                  onClick={() => handleStyleChange(style)}
+                  title={style.charAt(0).toUpperCase() + style.slice(1)}
+                >
+                  {styleIcons[style]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Presets */}
+          <div className="advanced-section">
+            <div className="section-title">Presets</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+              {Object.keys(LAYOUT_PRESETS).map(presetName => (
+                <button
+                  key={presetName}
+                  className={`preset-item ${currentLayout.preset === presetName ? 'active' : ''}`}
+                  onClick={() => handlePresetChange(presetName)}
+                  style={{ padding: '8px 12px', borderRadius: '6px', margin: 0 }}
+                >
+                  {presetName.replace('_', ' ')}
+                </button>
+              ))}
               <button
-                key={style}
-                className={`control-button ${currentLayout.style === style ? 'active' : ''}`}
-                onClick={() => handleStyleChange(style)}
-                title={style.charAt(0).toUpperCase() + style.slice(1)}
+                className="preset-item"
+                onClick={resetToDefault}
+                style={{ padding: '8px 12px', borderRadius: '6px', margin: 0, color: 'var(--accent-color)' }}
               >
-                <span style={{ fontSize: '14px' }}>{styleIcons[style]}</span>
+                🔄 Reset
               </button>
-            ))}
+            </div>
           </div>
         </div>
       )}

@@ -19,13 +19,13 @@ const Takvim = () => {
     // Dummy etkinlik ekle (örnek: 25 Ağustos 2025)
     calendarEvents.push({
       id: DUMMY.EVENT_ID,
-      title: '🧪 Dummy Etkinlik (Test)',
+      title: t('calendar.events.dummyTitle'),
       start: DUMMY.EVENT_DATE,
       allDay: true,
       backgroundColor: COLORS.DUMMY_BG,
       borderColor: COLORS.TRANSPARENT,
       textColor: COLORS.WHITE,
-      description: 'Bu sadece test amaçlı bir dummy etkinliktir.'
+      description: t('calendar.events.dummyDescription')
     });
 
     Object.values(contents || {}).forEach(content => {
@@ -46,13 +46,13 @@ const Takvim = () => {
               else if (pageId === PAGES.ANIME) bgColor = COLORS.ANIME;
               calendarEvents.push({
                 id: `scheduled-ep-${content.id}-${ep.episode}`,
-                title: `🗓️ ${apiData.title} - ${ep.episode}. Bölüm (Tahmini)` ,
+                title: `🗓️ ${apiData.title} - ${ep.episode}. Bölüm (${t('calendar.events.scheduleDescription')})` ,
                 start: ep.airDate,
                 allDay: false,
                 backgroundColor: bgColor,
                 borderColor: 'transparent',
                 textColor: 'white',
-                description: 'Tahmini yayın tarihi (schedule)'
+                description: t('calendar.events.scheduleDescription')
               });
           }
         });
@@ -126,11 +126,11 @@ const Takvim = () => {
   }, [contents]);
 
   const handleDateClick = (arg) => {
-    console.log('Tarih tıklandı:', arg.dateStr);
+    console.log(t('logs.dateClicked'), arg.dateStr);
   };
 
   const handleEventClick = (clickInfo) => {
-    console.log('Etkinlik tıklandı:', clickInfo.event.title);
+    console.log(t('logs.eventClicked'), clickInfo.event.title);
   };
 
   return (
@@ -143,35 +143,26 @@ const Takvim = () => {
       <div className="takvim-content">
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-          }}
+          initialView={t('calendar.initialView')}
+          headerToolbar={t('calendar.headerToolbar')}
           events={events}
           dateClick={handleDateClick}
           eventClick={handleEventClick}
           height="calc(100vh - 200px)"
-          locale="tr"
+          locale={t('calendar.locale')}
           firstDay={1}
-          buttonText={{
-            today: 'Bugün',
-            month: 'Ay',
-            week: 'Hafta',
-            day: 'Gün'
-          }}
+          buttonText={t('calendar.buttonText')}
           dayMaxEvents={true}
-          moreLinkText="daha fazla"
-          noEventsText="Gösterilecek etkinlik yok"
-          eventDisplay="block"
+          moreLinkText={t('calendar.moreLinkText')}
+          noEventsText={t('calendar.noEventsText')}
+          eventDisplay={t('calendar.eventDisplay')}
           displayEventTime={true}
-          allDayText="Tüm gün"
-          slotMinTime="06:00:00"
-          slotMaxTime="24:00:00"
+          allDayText={t('calendar.allDayText')}
+          slotMinTime={t('calendar.slotMinTime')}
+          slotMaxTime={t('calendar.slotMaxTime')}
           expandRows={true}
           stickyHeaderDates={true}
-          dayHeaderFormat={{ weekday: 'long' }}
+          dayHeaderFormat={t('calendar.dayHeaderFormat')}
         />
       </div>
     </div>

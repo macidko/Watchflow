@@ -3,6 +3,15 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',
+  build: {
+    rollupOptions: {
+      output: {
+        format: 'iife',
+        name: 'App'
+      }
+    }
+  },
   plugins: [react()],
   server: {
     proxy: {

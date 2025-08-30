@@ -4,6 +4,14 @@ import { t } from '../i18n';
 import { useSettings } from '../hooks/useSettings';
 import { DataManagementService } from '../services/dataManagementService';
 import { THEMES, ACCENT_COLORS, LANGUAGES, LANGUAGE_CONFIG } from '../config/themeConfig';
+import { useLayoutDynamic } from '../hooks/useLayoutDynamic';
+import { 
+  LAYOUT_MODES, 
+  CARD_SIZES, 
+  SLIDER_DENSITIES, 
+  CARD_STYLES,
+  LAYOUT_PRESETS 
+} from '../config/layoutConfig';
 import Toast from '../components/Toast';
 
 const Ayarlar = () => {
@@ -13,6 +21,16 @@ const Ayarlar = () => {
     updateAccentColor, 
     updateLanguage
   } = useSettings();
+  
+  const { 
+    currentLayout, 
+    applyPreset, 
+    updateMode, 
+    updateCardSize, 
+    updateDensity, 
+    updateStyle,
+    resetToDefault
+  } = useLayoutDynamic();
   
   const [showStorage, setShowStorage] = useState(false);
   const [storageInfo, setStorageInfo] = useState({ items: [], totalSize: '0 B', itemCount: 0 });
@@ -93,6 +111,7 @@ const Ayarlar = () => {
 
   const sections = [
     { id: 'appearance', title: t('pages.settings.sections.appearance'), icon: '🎨' },
+    { id: 'layout', title: 'Layout Settings', icon: '📐' },
     { id: 'dataManagement', title: t('pages.settings.sections.dataManagement'), icon: '💾' },
     { id: 'language', title: t('pages.settings.sections.language'), icon: '🌍' },
     { id: 'about', title: t('pages.settings.sections.about'), icon: 'ℹ️' }
@@ -141,6 +160,161 @@ const Ayarlar = () => {
       </div>
     </div>
   );
+
+  const renderLayoutSection = () => {
+    const layoutIcons = {
+      [LAYOUT_MODES.SLIDER]: (
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+        </svg>
+      ),
+      [LAYOUT_MODES.GRID]: (
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+        </svg>
+      ),
+      [LAYOUT_MODES.LIST]: (
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        </svg>
+      ),
+      [LAYOUT_MODES.MASONRY]: (
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 11a1 1 0 011-1h4a1 1 0 011 1v8a1 1 0 01-1 1h-4a1 1 0 01-1-1v-8z" />
+        </svg>
+      ),
+      [LAYOUT_MODES.CAROUSEL]: (
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16l13-8L7 4z" />
+        </svg>
+      ),
+      [LAYOUT_MODES.TIMELINE]: (
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      )
+    };
+
+    const sizeLabels = {
+      [CARD_SIZES.COMPACT]: 'Compact',
+      [CARD_SIZES.SMALL]: 'Small', 
+      [CARD_SIZES.MEDIUM]: 'Medium',
+      [CARD_SIZES.LARGE]: 'Large',
+      [CARD_SIZES.EXTRA_LARGE]: 'Extra Large'
+    };
+
+    const densityLabels = {
+      [SLIDER_DENSITIES.TIGHT]: 'Tight',
+      [SLIDER_DENSITIES.NORMAL]: 'Normal',
+      [SLIDER_DENSITIES.RELAXED]: 'Relaxed',
+      [SLIDER_DENSITIES.SPACIOUS]: 'Spacious'
+    };
+
+    const styleLabels = {
+      [CARD_STYLES.MODERN]: 'Modern',
+      [CARD_STYLES.MINIMAL]: 'Minimal',
+      [CARD_STYLES.CLASSIC]: 'Classic',
+      [CARD_STYLES.COMPACT]: 'Compact',
+      [CARD_STYLES.ARTISTIC]: 'Artistic',
+      [CARD_STYLES.PROFESSIONAL]: 'Professional'
+    };
+
+    return (
+      <div className="settings-section">
+        <h3 className="section-title">Layout Settings</h3>
+        <p className="section-description">Customize how content is displayed and organized in your app.</p>
+        
+        {/* Layout Mode */}
+        <div className="setting-group">
+          <label className="setting-label">Layout Mode</label>
+          <div className="layout-options">
+            {Object.values(LAYOUT_MODES).map(mode => (
+              <button
+                key={mode}
+                className={`layout-option ${currentLayout.mode === mode ? 'active' : ''}`}
+                onClick={() => updateMode(mode)}
+              >
+                <div className="layout-icon">
+                  {layoutIcons[mode]}
+                </div>
+                <span className="layout-name">{mode.charAt(0).toUpperCase() + mode.slice(1)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Card Size */}
+        <div className="setting-group">
+          <label className="setting-label">Card Size</label>
+          <div className="size-options">
+            {Object.values(CARD_SIZES).map(size => (
+              <button
+                key={size}
+                className={`size-option ${currentLayout.cardSize === size ? 'active' : ''}`}
+                onClick={() => updateCardSize(size)}
+              >
+                <span className="size-label">{sizeLabels[size]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Spacing */}
+        <div className="setting-group">
+          <label className="setting-label">Spacing</label>
+          <div className="density-options">
+            {Object.values(SLIDER_DENSITIES).map(density => (
+              <button
+                key={density}
+                className={`density-option ${currentLayout.density === density ? 'active' : ''}`}
+                onClick={() => updateDensity(density)}
+              >
+                <span className="density-label">{densityLabels[density]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Style */}
+        <div className="setting-group">
+          <label className="setting-label">Card Style</label>
+          <div className="style-options">
+            {Object.values(CARD_STYLES).map(style => (
+              <button
+                key={style}
+                className={`style-option ${currentLayout.style === style ? 'active' : ''}`}
+                onClick={() => updateStyle(style)}
+              >
+                <span className="style-label">{styleLabels[style]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Presets */}
+        <div className="setting-group">
+          <label className="setting-label">Quick Presets</label>
+          <div className="preset-options">
+            {Object.keys(LAYOUT_PRESETS).map(presetName => (
+              <button
+                key={presetName}
+                className={`preset-option ${currentLayout.preset === presetName ? 'active' : ''}`}
+                onClick={() => applyPreset(presetName)}
+              >
+                <span className="preset-label">{presetName.replace('_', ' ')}</span>
+              </button>
+            ))}
+            <button
+              className="preset-option reset"
+              onClick={resetToDefault}
+            >
+              <span className="preset-label">Reset to Default</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderDataManagementSection = () => (
     <div className="settings-section">
@@ -318,6 +492,7 @@ const Ayarlar = () => {
             {/* Main Content */}
             <div className="settings-main">
               {activeSection === 'appearance' && renderAppearanceSection()}
+              {activeSection === 'layout' && renderLayoutSection()}
               {activeSection === 'dataManagement' && renderDataManagementSection()}
               {activeSection === 'language' && renderLanguageSection()}
               {activeSection === 'about' && renderAboutSection()}
@@ -824,6 +999,143 @@ const Ayarlar = () => {
           .language-options {
             grid-template-columns: 1fr;
           }
+        }
+
+        /* Layout Settings Styles */
+        .layout-options {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          gap: 12px;
+          margin-top: 12px;
+        }
+
+        .layout-option {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding: 16px 12px;
+          border: 2px solid var(--border-color);
+          border-radius: var(--border-radius-md);
+          background: var(--secondary-bg);
+          color: var(--primary-text);
+          cursor: pointer;
+          transition: var(--transition-standard);
+          text-align: center;
+        }
+
+        .layout-option:hover {
+          border-color: var(--accent-color);
+          background: color-mix(in srgb, var(--accent-color) 5%, var(--secondary-bg));
+        }
+
+        .layout-option.active {
+          border-color: var(--accent-color);
+          background: color-mix(in srgb, var(--accent-color) 10%, var(--secondary-bg));
+          color: var(--accent-color);
+        }
+
+        .layout-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          color: var(--text-muted);
+        }
+
+        .layout-option.active .layout-icon {
+          color: var(--accent-color);
+        }
+
+        .layout-name {
+          font-size: 14px;
+          font-weight: 500;
+        }
+
+        .size-options,
+        .density-options,
+        .style-options {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-top: 12px;
+        }
+
+        .size-option,
+        .density-option,
+        .style-option {
+          padding: 8px 16px;
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-md);
+          background: var(--secondary-bg);
+          color: var(--primary-text);
+          cursor: pointer;
+          transition: var(--transition-standard);
+          font-size: 14px;
+          font-weight: 500;
+        }
+
+        .size-option:hover,
+        .density-option:hover,
+        .style-option:hover {
+          border-color: var(--accent-color);
+          background: color-mix(in srgb, var(--accent-color) 5%, var(--secondary-bg));
+        }
+
+        .size-option.active,
+        .density-option.active,
+        .style-option.active {
+          border-color: var(--accent-color);
+          background: var(--accent-color);
+          color: white;
+        }
+
+        .preset-options {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          gap: 8px;
+          margin-top: 12px;
+        }
+
+        .preset-option {
+          padding: 12px 16px;
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-md);
+          background: var(--secondary-bg);
+          color: var(--primary-text);
+          cursor: pointer;
+          transition: var(--transition-standard);
+          font-size: 14px;
+          font-weight: 500;
+          text-align: center;
+        }
+
+        .preset-option:hover {
+          border-color: var(--accent-color);
+          background: color-mix(in srgb, var(--accent-color) 5%, var(--secondary-bg));
+        }
+
+        .preset-option.active {
+          border-color: var(--accent-color);
+          background: color-mix(in srgb, var(--accent-color) 10%, var(--secondary-bg));
+          color: var(--accent-color);
+        }
+
+        .preset-option.reset {
+          border-color: var(--danger-color);
+          color: var(--danger-color);
+        }
+
+        .preset-option.reset:hover {
+          background: color-mix(in srgb, var(--danger-color) 5%, var(--secondary-bg));
+        }
+
+        .size-label,
+        .density-label,
+        .style-label,
+        .preset-label {
+          white-space: nowrap;
         }
       `}</style>
     </div>

@@ -170,12 +170,12 @@ const SliderManager = ({ page, onClose }) => {
       return;
     }
     
-    if (window.confirm('Bu slider\'ı silmek istediğinizden emin misiniz?')) {
+    if (window.confirm(t('components.sliderManager.deleteConfirm'))) {
       const success = deleteStatus(page, sliderId);
       if (success) {
-        showToast('Slider başarıyla silindi.', 'success');
+        showToast(t('components.sliderManager.deleteSuccess'), 'success');
       } else {
-        showToast('Slider silinemedi. Lütfen tekrar deneyin.', 'error');
+        showToast(t('components.sliderManager.deleteFail'), 'error');
       }
     }
   };
