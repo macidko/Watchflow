@@ -164,7 +164,6 @@ electron_react/*.tsbuildinfo
 electron_react/.stylelintcache
 
 ## Lock dosyaları (isteğe bağlı)
-electron_react/package-lock.json
 electron_react/yarn.lock
 electron_react/pnpm-lock.yaml
 
