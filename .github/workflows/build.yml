@@ -1,24 +1,43 @@
-name: Build
+name: Build Electron React
 
 on:
   push:
     branches:
       - main
-
+    paths:
+      - 'electron_react/**'
 
 jobs:
   build:
-    name: Build and analyze
+    name: Build and analyze Electron React
     runs-on: windows-latest
     
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: |
+          cd electron_react
+          npm install
+      - name: Run lint
+        run: |
+          cd electron_react
+          npm run lint
+      - name: Build
+        run: |
+          cd electron_react
+          npm run build
       - uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: electron_react
       # If you wish to fail your job when the Quality Gate is red, uncomment the
       # following lines. This would typically be used to fail a deployment.
       # - uses: SonarSource/sonarqube-quality-gate-action@v1
