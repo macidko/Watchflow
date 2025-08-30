@@ -10,7 +10,7 @@
     "start": "electron .",
     "lint": "eslint .",
     "preview": "vite preview",
-    "electron-build": "electron-builder",
+    "electron-build": "electron-builder --win",
     "release": "standard-version",
     "release:patch": "standard-version --release-as patch",
     "release:minor": "standard-version --release-as minor",
