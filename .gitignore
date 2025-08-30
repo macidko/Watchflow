@@ -93,6 +93,7 @@ electron_react/lerna-debug.log*
 ## Üretim dosyaları
 electron_react/dist/
 electron_react/dist-ssr/
+electron_react/dist-electron
 electron_react/build/
 electron_react/out/
 
@@ -103,6 +104,8 @@ electron_react/.env.development.local
 electron_react/.env.test.local
 electron_react/.env.production.local
 electron_react/*.local
+electron_react/.github/copilot-instructions.md
+
 
 ## Günlükler
 electron_react/logs/

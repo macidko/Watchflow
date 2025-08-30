@@ -64,6 +64,16 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Run SonarCloud Scan
+      uses: SonarSource/sonarqube-scan-action@v5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.projectKey=Watchflow
+          -Dsonar.organization=macidko
+          -Dsonar.projectVersion=${{ steps.bump_version.outputs.new_version }}
+
     - name: Create and push tag
       run: |
         git config --local user.email "action@github.com"
