@@ -7,6 +7,9 @@ on:
     paths:
       - 'electron_react/**'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build and analyze Electron React
