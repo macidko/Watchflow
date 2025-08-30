@@ -1,0 +1,80 @@
+name: Auto Version and Build
+
+on:
+  push:
+    branches:
+      - main
+    # Her commit'te çalışır (paths kaldırıldı)
+
+jobs:
+  version-and-build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Get commit message
+      id: get_commit
+      run: |
+        COMMIT_MSG=$(git log -1 --pretty=%B)
+        echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+
+    - name: Determine version bump type
+      id: bump_type
+      run: |
+        if [[ "${{ steps.get_commit.outputs.commit_message }}" == *"[major]"* ]]; then
+          echo "version_type=major" >> $GITHUB_OUTPUT
+        elif [[ "${{ steps.get_commit.outputs.commit_message }}" == *"[minor]"* ]]; then
+          echo "version_type=minor" >> $GITHUB_OUTPUT
+        else
+          echo "version_type=patch" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Get current version
+      id: get_version
+      run: |
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Bump version
+      id: bump_version
+      run: |
+        npm version ${{ steps.bump_type.outputs.version_type }} --no-git-tag-version
+        NEW_VERSION=$(node -p "require('./package.json').version")
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Build React app
+      run: npm run build
+
+    - name: Build Electron app
+      run: npm run electron-build -- --win
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create and push tag
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add package.json
+        git commit -m "Bump version to ${{ steps.bump_version.outputs.new_version }} [${{ steps.bump_type.outputs.version_type }}]"
+        git tag "v${{ steps.bump_version.outputs.new_version }}"
+        git push origin main --tags
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: watchflow-setup
+        path: dist-electron/*.exe

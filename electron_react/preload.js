@@ -1,4 +1,7 @@
-window.addEventListener('DOMContentLoaded', () => {
-  // Example: Expose a version API
-  // window.versions = { node: process.versions.node };
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  minimize: () => ipcRenderer.invoke('minimize-window'),
+  maximize: () => ipcRenderer.invoke('maximize-window'),
+  close: () => ipcRenderer.invoke('close-window'),
 });
