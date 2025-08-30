@@ -39,6 +39,9 @@ jobs:
         run: |
           cd electron_react
           npm run electron-build
+      - name: List Build Files
+        run: |
+          ls -la electron_react/dist-electron/
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
