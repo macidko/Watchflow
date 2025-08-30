@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Slider from '../components/Slider';
+import DynamicSlider from '../components/DynamicSlider';
 import SliderManager from '../components/SliderManager';
 import SearchButton from '../components/SearchButton';
 import DetailModal from '../components/DetailModal';
@@ -8,7 +9,7 @@ import useContentStore from '../config/initialData';
 import { useDrag } from '../contexts/DragContext';
 import useViewMode from '../hooks/useViewMode';
 import { CATEGORIES, PAGES } from '../config/constants';
-import { useTranslation, t } from '../i18n';
+import { t } from '../i18n';
 
 const Film = () => {
   // Ana içeriğe atla için ref
@@ -17,7 +18,7 @@ const Film = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   
   // Görünüm modu için custom hook (grid/list)
-  const { viewMode, toggleViewMode } = useViewMode('film');
+  const { viewMode, toggleViewMode } = useViewMode(PAGES.FILM);
   
   // Zustand store'dan verileri al
   const { 
@@ -34,9 +35,9 @@ const Film = () => {
 
   // Film sayfası için slider verilerini hazırla
   // Zustand store'dan slider listesini doğrudan oluştur
-  const filmStatuses = getStatusesByPage('film');
+  const filmStatuses = getStatusesByPage(PAGES.FILM);
   const sliders = filmStatuses.map(status => {
-    const contents = getContentsByPageAndStatus('film', status.id);
+    const contents = getContentsByPageAndStatus(PAGES.FILM, status.id);
     return {
       id: `film-${status.id}`,
       title: status.title,
@@ -77,7 +78,7 @@ const Film = () => {
     // Slider ID'lerini status ID'lerine çevir
     const fromStatusId = fromSliderId.replace('film-', '');
     const toStatusId = toSliderId.replace('film-', '');
-    const success = moveContentBetweenStatuses(cardItem, fromStatusId, toStatusId, 'film');
+    const success = moveContentBetweenStatuses(cardItem, fromStatusId, toStatusId, PAGES.FILM);
     if (success) {
       // Kart taşındıktan sonra hedef slider'a scroll
       setTimeout(() => {
@@ -169,7 +170,7 @@ const Film = () => {
           ) : (
             <div className={'sliders ' + (isDragging ? 'compact' : viewMode)}>
               {sliders.map(slider => (
-                <Slider
+                <DynamicSlider
                   key={slider.id}
                   rootRef={el => (sliderRefs.current[slider.id] = el)}
                   title={<h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>{slider.title}</h2>}

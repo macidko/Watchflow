@@ -3,6 +3,8 @@ import useContentStore from '../config/initialData';
 import { useToast } from '../contexts/ToastContext';
 import { t } from '../i18n';
 import { validateTitle } from '../utils/validation';
+import AdvancedViewSwitcher from './AdvancedViewSwitcher';
+import DynamicSlider from './DynamicSlider';
 
 // Custom hook for debouncing
 const useDebounce = (callback, delay) => {
@@ -200,16 +202,32 @@ const SliderManager = ({ page, onClose }) => {
           <h2 className="text-xl font-semibold drop-shadow-lg" style={{ color: 'var(--primary-text)' }}>
             Listeleri Yönet
           </h2>
-          <button
-            onClick={onClose}
-                className="p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2"
-                style={{ background: 'var(--secondary-bg)', color: 'var(--secondary-text)', boxShadow: '0 0 0 2px var(--accent-color)' }}
-            title="Kapat"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Layout Switcher */}
+            <div className="hidden sm:block">
+              <AdvancedViewSwitcher onLayoutChange={(layout) => {
+                // Layout değişikliği burada handle edilebilir
+                console.log('Layout changed:', layout);
+              }} />
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2"
+              style={{ background: 'var(--secondary-bg)', color: 'var(--secondary-text)', boxShadow: '0 0 0 2px var(--accent-color)' }}
+              title="Kapat"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Layout Switcher */}
+        <div className="block sm:hidden mb-4">
+          <AdvancedViewSwitcher onLayoutChange={(layout) => {
+            console.log('Layout changed:', layout);
+          }} />
         </div>
 
         {/* Slider List */}

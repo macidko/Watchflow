@@ -23,7 +23,17 @@
     "search": "Arama",
     "movies": "Filmler",
     "series": "Diziler", 
-    "anime": "Anime"
+    "anime": "Anime",
+    "save": "Kaydet",
+    "reset": "Sıfırla",
+    "export": "Dışa Aktar",
+    "import": "İçe Aktar",
+    "language": "Dil",
+    "theme": "Tema",
+    "success": "Başarılı",
+    "error": "Hata",
+    "warning": "Uyarı",
+    "info": "Bilgi"
   },
   "pages": {
     "home": {
@@ -71,10 +81,82 @@
     "settings": {
       "title": "Ayarlar",
       "description": "Uygulama tercihlerini yönet",
-      "developing": "Ayarlar Geliştiriliyor",
-      "developingDescription": "Ayarlar sayfası şu anda geliştirme aşamasında. Yakında uygulama tercihlerini buradan yönetebileceksin.",
-      "downloadJson": "İçerik JSON'unu İndir",
-      "showLocalStorage": "Tüm LocalStorage İçeriğini Göster"
+      "developing": "Ayarlar Paneli",
+      "developingDescription": "Uygulama tercihlerini yönet ve verilerini yönet.",
+      "downloadJson": "Verileri Dışa Aktar",
+      "showLocalStorage": "Tüm LocalStorage İçeriğini Göster",
+      "sections": {
+        "general": "Genel Ayarlar",
+        "appearance": "Görünüm",
+        "dataManagement": "Veri Yönetimi",
+        "language": "Dil & Bölge",
+        "about": "Hakkında"
+      },
+      "general": {
+        "title": "Genel Ayarlar",
+        "description": "Temel uygulama tercihlerini yapılandır"
+      },
+      "appearance": {
+        "title": "Görünüm",
+        "description": "Uygulamanın nasıl göründüğünü özelleştir",
+        "theme": "Tema",
+        "themeOptions": {
+          "dark": "Koyu",
+          "light": "Açık",
+          "auto": "Otomatik (Sistem)"
+        },
+        "accentColor": "Vurgu Rengi",
+        "accentColors": {
+          "orange": "Turuncu (Varsayılan)",
+          "blue": "Mavi",
+          "green": "Yeşil",
+          "purple": "Mor",
+          "red": "Kırmızı",
+          "yellow": "Sarı"
+        }
+      },
+      "dataManagement": {
+        "title": "Veri Yönetimi",
+        "description": "Verilerini yedekle, geri yükle ve yönet",
+        "export": {
+          "title": "Verileri Dışa Aktar",
+          "description": "Tüm koleksiyonunu JSON dosyası olarak indir",
+          "button": "Koleksiyonu Dışa Aktar"
+        },
+        "import": {
+          "title": "Verileri İçe Aktar",
+          "description": "Koleksiyonunu JSON dosyasından geri yükle",
+          "button": "Koleksiyonu İçe Aktar",
+          "selectFile": "Dosya Seç",
+          "dragDrop": "Veya JSON dosyanızı buraya sürükleyip bırakın"
+        },
+        "reset": {
+          "title": "Uygulamayı Sıfırla",
+          "description": "Tüm verileri temizle ve varsayılanlara döndür",
+          "button": "Tüm Verileri Sıfırla",
+          "warning": "Bu işlem geri alınamaz!"
+        },
+        "storage": {
+          "title": "Depolama Bilgileri",
+          "description": "Mevcut depolama kullanımını görüntüle",
+          "show": "Depolama Detaylarını Göster",
+          "hide": "Depolama Detaylarını Gizle"
+        }
+      },
+      "language": {
+        "title": "Dil & Bölge",
+        "description": "Tercih ettiğin dili seç",
+        "currentLanguage": "Mevcut Dil",
+        "availableLanguages": "Mevcut Diller"
+      },
+      "about": {
+        "title": "Watchflow Hakkında",
+        "description": "Uygulama bilgileri ve krediler",
+        "version": "Sürüm",
+        "author": "Geliştirici",
+        "github": "GitHub Deposu",
+        "license": "Lisans"
+      }
     }
   },
   "components": {
@@ -203,7 +285,38 @@
     "contentsFilename": "watchflow-icerikler.json"
   },
   "alerts": {
-    "noRecord": "Kayıt bulunamadı!"
+    "noRecord": "Kayıt bulunamadı!",
+    "invalidFile": "Geçersiz dosya formatı!",
+    "importSuccess": "Veriler başarıyla içe aktarıldı!",
+    "importError": "Veri içe aktarma hatası!",
+    "resetSuccess": "Tüm veriler sıfırlandı!",
+    "resetError": "Veri sıfırlama hatası!"
+  },
+  "toast": {
+    "added": "{{list}} listesine eklendi",
+    "removed": "{{list}} listesinden çıkarıldı",
+    "success": "İşlem başarıyla tamamlandı",
+    "error": "Bir hata oluştu",
+    "dataExported": "Veriler başarıyla dışa aktarıldı",
+    "dataImported": "Veriler başarıyla içe aktarıldı",
+    "dataReset": "Tüm veriler sıfırlandı",
+    "settingsSaved": "Ayarlar kaydedildi",
+    "languageChanged": "Dil {{language}} olarak değiştirildi",
+    "themeChanged": "Tema {{theme}} olarak değiştirildi"
+  },
+  "modals": {
+    "confirmDelete": {
+      "title": "Silmeyi Onayla",
+      "message": "Bu öğeyi silmek istediğinizden emin misiniz?",
+      "confirm": "Sil",
+      "cancel": "İptal"
+    },
+    "confirmReset": {
+      "title": "Tüm Verileri Sıfırla",
+      "message": "Bu işlem tüm koleksiyonlarınızı, listelerinizi ve ayarlarınızı kalıcı olarak silecektir. Bu işlem geri alınamaz.",
+      "confirm": "Her Şeyi Sıfırla",
+      "cancel": "İptal"
+    }
   },
   "colors": {
     "default": "#1976d2",

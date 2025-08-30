@@ -1,0 +1,265 @@
+{
+  "navigation": {
+    "home": "Home",
+    "movies": "Movies", 
+    "series": "Series",
+    "anime": "Anime",
+    "calendar": "Calendar",
+    "settings": "Settings"
+  },
+  "common": {
+    "loading": "Loading...",
+    "close": "Close",
+    "cancel": "Cancel",
+    "add": "Add",
+    "show": "Show",
+    "hide": "Hide",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "updating": "Updating...",
+    "skipToContent": "Skip to content",
+    "lists": "Lists",
+    "content": "Content",
+    "search": "Search",
+    "movies": "Movies",
+    "series": "Series", 
+    "anime": "Anime",
+    "save": "Save",
+    "reset": "Reset",
+    "export": "Export",
+    "import": "Import",
+    "language": "Language",
+    "theme": "Theme",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info"
+  },
+  "pages": {
+    "home": {
+      "title": "Home",
+      "description": "Overview of your entire collection",
+      "mainContentLabel": "Home Main Content",
+      "collectionSlidersLabel": "Collection Sliders",
+      "totalContent": "Total {{count}} Content",
+      "empty": {
+        "noContentTitle": "No Content Yet",
+        "noContentDescription": "Start building your collection! You can search for content and create lists."
+      }
+    },
+    "film": {
+      "title": "Movies",
+      "description": "Organize movies you've watched and plan to watch",
+      "count": "Movie",
+      "empty": {
+        "noContentTitle": "No Movies Yet",
+        "noContentDescription": "Start building your movie collection! You can search for movies and create lists."
+      }
+    },
+    "dizi": {
+      "title": "Series",
+      "description": "Organize series you've watched and plan to watch",
+      "count": "Series",
+      "empty": {
+        "noContentTitle": "No Series Yet",
+        "noContentDescription": "Start building your series collection! You can search for series and create lists."
+      }
+    },
+    "anime": {
+      "title": "Anime",
+      "description": "Organize anime you've watched and plan to watch",
+      "count": "Anime",
+      "empty": {
+        "noContentTitle": "No Anime Yet",
+        "noContentDescription": "Start building your anime collection! You can search for anime and create lists."
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Customize your Watchflow experience",
+      "developing": "Settings Panel",
+      "developingDescription": "Customize your application preferences and manage your data.",
+      "downloadJson": "Export Data",
+      "showLocalStorage": "Show Local Storage",
+      "sections": {
+        "general": "General Settings",
+        "appearance": "Appearance",
+        "dataManagement": "Data Management",
+        "language": "Language & Region",
+        "about": "About"
+      },
+      "general": {
+        "title": "General Settings",
+        "description": "Configure basic application preferences"
+      },
+      "appearance": {
+        "title": "Appearance",
+        "description": "Customize how the application looks",
+        "theme": "Theme",
+        "themeOptions": {
+          "dark": "Dark",
+          "light": "Light",
+          "auto": "Auto (System)"
+        },
+        "accentColor": "Accent Color",
+        "accentColors": {
+          "orange": "Orange (Default)",
+          "blue": "Blue",
+          "green": "Green",
+          "purple": "Purple",
+          "red": "Red",
+          "yellow": "Yellow"
+        }
+      },
+      "dataManagement": {
+        "title": "Data Management",
+        "description": "Backup, restore and manage your data",
+        "export": {
+          "title": "Export Data",
+          "description": "Download your entire collection as JSON file",
+          "button": "Export Collection"
+        },
+        "import": {
+          "title": "Import Data", 
+          "description": "Restore your collection from a JSON file",
+          "button": "Import Collection",
+          "selectFile": "Select File",
+          "dragDrop": "Or drag and drop your JSON file here"
+        },
+        "reset": {
+          "title": "Reset Application",
+          "description": "Clear all data and reset to defaults",
+          "button": "Reset All Data",
+          "warning": "This action cannot be undone!"
+        },
+        "storage": {
+          "title": "Storage Information",
+          "description": "View current storage usage",
+          "show": "Show Storage Details",
+          "hide": "Hide Storage Details"
+        }
+      },
+      "language": {
+        "title": "Language & Region",
+        "description": "Choose your preferred language",
+        "currentLanguage": "Current Language",
+        "availableLanguages": "Available Languages"
+      },
+      "about": {
+        "title": "About Watchflow",
+        "description": "Application information and credits",
+        "version": "Version",
+        "author": "Developer",
+        "github": "GitHub Repository",
+        "license": "License"
+      }
+    },
+    "calendar": {
+      "title": "Calendar",
+      "description": "Track your watching schedule",
+      "events": "Events",
+      "empty": {
+        "noEvents": "No events scheduled",
+        "addEvents": "Add events to see them here"
+      }
+    }
+  },
+  "toast": {
+    "added": "Added to {{list}}",
+    "removed": "Removed from {{list}}",
+    "success": "Operation completed successfully",
+    "error": "An error occurred",
+    "dataExported": "Data exported successfully",
+    "dataImported": "Data imported successfully",
+    "dataReset": "All data has been reset",
+    "settingsSaved": "Settings saved",
+    "languageChanged": "Language changed to {{language}}",
+    "themeChanged": "Theme changed to {{theme}}"
+  },
+  "search": {
+    "placeholder": "Search movies, series, anime...",
+    "noResults": "No results found",
+    "searching": "Searching...",
+    "tabs": {
+      "all": "All",
+      "movies": "Movies", 
+      "series": "Series",
+      "anime": "Anime"
+    }
+  },
+  "modals": {
+    "confirmDelete": {
+      "title": "Confirm Delete",
+      "message": "Are you sure you want to delete this item?",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "confirmReset": {
+      "title": "Reset All Data",
+      "message": "This will permanently delete all your collections, lists, and settings. This action cannot be undone.",
+      "confirm": "Reset Everything",
+      "cancel": "Cancel"
+    }
+  },
+  "lists": {
+    "izliyorum": "Watching",
+    "izleyecegim": "Plan to Watch", 
+    "izledim": "Completed",
+    "biraktim": "Dropped",
+    "beklemede": "On Hold"
+  },
+  "status": {
+    "completed": "Completed",
+    "watching": "Watching",
+    "planToWatch": "Plan to Watch",
+    "dropped": "Dropped",
+    "onHold": "On Hold"
+  },
+  "downloads": {
+    "contentsFilename": "watchflow-contents.json"
+  },
+  "alerts": {
+    "noRecord": "No record found!",
+    "invalidFile": "Invalid file format!",
+    "importSuccess": "Data imported successfully!",
+    "importError": "Error importing data!",
+    "resetSuccess": "All data has been reset!",
+    "resetError": "Error resetting data!"
+  },
+  "colors": {
+    "default": "#1976d2",
+    "film": "#ff6b6b",
+    "dizi": "#43a047", 
+    "anime": "#45b7d1",
+    "nextEpisode": "#ffa726",
+    "nextSeason": "#9c27b0",
+    "dummyBg": "#607d8b",
+    "white": "white",
+    "transparent": "transparent"
+  },
+  "dates": {
+    "defaultScheduleTime": "T20:00:00",
+    "startOfDay": "T00:00:00"
+  },
+  "dummy": {
+    "eventId": "dummy-1",
+    "eventTitle": "🧪 Dummy Event (Test)",
+    "eventDate": "2025-08-25",
+    "eventDescription": "This is just a test dummy event."
+  },
+  "logs": {
+    "dateClicked": "Date clicked:",
+    "eventClicked": "Event clicked:"
+  },
+  "categories": {
+    "all": "all",
+    "film": "film",
+    "dizi": "dizi"
+  },
+  "pageIds": {
+    "home": "home",
+    "film": "film",
+    "dizi": "dizi", 
+    "anime": "anime"
+  }
+}

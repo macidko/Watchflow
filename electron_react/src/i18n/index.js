@@ -1,12 +1,19 @@
 import trTranslations from './tr.json';
+import enTranslations from './en.json';
 
-// Şu an sadece Türkçe var, gelecekte başka diller eklenebilir
+// Mevcut diller
 const translations = {
-  tr: trTranslations
+  tr: trTranslations,
+  en: enTranslations
 };
 
-// Varsayılan dil
-const defaultLang = 'tr';
+// Varsayılan dil - localStorage'dan al veya Türkçe kullan
+const getDefaultLang = () => {
+  const savedLang = localStorage.getItem('watchflow_language');
+  return savedLang && translations[savedLang] ? savedLang : 'tr';
+};
+
+let currentLang = getDefaultLang();
 
 /**
  * İç içe geçmiş obje anahtarlarına erişim için yardımcı fonksiyon
@@ -24,7 +31,7 @@ function get(obj, path) {
  */
 export function useTranslation() {
   const t = (key, params = {}) => {
-    const translation = get(translations[defaultLang], key);
+    const translation = get(translations[currentLang], key);
     
     if (!translation) {
       console.warn(`Translation missing for key: ${key}`);
@@ -46,7 +53,7 @@ export function useTranslation() {
 
 // Direkt export da ekleyelim kolay kullanım için
 export const t = (key, params = {}) => {
-  const translation = get(translations[defaultLang], key);
+  const translation = get(translations[currentLang], key);
   
   if (!translation) {
     console.warn(`Translation missing for key: ${key}`);
@@ -61,3 +68,17 @@ export const t = (key, params = {}) => {
 
   return translation;
 };
+
+// Dil değiştirme fonksiyonu
+export const changeLanguage = (newLang) => {
+  if (translations[newLang]) {
+    currentLang = newLang;
+    localStorage.setItem('watchflow_language', newLang);
+  }
+};
+
+// Mevcut dili al
+export const getCurrentLanguage = () => currentLang;
+
+// Mevcut dilleri al  
+export const getAvailableLanguages = () => Object.keys(translations);

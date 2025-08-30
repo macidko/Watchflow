@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Slider from '../components/Slider';
-import DynamicSlider from '../components/DynamicSlider';
 import SliderManager from '../components/SliderManager';
 import SearchButton from '../components/SearchButton';
 import DetailModal from '../components/DetailModal';
@@ -161,7 +160,7 @@ const Home = () => {
               /* Sliders */
               <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
                 {sliderData.map((slider) => (
-                  <DynamicSlider 
+                  <Slider 
                     key={slider.id}
                     title={<h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>{slider.title}</h2>}
                     items={slider.items} 

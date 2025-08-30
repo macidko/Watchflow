@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getUpcomingEpisodeNotifications } from '../services/notificationService';
 import NotificationPanel from './NotificationPanel';
+import AdvancedViewSwitcher from './AdvancedViewSwitcher';
 import useContentStore from '../config/initialData';
 import { Link, useLocation } from 'react-router-dom';
 import { t } from '../i18n';
@@ -244,8 +245,9 @@ const Navbar = () => {
         </div>
       </div>
       {/* Navigation */}
-      <div style={{ width: '100%', height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--secondary-bg)', borderTop: '1px solid var(--border-color)' }}>
-        <div style={{ display: 'flex', gap: 0, width: '100%', maxWidth: 520, justifyContent: 'center' }}>
+      <div style={{ width: '100%', height: 44, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--secondary-bg)', borderTop: '1px solid var(--border-color)', padding: '0 16px' }}>
+        {/* Left: Navigation Links */}
+        <div style={{ display: 'flex', gap: 0, justifyContent: 'center', flex: 1 }}>
           {navItems.map((item) => { 
             const isActive = location.pathname === item.path;
             return (
@@ -286,6 +288,13 @@ const Navbar = () => {
               </Link>
             );
           })}
+        </div>
+        
+        {/* Right: Layout Switcher */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <AdvancedViewSwitcher onLayoutChange={(layout) => {
+            console.log('Global layout changed:', layout);
+          }} />
         </div>
       </div>
     </nav>

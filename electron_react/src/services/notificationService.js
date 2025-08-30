@@ -1,6 +1,8 @@
 // Bildirim servisi: Takvimde bugünün ve yarının etkinliklerini kontrol eder ve bildirim mesajı üretir.
 // Diğer bildirim türleri de buraya eklenebilir.
 
+import { NOTIFICATION_TYPES } from '../config/constants';
+
 /**
  * Takvimde bugünün ve yarının tarihinde içerik var mı kontrol eder.
  * @param {Array} events - Takvimdeki etkinlikler (calendarEvents array)
@@ -20,13 +22,13 @@ export function getUpcomingEpisodeNotifications(events, now = new Date()) {
     const isTomorrow = eventDate.getFullYear() === tomorrow.getFullYear() && eventDate.getMonth() === tomorrow.getMonth() && eventDate.getDate() === tomorrow.getDate();
     if (isToday) {
       notifications.push({
-        type: 'episode',
+        type: NOTIFICATION_TYPES.EPISODE,
         message: `${event.title} bugün yayınlandı!`,
         event
       });
     } else if (isTomorrow) {
       notifications.push({
-        type: 'episode',
+        type: NOTIFICATION_TYPES.EPISODE,
         message: `${event.title} yarın yayınlanacak!`,
         event
       });

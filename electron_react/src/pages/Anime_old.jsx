@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Slider from '../components/Slider';
-import DynamicSlider from '../components/DynamicSlider';
 import SliderManager from '../components/SliderManager';
 import SearchButton from '../components/SearchButton';
 import DetailModal from '../components/DetailModal';
@@ -166,7 +165,7 @@ const Anime = () => {
           ) : (
             <div className={'sliders ' + (isDragging ? 'compact' : viewMode)}>
               {sliders.map(slider => (
-                <DynamicSlider
+                <Slider
                   key={slider.id}
                   rootRef={el => (sliderRefs.current[slider.id] = el)}
                   title={<h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>{slider.title}</h2>}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Slider from '../components/Slider';
+import DynamicSlider from '../components/DynamicSlider';
 import SliderManager from '../components/SliderManager';
 import SearchButton from '../components/SearchButton';
 import DetailModal from '../components/DetailModal';
@@ -17,7 +18,7 @@ const Dizi = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   
   // Görünüm modu için custom hook (grid/list)
-  const { viewMode, toggleViewMode } = useViewMode('dizi');
+  const { viewMode, toggleViewMode } = useViewMode(PAGES.DIZI);
   
   // Zustand store'dan verileri al
   const { 
@@ -34,9 +35,9 @@ const Dizi = () => {
 
   // Dizi sayfası için slider verilerini hazırla
   // Zustand store'dan slider listesini doğrudan oluştur
-  const diziStatuses = getStatusesByPage('dizi');
+  const diziStatuses = getStatusesByPage(PAGES.DIZI);
   const sliders = diziStatuses.map(status => {
-    const contents = getContentsByPageAndStatus('dizi', status.id);
+    const contents = getContentsByPageAndStatus(PAGES.DIZI, status.id);
     return {
       id: `dizi-${status.id}`,
       title: status.title,
@@ -81,7 +82,7 @@ const Dizi = () => {
     const toStatusId = toSliderId.replace('dizi-', '');
     
     // Dizi sayfasında olduğumuz için pageId'yi 'dizi' olarak geç
-    const success = moveContentBetweenStatuses(cardItem, fromStatusId, toStatusId, 'dizi');
+    const success = moveContentBetweenStatuses(cardItem, fromStatusId, toStatusId, PAGES.DIZI);
     console.log('Move result:', success);
   };
 
@@ -165,7 +166,7 @@ const Dizi = () => {
           ) : (
             <div className={'sliders ' + (isDragging ? 'compact' : viewMode)}>
               {sliders.map(slider => (
-                <Slider
+                <DynamicSlider
                   key={slider.id}
                   rootRef={el => (sliderRefs.current[slider.id] = el)}
                   title={<h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>{slider.title}</h2>}

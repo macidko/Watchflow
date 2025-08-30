@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getNextEpisodeFromSchedule } from '../utils/episodeScheduler';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import useContentStore from '../config/initialData';
 import { t } from '../i18n';
+import { PAGES, COLORS, DUMMY } from '../config/constants';
 import './Takvim.css';
 
 const Takvim = () => {
@@ -18,13 +18,13 @@ const Takvim = () => {
 
     // Dummy etkinlik ekle (örnek: 25 Ağustos 2025)
     calendarEvents.push({
-      id: 'dummy-1',
+      id: DUMMY.EVENT_ID,
       title: '🧪 Dummy Etkinlik (Test)',
-      start: '2025-08-25',
+      start: DUMMY.EVENT_DATE,
       allDay: true,
-      backgroundColor: '#607d8b',
-      borderColor: 'transparent',
-      textColor: 'white',
+      backgroundColor: COLORS.DUMMY_BG,
+      borderColor: COLORS.TRANSPARENT,
+      textColor: COLORS.WHITE,
       description: 'Bu sadece test amaçlı bir dummy etkinliktir.'
     });
 
@@ -40,10 +40,10 @@ const Takvim = () => {
         apiData.schedule.forEach(ep => {
           const airDate = new Date(ep.airDate);
           if (airDate > now) {
-              let bgColor = '#1976d2';
-              if (pageId === 'film') bgColor = '#ff6b6b';
-              else if (pageId === 'dizi') bgColor = '#43a047';
-              else if (pageId === 'anime') bgColor = '#45b7d1';
+              let bgColor = COLORS.DEFAULT;
+              if (pageId === PAGES.FILM) bgColor = COLORS.FILM;
+              else if (pageId === PAGES.DIZI) bgColor = COLORS.DIZI;
+              else if (pageId === PAGES.ANIME) bgColor = COLORS.ANIME;
               calendarEvents.push({
                 id: `scheduled-ep-${content.id}-${ep.episode}`,
                 title: `🗓️ ${apiData.title} - ${ep.episode}. Bölüm (Tahmini)` ,
@@ -65,10 +65,10 @@ const Takvim = () => {
         
         // Sadece gelecek yıllar veya bu yıl olan içerikleri göster
         if (releaseYear >= currentYear) {
-            let bgColor = '#1976d2';
-            if (pageId === 'film') bgColor = '#ff6b6b';
-            else if (pageId === 'dizi') bgColor = '#43a047';
-            else if (pageId === 'anime') bgColor = '#45b7d1';
+            let bgColor = COLORS.DEFAULT;
+            if (pageId === PAGES.FILM) bgColor = COLORS.FILM;
+            else if (pageId === PAGES.DIZI) bgColor = COLORS.DIZI;
+            else if (pageId === PAGES.ANIME) bgColor = COLORS.ANIME;
             calendarEvents.push({
               id: `release-${content.id}`,
               title: `📅 ${apiData.title}`,
@@ -86,10 +86,10 @@ const Takvim = () => {
         const airDate = apiData.relations.nextEpisode.airDate;
         // Tarih formatını düzelt: '2025-08-23' -> '2025-08-23T00:00:00'
         const formattedDate = airDate.includes('T') ? airDate : `${airDate}T20:00:00`;
-          let bgColor = '#ffa726';
-          if (pageId === 'film') bgColor = '#ff6b6b';
-          else if (pageId === 'dizi') bgColor = '#43a047';
-          else if (pageId === 'anime') bgColor = '#45b7d1';
+          let bgColor = COLORS.NEXT_EP;
+          if (pageId === PAGES.FILM) bgColor = COLORS.FILM;
+          else if (pageId === PAGES.DIZI) bgColor = COLORS.DIZI;
+          else if (pageId === PAGES.ANIME) bgColor = COLORS.ANIME;
           calendarEvents.push({
             id: `next-episode-${content.id}`,
             title: `🎬 ${apiData.title} - ${apiData.relations.nextEpisode.episodeNumber}. Bölüm`,
@@ -106,10 +106,10 @@ const Takvim = () => {
         const airDate = apiData.relations.nextSeason.airDate;
         // Tarih formatını düzelt
         const formattedDate = airDate.includes('T') ? airDate : `${airDate}T00:00:00`;
-          let bgColor = '#9c27b0';
-          if (pageId === 'film') bgColor = '#ff6b6b';
-          else if (pageId === 'dizi') bgColor = '#43a047';
-          else if (pageId === 'anime') bgColor = '#45b7d1';
+          let bgColor = COLORS.NEXT_SEASON;
+          if (pageId === PAGES.FILM) bgColor = COLORS.FILM;
+          else if (pageId === PAGES.DIZI) bgColor = COLORS.DIZI;
+          else if (pageId === PAGES.ANIME) bgColor = COLORS.ANIME;
           calendarEvents.push({
             id: `next-season-${content.id}`,
             title: `🎭 ${apiData.title} - ${apiData.relations.nextSeason.seasonNumber}. Sezon`,

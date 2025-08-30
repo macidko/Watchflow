@@ -1,5 +1,5 @@
 :root {
-  /* Ana renkler */
+  /* Ana renkler - Dark Theme (default) */
   --primary-bg: #121212;
   --secondary-bg: #1e1e1e;
   --primary-text: #ffffff;
@@ -45,4 +45,27 @@
   --star-color: #ffb400;
   --star-size: 24px;
   --text-muted: #8a8a8a;
+}
+
+/* Light Theme Overrides */
+.theme-light {
+  --primary-bg: #ffffff;
+  --secondary-bg: #f5f5f5;
+  --primary-text: #1a1a1a;
+  --secondary-text: #666666;
+  --border-color: #e0e0e0;
+  --input-bg: #ffffff;
+  --dropdown-bg: #ffffff;
+  --card-bg: #ffffff;
+  --secondary-bg-transparent: rgba(245, 245, 245, 0.9);
+  --hover-bg: rgba(240, 240, 240, 0.8);
+  --border-color-hover: #d0d0d0;
+  --tag-bg: rgba(240, 240, 240, 0.8);
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --text-muted: #757575;
+  
+  /* Light theme shadows */
+  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }

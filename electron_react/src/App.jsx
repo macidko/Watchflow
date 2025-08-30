@@ -1,6 +1,8 @@
 import './App.css';
 import Navbar from './components/Navbar';
 import SearchButton from './components/SearchButton';
+import ThemeLoader from './components/ThemeLoader';
+import LayoutController from './components/LayoutController';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ToastProvider } from './contexts/ToastContext';
 import { DragProvider } from './contexts/DragContext';
@@ -38,7 +40,10 @@ function App() {
     <ToastProvider>
       <DragProvider>
         <Router>
-          <AppContent />
+          <ThemeLoader />
+          <LayoutController>
+            <AppContent />
+          </LayoutController>
         </Router>
       </DragProvider>
     </ToastProvider>
