@@ -23,6 +23,12 @@ const Navbar = () => {
     }
   };
 
+  const handleMaximize = () => {
+    if (window.electronAPI) {
+      window.electronAPI.maximize();
+    }
+  };
+
   const handleClose = () => {
     if (window.electronAPI) {
       window.electronAPI.close();
@@ -202,10 +208,14 @@ const Navbar = () => {
   return (
     <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, background: 'var(--primary-bg)', borderBottom: '1px solid var(--border-color)', boxShadow: '0 2px 8px 0 rgba(0,0,0,0.18)' }}>
       {/* Header */}
-      <div style={{ width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', userSelect: 'none' }}>
+      <div 
+        style={{ width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', userSelect: 'none' }}
+        onDoubleClick={handleMaximize}
+        className="navbar-header"
+      >
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <svg width={24} height={24} viewBox="0 0 24 24" fill="none" style={{ color: 'var(--accent-color)' }}><path d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h4a1 1 0 011 1v18a1 1 0 01-1 1H3a1 1 0 01-1-1V1a1 1 0 011-1h4a1 1 0 011 1v3m0 0h8M7 4H3" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <img src="/icon.ico" alt="Watchflow" style={{ width: 24, height: 24, objectFit: 'contain' }} />
           <span style={{ fontWeight: 700, fontSize: 18, color: 'var(--primary-text)', letterSpacing: 0.5 }}>Watchflow</span>
         </div>
         {/* Window Controls */}
@@ -213,6 +223,7 @@ const Navbar = () => {
           {/* Bildirim ikonu */}
           <button
             onClick={handleNotificationClick}
+            className="notification-btn"
             style={{
               width: 32,
               height: 32,
@@ -236,10 +247,25 @@ const Navbar = () => {
           </button>
           {/* Bildirim paneli component */}
           <NotificationPanel open={showNotifications} onClose={() => setShowNotifications(false)} notifications={notifications} />
-          <button onClick={handleMinimize} style={{ width: 28, height: 28, color: 'var(--secondary-text)', background: 'none', border: 'none', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <button 
+            onClick={handleMinimize} 
+            className="window-control-btn minimize-btn"
+            style={{ width: 28, height: 28, color: 'var(--secondary-text)', border: 'none', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
             <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" /></svg>
           </button>
-          <button onClick={handleClose} style={{ width: 28, height: 28, color: 'var(--secondary-text)', background: 'none', border: 'none', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <button 
+            onClick={handleMaximize} 
+            className="window-control-btn maximize-btn"
+            style={{ width: 28, height: 28, color: 'var(--secondary-text)', border: 'none', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
+            <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
+          </button>
+          <button 
+            onClick={handleClose} 
+            className="window-control-btn close-btn"
+            style={{ width: 28, height: 28, color: 'var(--secondary-text)', border: 'none', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
             <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
