@@ -1,5 +1,5 @@
 {
-  "name": "electron_react",
+  "name": "watchflow-react",
   "private": true,
   "version": "0.0.4",
   "type": "module",
@@ -49,8 +49,8 @@
     "wait-on": "^8.0.4"
   },
   "build": {
-    "appId": "com.watchflow.app",
-    "productName": "Watchflow",
+  "appId": "com.watchflow.react",
+  "productName": "Watchflow React",
     "directories": {
       "output": "dist-electron"
     },
