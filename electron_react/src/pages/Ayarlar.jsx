@@ -34,6 +34,7 @@ const Ayarlar = () => {
   
   const [showStorage, setShowStorage] = useState(false);
   const [storageInfo, setStorageInfo] = useState({ items: [], totalSize: '0 B', itemCount: 0 });
+  const [expandedItems, setExpandedItems] = useState(new Set());
   const [activeSection, setActiveSection] = useState('appearance');
   const [showResetModal, setShowResetModal] = useState(false);
   const [toast, setToast] = useState(null);
@@ -50,6 +51,25 @@ const Ayarlar = () => {
       setStorageInfo(info);
     }
     setShowStorage(!showStorage);
+  };
+
+  const toggleExpanded = (key) => {
+    const newExpanded = new Set(expandedItems);
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key);
+    } else {
+      newExpanded.add(key);
+    }
+    setExpandedItems(newExpanded);
+  };
+
+  const formatJsonValue = (value) => {
+    try {
+      const parsed = JSON.parse(value);
+      return JSON.stringify(parsed, null, 2);
+    } catch {
+      return value;
+    }
   };
 
   const handleExportData = () => {
@@ -327,8 +347,10 @@ const Ayarlar = () => {
           <div>
             <h4>{t('pages.settings.dataManagement.export.title')}</h4>
             <p>{t('pages.settings.dataManagement.export.description')}</p>
+            <small className="info-text">📁 JSON formatında indirilir</small>
           </div>
-          <button className="primary-button" onClick={handleExportData}>
+          <button className="primary-button export-button" onClick={handleExportData}>
+            <span className="button-icon">⬇️</span>
             {t('pages.settings.dataManagement.export.button')}
           </button>
         </div>
@@ -340,6 +362,7 @@ const Ayarlar = () => {
           <div>
             <h4>{t('pages.settings.dataManagement.import.title')}</h4>
             <p>{t('pages.settings.dataManagement.import.description')}</p>
+            <small className="info-text">📤 JSON dosyasını sürükle-bırak veya seç</small>
           </div>
           <div className="import-controls">
             <input
@@ -350,9 +373,10 @@ const Ayarlar = () => {
               style={{ display: 'none' }}
             />
             <button 
-              className="secondary-button" 
+              className="secondary-button import-button" 
               onClick={() => fileInputRef.current?.click()}
             >
+              <span className="button-icon">📂</span>
               {t('pages.settings.dataManagement.import.selectFile')}
             </button>
           </div>
@@ -362,7 +386,11 @@ const Ayarlar = () => {
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          {t('pages.settings.dataManagement.import.dragDrop')}
+          <div className="drop-content">
+            <span className="drop-icon">📤</span>
+            <span>{t('pages.settings.dataManagement.import.dragDrop')}</span>
+            <small>Desteklenen format: .json</small>
+          </div>
         </div>
       </div>
 
@@ -384,13 +412,36 @@ const Ayarlar = () => {
               <span>Öğe Sayısı: {storageInfo.itemCount}</span>
             </div>
             <div className="storage-items">
-              {storageInfo.items.map(({ key, size, preview }) => (
-                <div key={key} className="storage-item">
-                  <div className="storage-key">{key}</div>
-                  <div className="storage-size">{size}</div>
-                  <div className="storage-preview">{preview}</div>
-                </div>
-              ))}
+              {storageInfo.items.map(({ key, size, preview }) => {
+                const isExpanded = expandedItems.has(key);
+                const fullValue = localStorage.getItem(key) || '';
+                const isJson = fullValue.startsWith('{') || fullValue.startsWith('[');
+                
+                return (
+                  <div key={key} className="storage-item">
+                    <div className="storage-key">
+                      {key}
+                      {isJson && (
+                        <button 
+                          className="expand-button"
+                          onClick={() => toggleExpanded(key)}
+                          title={isExpanded ? 'Daralt' : 'Genişlet'}
+                        >
+                          {isExpanded ? '🔽' : '▶️'}
+                        </button>
+                      )}
+                    </div>
+                    <div className="storage-size">{size}</div>
+                    <div className="storage-preview">
+                      {isExpanded && isJson ? (
+                        <pre className="json-preview">{formatJsonValue(fullValue)}</pre>
+                      ) : (
+                        <span className="text-preview">{preview}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -865,6 +916,7 @@ const Ayarlar = () => {
           padding: 20px;
           background: var(--secondary-bg);
           border-radius: var(--border-radius-md);
+          border: 1px solid var(--border-color);
         }
 
         .storage-summary {
@@ -873,20 +925,30 @@ const Ayarlar = () => {
           margin-bottom: 16px;
           font-weight: 600;
           color: var(--primary-text);
+          padding: 12px;
+          background: var(--card-bg);
+          border-radius: var(--border-radius-sm);
         }
 
         .storage-items {
           max-height: 300px;
           overflow-y: auto;
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-sm);
         }
 
         .storage-item {
           display: grid;
-          grid-template-columns: 200px 80px 1fr;
+          grid-template-columns: 280px 80px 1fr;
           gap: 16px;
-          padding: 12px 0;
+          padding: 12px 16px;
           border-bottom: 1px solid var(--border-color);
           font-size: 13px;
+          transition: background-color 0.2s;
+        }
+
+        .storage-item:hover {
+          background: color-mix(in srgb, var(--accent-color) 5%, var(--secondary-bg));
         }
 
         .storage-item:last-child {
@@ -896,6 +958,58 @@ const Ayarlar = () => {
         .storage-key {
           font-weight: 600;
           color: var(--primary-text);
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          word-break: break-all;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .expand-button {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 2px 4px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+          font-size: 12px;
+        }
+
+        .expand-button:hover {
+          background: var(--border-color);
+        }
+
+        .storage-size {
+          font-weight: 500;
+          color: var(--accent-color);
+          text-align: center;
+        }
+
+        .storage-preview {
+          color: var(--text-muted);
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          font-size: 12px;
+          word-break: break-word;
+          line-height: 1.4;
+        }
+
+        .json-preview {
+          background: var(--card-bg);
+          padding: 12px;
+          border-radius: var(--border-radius-sm);
+          border: 1px solid var(--border-color);
+          margin: 8px 0;
+          overflow-x: auto;
+          white-space: pre-wrap;
+          max-height: 300px;
+          overflow-y: auto;
+          font-size: 11px;
+          line-height: 1.5;
+        }
+
+        .text-preview {
+          display: block;
+          padding: 4px 0;
         }
 
         .storage-size {
@@ -1136,6 +1250,52 @@ const Ayarlar = () => {
         .style-label,
         .preset-label {
           white-space: nowrap;
+        }
+
+        .drop-zone {
+          padding: 40px 20px;
+          border: 2px dashed var(--border-color);
+          border-radius: var(--border-radius-md);
+          text-align: center;
+          color: var(--text-muted);
+          transition: var(--transition-standard);
+          cursor: pointer;
+        }
+
+        .drop-zone:hover {
+          border-color: var(--accent-color);
+          color: var(--accent-color);
+          background: color-mix(in srgb, var(--accent-color) 5%, transparent);
+        }
+
+        .drop-content {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          align-items: center;
+        }
+
+        .drop-icon {
+          font-size: 24px;
+        }
+
+        .button-icon {
+          margin-right: 8px;
+        }
+
+        .export-button,
+        .import-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 20px;
+          font-weight: 500;
+        }
+
+        .info-text {
+          color: var(--text-muted);
+          font-size: 12px;
+          margin-top: 4px;
         }
       `}</style>
     </div>

@@ -4,7 +4,7 @@ import NotificationPanel from './NotificationPanel';
 import useContentStore from '../config/initialData';
 import { Link, useLocation } from 'react-router-dom';
 import { t } from '../i18n';
-import './Navbar.css';
+import '../css/components/Navbar.css';
 
 const Navbar = () => {
   const location = useLocation();

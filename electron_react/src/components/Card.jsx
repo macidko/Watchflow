@@ -1,28 +1,49 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDrag } from '../contexts/DragContext';
+import '../css/components/Card.css';
 
 const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQuickMove }) => {
   const [imgError, setImgError] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
   const dropdownRef = useRef(null);
+  const imageRef = useRef(null);
+  const observerRef = useRef(null);
   const { startDrag } = useDrag();
 
-  // Dropdown dışına tıklandığında kapat
+  // Intersection Observer for lazy loading
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
-    };
+    if (!imageRef.current) return;
 
-    if (showDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observerRef.current?.disconnect();
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+
+    observerRef.current.observe(imageRef.current);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      observerRef.current?.disconnect();
     };
-  }, [showDropdown]);
+  }, []);
+
+  // Image load handler
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    setImgError(true);
+    setImageLoaded(true);
+  };
 
   // Yeni veri yapısına göre field mapping
   const poster = item.poster || item.imageUrl || (item.apiData?.poster);
@@ -86,47 +107,48 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQ
         {showImage ? (
           <>
             <img
-              src={poster}
+              ref={imageRef}
+              src={isInView ? poster : undefined}
               alt={title}
-              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
-              onError={() => setImgError(true)}
+              className={`card-image ${imageLoaded ? 'loaded' : 'loading'}`}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
               draggable={false}
+              loading="lazy"
             />
-            
+
             {/* Gradient Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/10"></div>
-            
+            <div className="card-overlay"></div>
+
             {/* Rating Badge */}
             {rating && (
-              <div className="absolute top-3 right-3 px-2 py-1 bg-black/80 backdrop-blur-sm rounded-md">
-                <div className="flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--accent)' }} role="img" aria-label="Derecelendirme" focusable="false">
-                    <title>Derecelendirme</title>
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                  <span className="text-xs font-medium text-white">{Number(rating).toFixed(1)}</span>
-                </div>
+              <div className="card-rating">
+                <svg fill="currentColor" viewBox="0 0 24 24" role="img" aria-label="Derecelendirme" focusable="false">
+                  <title>Derecelendirme</title>
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span>{Number(rating).toFixed(1)}</span>
               </div>
             )}
 
             {/* Quick Move Button */}
-            <div className="absolute top-3 left-3" ref={dropdownRef}>
+            <div className="card-quick-move" ref={dropdownRef}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowDropdown(!showDropdown);
                 }}
-                className="w-7 h-7 bg-black/80 backdrop-blur-sm rounded-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/90 transition-all opacity-0 group-hover:opacity-100"
+                className="quick-move-btn"
                 title="Hızlı taşı"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                 </svg>
               </button>
 
               {/* Dropdown Menu */}
               {showDropdown && onQuickMove && (
-                <div className="absolute top-8 left-0 bg-neutral-800 rounded-lg shadow-lg border border-neutral-700 py-1 z-50 min-w-40">
+                <div className="dropdown-menu">
                   {onQuickMove.availableSliders?.map((slider) => (
                     <button
                       key={slider.id}
@@ -135,7 +157,7 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQ
                         onQuickMove.handler(item, sliderId, slider.id);
                         setShowDropdown(false);
                       }}
-                      className="w-full text-left px-3 py-2 text-sm text-white hover:bg-neutral-700 transition-colors"
+                      className="dropdown-item"
                     >
                       {slider.title}
                     </button>
@@ -198,6 +220,16 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQ
           </div>
         )}
       </div>
+
+      {/* Rating Badge */}
+      {item.rating && (
+        <div className="card-rating">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <span>{item.rating}</span>
+        </div>
+      )}
     </div>
   );
 };

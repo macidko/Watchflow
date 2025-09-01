@@ -9,12 +9,18 @@
     "build": "vite build",
     "start": "electron .",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "electron-build": "npm run build && electron-builder --win",
+    "electron-build:mac": "npm run build && electron-builder --mac",
+    "electron-build:linux": "npm run build && electron-builder --linux",
     "release": "standard-version",
     "release:patch": "standard-version --release-as patch",
     "release:minor": "standard-version --release-as minor",
-    "release:major": "standard-version --release-as major"
+    "release:major": "standard-version --release-as major",
+    "clean": "rimraf dist dist-electron",
+    "test": "echo \"No tests specified\" && exit 0",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.19",

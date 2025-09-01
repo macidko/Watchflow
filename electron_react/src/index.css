@@ -1,54 +1,5 @@
 @import "tailwindcss";
-
-/* CSS Custom Properties from Electron App */
-:root {
-  /* Ana renkler */
-  --primary-bg: #121212;
-  --secondary-bg: #1e1e1e;
-  --primary-text: #ffffff;
-  --secondary-text: #b3b3b3;
-  --accent-color: #ff4500;
-  --accent-color-rgb: 255, 69, 0;
-  --hover-color: #ff6a33;
-  --border-color: #2a2a2a;
-  
-  /* UI Bileşenleri */
-  --input-bg: #2c2c2c;
-  --dropdown-bg: #1a1a1a;
-  --card-bg: #1e1e1e;
-  --secondary-bg-transparent: rgba(30, 30, 30, 0.7);
-  --hover-bg: rgba(40, 40, 45, 0.8);
-  --border-color-hover: #3a3a3a;
-  --tag-bg: rgba(50, 50, 54, 0.8);
-  --overlay-bg: rgba(0, 0, 0, 0.8);
-  --success-color: #4caf50;
-  --danger-color: #ef4444;
-  --danger-color-rgb: 239, 68, 68;
-  
-  /* Gölgeler */
-  --dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  
-  /* Animasyonlar */
-  --popup-animation-time: 0.2s;
-  --transition-standard: all 0.2s ease;
-  
-  /* Yuvarlak köşeler */
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 16px;
-  --popup-radius: 8px;
-  
-  /* İçerik boşlukları */
-  --popup-padding: 15px;
-  --content-padding: 20px;
-  
-  /* Yıldız derecelendirme */
-  --star-color: #ffb400;
-  --star-size: 24px;
-  --text-muted: #8a8a8a;
-}
+@import "./css/variables.css";
 
 /* Smooth scrolling */
 html {

@@ -6,7 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import useContentStore from '../config/initialData';
 import { t } from '../i18n';
 import { PAGES, COLORS, DUMMY } from '../config/constants';
-import './Takvim.css';
+import '../css/pages/Takvim.css';
 
 const Takvim = () => {
   const { contents } = useContentStore();

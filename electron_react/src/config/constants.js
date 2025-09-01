@@ -45,7 +45,7 @@ export const DATES = {
 
 // Storage keys
 export const STORAGE_KEYS = {
-	ZUSTAND: 'zustand-store'
+	ZUSTAND: 'content-tracker-storage'
 };
 
 // Download filenames

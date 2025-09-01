@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import SearchButton from './components/SearchButton';
 import ThemeLoader from './components/ThemeLoader';
 import LayoutController from './components/LayoutController';
+import ErrorBoundary from './components/ErrorBoundary';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ToastProvider } from './contexts/ToastContext';
 import { DragProvider } from './contexts/DragContext';
@@ -12,10 +13,11 @@ import Dizi from './pages/Dizi';
 import Anime from './pages/Anime';
 import Takvim from './pages/Takvim';
 import Ayarlar from './pages/Ayarlar';
+import ExportImportTest from './components/ExportImportTest';
 
 function AppContent() {
   const location = useLocation();
-  const showSearchButton = location.pathname !== '/ayarlar' && location.pathname !== '/takvim';
+  const showSearchButton = location.pathname !== '/ayarlar' && location.pathname !== '/takvim' && location.pathname !== '/test';
 
   return (
     <>
@@ -29,6 +31,7 @@ function AppContent() {
           <Route path="/anime" element={<Anime />} />
           <Route path="/takvim" element={<Takvim />} />
           <Route path="/ayarlar" element={<Ayarlar />} />
+          <Route path="/test" element={<ExportImportTest />} />
         </Routes>
       </div>
     </>
@@ -37,16 +40,18 @@ function AppContent() {
 
 function App() {
   return (
-    <ToastProvider>
-      <DragProvider>
-        <Router>
-          <ThemeLoader />
-          <LayoutController>
-            <AppContent />
-          </LayoutController>
-        </Router>
-      </DragProvider>
-    </ToastProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <DragProvider>
+          <Router>
+            <ThemeLoader />
+            <LayoutController>
+              <AppContent />
+            </LayoutController>
+          </Router>
+        </DragProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
 

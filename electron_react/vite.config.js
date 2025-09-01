@@ -7,10 +7,20 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        format: 'iife',
-        name: 'App'
+        format: 'es', // 'iife' yerine 'es' kullan
+        name: 'App',
+        manualChunks: {
+          // Vendor chunk'ları ayır
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          calendar: ['@fullcalendar/react', '@fullcalendar/daygrid', '@fullcalendar/timegrid', '@fullcalendar/interaction'],
+          state: ['zustand', 'immer'],
+          ui: ['react-calendar']
+        }
       }
-    }
+    },
+    chunkSizeWarningLimit: 1000, // Chunk size warning limitini artır
+    sourcemap: false // Production'da sourcemap'i kapat
   },
   plugins: [react()],
   server: {

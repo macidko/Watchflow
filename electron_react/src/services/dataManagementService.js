@@ -17,9 +17,9 @@ export class DataManagementService {
       
       // Export settings
       const settings = {
-        theme: localStorage.getItem('watchflow_theme'),
-        accentColor: localStorage.getItem('watchflow_accent_color'),
-        language: localStorage.getItem('watchflow_language')
+        theme: localStorage.getItem('watchflow_theme') || 'dark',
+        accentColor: localStorage.getItem('watchflow_accent_color') || 'blue',
+        language: localStorage.getItem('watchflow_language') || 'tr'
       };
       data.settings = settings;
       
@@ -80,15 +80,14 @@ export class DataManagementService {
         
         // Import settings
         if (data.settings) {
-          if (data.settings.theme) {
-            localStorage.setItem('watchflow_theme', data.settings.theme);
-          }
-          if (data.settings.accentColor) {
-            localStorage.setItem('watchflow_accent_color', data.settings.accentColor);
-          }
-          if (data.settings.language) {
-            localStorage.setItem('watchflow_language', data.settings.language);
-          }
+          // Handle null values with defaults
+          const theme = data.settings.theme !== null ? data.settings.theme : 'dark';
+          const accentColor = data.settings.accentColor || 'blue';
+          const language = data.settings.language !== null ? data.settings.language : 'tr';
+          
+          localStorage.setItem('watchflow_theme', theme);
+          localStorage.setItem('watchflow_accent_color', accentColor);
+          localStorage.setItem('watchflow_language', language);
         }
         
         return { 

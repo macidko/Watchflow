@@ -1060,4 +1060,25 @@ const useContentStore = create()(
   )
 );
 
+// Selector hooks for optimized re-renders
+export const usePageData = () => useContentStore((state) => state.pages);
+export const useStatusData = () => useContentStore((state) => state.statuses);
+export const useContentData = () => useContentStore((state) => state.contents);
+export const useSettingsData = () => useContentStore((state) => state.settings);
+
+export const usePageStatuses = (pageId) => useContentStore((state) => {
+  if (!pageId || !state.statuses[pageId]) return [];
+  return Object.values(state.statuses[pageId]).sort((a, b) => a.order - b.order);
+});
+
+export const usePageContents = (pageId) => useContentStore((state) => {
+  if (!pageId) return [];
+  return Object.values(state.contents).filter(content => content.pageId === pageId);
+});
+
+export const useStatusContents = (statusId) => useContentStore((state) => {
+  if (!statusId) return [];
+  return Object.values(state.contents).filter(content => content.statusId === statusId);
+});
+
 export default useContentStore;
