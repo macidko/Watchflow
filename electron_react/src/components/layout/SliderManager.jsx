@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import useContentStore from '../config/initialData';
-import { useToast } from '../contexts/ToastContext';
-import { t } from '../i18n';
-import { validateTitle } from '../utils/validation';
+import useContentStore from '../../config/initialData';
+import { useToast } from '../../contexts/ToastContext';
+import { t } from '../../i18n';
+import { validateTitle } from '../../utils/validation';
 import AdvancedViewSwitcher from './AdvancedViewSwitcher';
 import DynamicSlider from './DynamicSlider';
 

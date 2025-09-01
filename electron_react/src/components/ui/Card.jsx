@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useDrag } from '../contexts/DragContext';
-import '../css/components/Card.css';
+import { useDrag } from '../../contexts/DragContext';
+import '../../css/components/ui/Card.css';
 
 const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQuickMove }) => {
   const [imgError, setImgError] = useState(false);
@@ -82,12 +82,7 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQ
 
   return (
     <div
-      className={`group flex-none w-44 h-64 bg-neutral-900 rounded-xl overflow-hidden transition-all duration-200 ease-out cursor-move relative border border-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)] ${
-        isDragging 
-          ? 'opacity-70 scale-95 ring-2 shadow-[var(--card-shadow,0_6px_18px_rgba(0,0,0,0.35))]' 
-          : 'hover:scale-103 hover:shadow-[var(--card-shadow,0_6px_18px_rgba(0,0,0,0.35))] transition-colors'
-      }`}
-      style={{ boxShadow: 'var(--card-shadow, 0 6px 18px rgba(0,0,0,0.35))' }}
+      className={`card ${isDragging ? 'card--dragging' : ''} group flex-none w-44 h-64 bg-neutral-900 rounded-xl border border-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]`}
       onClick={() => onClick && onClick(item)}
       tabIndex={0}
       role="button"
@@ -185,17 +180,17 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQ
 
             {/* Drag Indicator */}
             {isDragging && (
-              <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--accent) 30%, transparent)' }}>
-                <div className="text-white px-3 py-1.5 rounded-md font-medium text-sm" style={{ background: 'var(--accent)' }}>
+              <div className="card__drag-indicator">
+                <div className="card__drag-indicator-text">
                   Taşınıyor...
                 </div>
               </div>
             )}
           </>
         ) : (
-          <div className="w-full h-full bg-gray-800 flex items-center justify-center relative">
-            <div className="text-center">
-              <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#6b7280' }} role="img" aria-label="Poster Yok" focusable="false">
+          <div className="card__no-image">
+            <div className="card__no-image-content">
+              <svg className="card__no-image-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Poster Yok" focusable="false">
                 <title>Poster Yok</title>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -203,12 +198,12 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQ
             </div>
             {/* Content for No Image */}
             <div className="absolute bottom-0 left-0 right-0 p-2.5">
-              <h2 className="text-white text-base font-semibold line-clamp-2 mb-0.5">
+              <h2 className="card__no-image-title">
                 {title || 'Başlık Yok'}
               </h2>
               <div className="flex items-center justify-between gap-1">
                 {releaseDate && (
-                  <span className="text-xs text-gray-400">{releaseDate}</span>
+                  <span className="card__no-image-year">{releaseDate}</span>
                 )}
                 {genres.length > 0 && (
                   <span className="text-xs px-2 py-0.5 rounded-full text-gray-500 bg-gray-700">

@@ -1,0 +1,242 @@
+/* Dizi Page Styles */
+
+/* Skip to content link */
+.dizi-skip-link {
+  background: var(--accent-color);
+  color: var(--primary-text);
+  box-shadow: 0 4px 24px 0 color-mix(in srgb, var(--accent-color) 70%, transparent);
+  outline-color: color-mix(in srgb, var(--accent-color) 70%, transparent);
+}
+
+/* Main layout */
+.dizi-main {
+  min-height: 100vh;
+  background: var(--primary-bg);
+}
+
+/* Header section */
+.dizi-header {
+  padding-top: 112px;
+  padding-bottom: 40px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.dizi-header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.dizi-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dizi-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dizi-title {
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--primary-text);
+}
+
+.dizi-description {
+  font-size: 18px;
+  color: var(--secondary-text);
+}
+
+.dizi-meta-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.dizi-accent-bar {
+  height: 4px;
+  width: 64px;
+  border-radius: 999px;
+  box-shadow: var(--card-shadow);
+  background: linear-gradient(90deg, var(--accent-color) 60%, transparent 100%);
+}
+
+.dizi-content-count {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.dizi-header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.dizi-manager-button {
+  padding: 12px 24px;
+  color: var(--primary-text);
+  background: var(--accent-color);
+  border-radius: 16px;
+  font-weight: 500;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 50%, transparent);
+  box-shadow: 0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.dizi-manager-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--accent-color) 40%, transparent);
+}
+
+.dizi-manager-button:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent-color) 50%, transparent);
+  outline-offset: 2px;
+}
+
+.dizi-manager-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Content section */
+.dizi-content {
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 64px;
+}
+
+.dizi-content-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Empty state */
+.dizi-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 384px;
+}
+
+.dizi-empty-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.dizi-empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  margin-bottom: 24px;
+  background: var(--card-bg);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dizi-empty-icon svg {
+  width: 40px;
+  height: 40px;
+  color: var(--secondary-text);
+}
+
+.dizi-empty-icon svg:last-child {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 8px auto;
+}
+
+.dizi-empty-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.dizi-empty-description {
+  color: var(--secondary-text);
+  margin-bottom: 24px;
+}
+
+/* Sliders section */
+.dizi-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.dizi-slider-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-text);
+  margin-bottom: 8px;
+}
+
+/* Search button styling overrides */
+.dizi-search-button {
+  background: var(--accent-color);
+  color: var(--primary-text);
+  box-shadow: 0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent);
+}
+
+.dizi-empty-search-button {
+  background: var(--accent-color);
+  color: var(--primary-text);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .dizi-header {
+    padding-top: 96px;
+    padding-bottom: 32px;
+  }
+  
+  .dizi-header-content {
+    flex-direction: column;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  
+  .dizi-title {
+    font-size: 24px;
+  }
+  
+  .dizi-description {
+    font-size: 16px;
+  }
+  
+  .dizi-header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .dizi-manager-button {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .dizi-header,
+  .dizi-content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .dizi-title {
+    font-size: 20px;
+  }
+  
+  .dizi-empty-content {
+    max-width: 300px;
+  }
+}

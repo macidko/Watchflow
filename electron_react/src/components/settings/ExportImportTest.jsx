@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { DataManagementService } from '../services/dataManagementService';
+import { DataManagementService } from '../../services/dataManagementService';
+import '../../css/components/settings/ExportImportTest.css';
 
 const ExportImportTest = () => {
   const [storageInfo, setStorageInfo] = useState(null);
@@ -97,7 +98,7 @@ const ExportImportTest = () => {
     setIsLoading(true);
     try {
       // Import store and force initialize
-      import('../config/initialData').then(({ default: useContentStore }) => {
+      import('../../config/initialData').then(({ default: useContentStore }) => {
         const store = useContentStore.getState();
         store.initializeStore();
         
@@ -151,32 +152,32 @@ const ExportImportTest = () => {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', marginTop: '84px' }}>
+    <div className="export-import-container">
       <h2>Export/Import Test Suite</h2>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div className="export-import-controls">
         <button onClick={runStorageCheck} disabled={isLoading}>
           Check Storage
         </button>
-        <button onClick={checkZustandDirectly} disabled={isLoading} style={{ marginLeft: '10px' }}>
+        <button onClick={checkZustandDirectly} disabled={isLoading} className="export-import-btn">
           Check Zustand Direct
         </button>
-        <button onClick={forceInitializeStore} disabled={isLoading} style={{ marginLeft: '10px' }}>
+        <button onClick={forceInitializeStore} disabled={isLoading} className="export-import-btn">
           Force Initialize
         </button>
-        <button onClick={testExport} disabled={isLoading} style={{ marginLeft: '10px' }}>
+        <button onClick={testExport} disabled={isLoading} className="export-import-btn">
           Test Export
         </button>
-        <button onClick={testImport} disabled={isLoading} style={{ marginLeft: '10px' }}>
+        <button onClick={testImport} disabled={isLoading} className="export-import-btn">
           Test Import
         </button>
-        <button onClick={resetAndInitializeStore} disabled={isLoading} style={{ marginLeft: '10px', backgroundColor: '#ff6b6b', color: 'white' }}>
+        <button onClick={resetAndInitializeStore} disabled={isLoading} className="export-import-reset-btn">
           Reset Store
         </button>
       </div>
 
       {storageInfo && (
-        <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc' }}>
+        <div className="export-import-info-box">
           <h3>Storage Info</h3>
           <p>Total Items: {storageInfo.itemCount}</p>
           <p>Total Size: {storageInfo.totalSize}</p>
@@ -202,11 +203,7 @@ const ExportImportTest = () => {
         ) : (
           <ul>
             {testResults.map((result, index) => (
-              <li key={index} style={{
-                color: result.result === 'PASS' ? 'green' :
-                       result.result === 'FAIL' ? 'red' :
-                       result.result === 'WARN' ? 'orange' : 'black'
-              }}>
+              <li key={index} className={`export-import-result export-import-result-${result.result.toLowerCase()}`}>
                 <strong>{result.test}</strong> [{result.result}] - {result.timestamp}
                 {result.details && <br />}
                 {result.details && <small>{result.details}</small>}

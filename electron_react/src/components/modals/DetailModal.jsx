@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useMemo } from 'react';
-import useContentStore from '../config/initialData';
+import useContentStore from '../../config/initialData';
+import '../../css/components/modals/DetailModal.css';
 
 const DetailModal = ({ item, onClose }) => {
   const modalRef = useRef(null);
@@ -217,31 +218,22 @@ if (
   return (
   <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-20" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title" tabIndex={-1}>
       {/* Backdrop */}
-  <div className="absolute inset-0" style={{background: 'var(--overlay-bg, rgba(0,0,0,0.8))', backdropFilter: 'blur(2px)'}} onClick={onClose} />
+  <div className="absolute inset-0 detail-modal-backdrop" onClick={onClose} />
       {/* Modal - Kompakt tasarım */}
-  <div ref={modalRef} className="relative w-full max-w-md" style={{
-    background: 'var(--card-bg, #1e1e1e)',
-    borderRadius: 'var(--border-radius-lg, 16px)',
-    boxShadow: 'var(--popup-shadow, 0 4px 12px rgba(0,0,0,0.3))',
-    border: '1px solid var(--border-color, #2a2a2a)',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    maxHeight: 'calc(100vh - 5rem)'
+  <div ref={modalRef} className="detail-modal-container" style={{
+    maxHeight: '90vh',
+    pointerEvents: 'auto'
   }} tabIndex={0}>
         {/* Header */}
-  <div className="p-5 flex-shrink-0" style={{
-    borderBottom: '1px solid var(--border-color, #2a2a2a)',
-    background: 'linear-gradient(135deg, var(--card-bg, #1e1e1e) 60%, var(--secondary-bg, #1e1e1e) 100%)'
-  }}>
+  <div className="detail-modal-header">
           <div className="flex items-start gap-2 sm:gap-3">
             {/* Poster - Küçük */}
             <div className="flex-shrink-0 relative">
               {apiData?.poster ? (
-                <img src={apiData.poster} alt={apiData.title} className="w-16 h-24 object-cover rounded-lg shadow border" style={{borderColor: 'var(--border-color, #2a2a2a)'}} />
+                <img src={apiData.poster} alt={apiData.title} className="detail-modal-poster" />
               ) : (
-                <div className="w-16 h-24 rounded-lg flex items-center justify-center" style={{background: 'var(--secondary-bg, #1e1e1e)'}}>
-                  <span className="text-2xl opacity-40" style={{color: 'var(--primary-text, #fff)'}}>🎬</span>
+                <div className="detail-modal-poster-placeholder">
+                  <span className="detail-modal-poster-icon">🎬</span>
                 </div>
               )}
             </div>
@@ -249,7 +241,7 @@ if (
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2 min-w-0">
-                  <h2 id="detail-modal-title" className="font-medium text-base mb-1 truncate pr-2" style={{color: 'var(--primary-text, #fff)'}}>
+                  <h2 id="detail-modal-title" className="detail-modal-title">
                     {apiData?.title || 'Başlık Yok'}
                   </h2>
                   {/* Status badge başlığın hemen sağında, animasyonsuz */}
@@ -270,8 +262,7 @@ if (
                 </div>
                 <button 
                   onClick={onClose} 
-                  className="p-1 rounded-md transition-colors"
-                  style={{color: 'var(--primary-text, #fff)'}}
+                  className="detail-modal-close"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
                     <title>Kapat</title>

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { getUpcomingEpisodeNotifications } from '../services/notificationService';
+import { getUpcomingEpisodeNotifications } from '../../services/notificationService';
 import NotificationPanel from './NotificationPanel';
-import useContentStore from '../config/initialData';
+import useContentStore from '../../config/initialData';
 import { Link, useLocation } from 'react-router-dom';
-import { t } from '../i18n';
-import '../css/components/Navbar.css';
+import { t } from '../../i18n';
+import '../../css/components/common/Navbar.css';
 
 const Navbar = () => {
   const location = useLocation();

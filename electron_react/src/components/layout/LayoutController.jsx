@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useLayoutDynamic } from '../hooks/useLayoutDynamic';
+import { useLayoutDynamic } from '../../hooks/useLayoutDynamic';
 
 const LayoutController = ({ children }) => {
   const { currentLayout, getLayoutCSS } = useLayoutDynamic();

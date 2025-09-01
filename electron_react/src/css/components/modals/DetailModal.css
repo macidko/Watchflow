@@ -1,0 +1,344 @@
+/* DetailModal Styles */
+
+.detail-modal-backdrop {
+  background: var(--overlay-bg, rgba(0,0,0,0.8));
+  backdrop-filter: blur(2px);
+}
+
+.detail-modal-container {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  background: var(--card-bg, #1e1e1e);
+  border-radius: 16px;
+  border: 1px solid var(--border-color, #2a2a2a);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-modal-header {
+  padding: 1.25rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color, #2a2a2a);
+  background: linear-gradient(135deg, var(--card-bg, #1e1e1e) 60%, var(--secondary-bg, #1e1e1e) 100%);
+}
+
+.detail-modal-poster {
+  width: 4rem;
+  height: 6rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color, #2a2a2a);
+}
+
+.detail-modal-poster-placeholder {
+  width: 4rem;
+  height: 6rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--secondary-bg, #1e1e1e);
+}
+
+.detail-modal-poster-icon {
+  font-size: 1.5rem;
+  opacity: 0.4;
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-title {
+  font-weight: 500;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 0.5rem;
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-close {
+  padding: 0.25rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.detail-modal-year {
+  color: var(--secondary-text, #b3b3b3);
+  background: color-mix(in srgb, var(--card-bg, #1e1e1e) 50%, transparent);
+}
+
+.detail-modal-close-button {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-close-button:hover {
+  background: var(--card-bg, #1e1e1e);
+}
+
+.detail-modal-status {
+  background: var(--card-bg, #1e1e1e);
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-type {
+  background: var(--card-bg, #1e1e1e);
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-rating {
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-content {
+  background: var(--card-bg, #1e1e1e);
+  border-bottom: 1px solid var(--border-color, #2a2a2a);
+}
+
+.detail-modal-progress-text {
+  color: var(--secondary-text, #b3b3b3);
+}
+
+.detail-modal-progress-percent {
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-progress-bar {
+  background: var(--border-color, #2a2a2a);
+}
+
+.detail-modal-progress-fill {
+  background: var(--accent-color, #ff4500);
+}
+
+.detail-modal-details {
+  background: var(--card-bg, #1e1e1e);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+.detail-modal-season {
+  background: var(--card-bg, #1e1e1e);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+.detail-modal-season-label {
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-season-text {
+  color: var(--primary-text, #fff);
+}
+
+/* Additional inline style replacements */
+.detail-modal-overlay-styled {
+  background: var(--overlay-bg, rgba(0,0,0,0.8));
+  backdrop-filter: blur(2px);
+}
+
+.detail-modal-container-gradient {
+  background: linear-gradient(135deg, var(--card-bg, #1e1e1e) 0%, var(--secondary-bg, #252525) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color, #2a2a2a);
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
+  max-height: 90vh;
+  border-radius: 24px;
+}
+
+.detail-modal-header-gradient {
+  background: linear-gradient(135deg, var(--card-bg, #1a1a1a) 0%, var(--secondary-bg, #2a2a2a) 100%);
+  border-bottom: 1px solid var(--border-color, #2a2a2a);
+}
+
+.detail-modal-poster-border {
+  border-color: var(--border-color, #2a2a2a);
+}
+
+.detail-modal-placeholder-bg {
+  background: var(--secondary-bg, #1e1e1e);
+}
+
+.detail-modal-placeholder-icon {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-title-styled {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-year-styled {
+  background: linear-gradient(90deg, var(--accent-color, #ff4500) 0%, color-mix(in srgb, var(--accent-color, #ff4500) 70%, transparent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-close-styled {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-status-styled {
+  background: var(--card-bg, #1e1e1e);
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-status-inactive-styled {
+  background: var(--card-bg, #1e1e1e);
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-star-styled {
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-content-styled {
+  background: linear-gradient(180deg, transparent 0%, var(--card-bg, #1a1a1a) 100%);
+  border-top: 1px solid var(--border-color, #2a2a2a);
+}
+
+.detail-modal-progress-text-styled {
+  color: var(--secondary-text, #b3b3b3);
+}
+
+.detail-modal-progress-percent-styled {
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-progress-bar-styled {
+  background: var(--border-color, #2a2a2a);
+}
+
+.detail-modal-progress-fill-styled {
+  background: var(--accent-color, #ff4500);
+}
+
+.detail-modal-info-styled {
+  background: linear-gradient(135deg, var(--card-bg, #1a1a1a) 0%, var(--secondary-bg, #252525) 100%);
+  border: 1px solid var(--border-color, #2a2a2a);
+}
+
+.detail-modal-card-styled {
+  background: var(--card-bg, #1e1e1e);
+  border-color: var(--border-color, #2a2a2a);
+}
+
+.detail-modal-label-styled {
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-value-styled {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-score-styled {
+  background: var(--card-bg, #1e1e1e);
+  border-color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-score-label-styled {
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-score-value-styled {
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-genre-styled {
+  background: var(--secondary-bg, #1e1e1e);
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-genre-accent-styled {
+  background: var(--secondary-bg, #1e1e1e);
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-season-styled {
+  background: linear-gradient(135deg, var(--card-bg, #1a1a1a) 0%, var(--secondary-bg, #252525) 100%);
+  border: 1px solid var(--border-color, #2a2a2a);
+}
+
+.detail-modal-season-header-styled {
+  background: linear-gradient(135deg, var(--secondary-bg, #252525) 0%, var(--card-bg, #1a1a1a) 100%);
+  border-bottom: 1px solid var(--border-color, #2a2a2a);
+}
+
+.detail-modal-season-badge-styled {
+  background: var(--accent-color, #ff4500);
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-season-title-styled {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-season-info-styled {
+  color: var(--secondary-text, #b3b3b3);
+  background: var(--secondary-bg, #1e1e1e);
+}
+
+.detail-modal-season-progress-styled {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-season-progress-complete-styled {
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-season-bar-bg-styled {
+  background: var(--border-color, #2a2a2a);
+}
+
+.detail-modal-season-bar-fill-styled {
+  background: var(--accent-color, #ff4500);
+}
+
+.detail-modal-episode-styled {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-episode-indicator-styled {
+  background: var(--accent-color, #ff4500);
+}
+
+.detail-modal-episode-icon-styled {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-legend-styled {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-legend-watched-dot-styled {
+  background: var(--accent-color, #ff4500);
+}
+
+.detail-modal-legend-watched-text-styled {
+  color: var(--accent-color, #ff4500);
+}
+
+.detail-modal-legend-unwatched-dot-styled {
+  background: var(--secondary-bg, #1e1e1e);
+  border: 1px solid var(--card-bg, #1e1e1e);
+}
+
+.detail-modal-legend-unwatched-text-styled {
+  color: var(--primary-text, #fff);
+}
+
+.detail-modal-final-genre-styled {
+  background: var(--secondary-bg, #1e1e1e);
+  color: var(--accent-color, #ff4500);
+}

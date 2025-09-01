@@ -1,9 +1,9 @@
 import './App.css';
-import Navbar from './components/Navbar';
-import SearchButton from './components/SearchButton';
-import ThemeLoader from './components/ThemeLoader';
-import LayoutController from './components/LayoutController';
-import ErrorBoundary from './components/ErrorBoundary';
+import Navbar from './components/common/Navbar';
+import SearchButton from './components/common/SearchButton';
+import ThemeLoader from './components/common/ThemeLoader';
+import LayoutController from './components/layout/LayoutController';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ToastProvider } from './contexts/ToastContext';
 import { DragProvider } from './contexts/DragContext';
@@ -13,7 +13,7 @@ import Dizi from './pages/Dizi';
 import Anime from './pages/Anime';
 import Takvim from './pages/Takvim';
 import Ayarlar from './pages/Ayarlar';
-import ExportImportTest from './components/ExportImportTest';
+import ExportImportTest from './components/settings/ExportImportTest';
 
 function AppContent() {
   const location = useLocation();

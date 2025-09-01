@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useLayoutDynamic } from '../hooks/useLayoutDynamic';
+import { useLayoutDynamic } from '../../hooks/useLayoutDynamic';
 import { 
   LAYOUT_MODES, 
   CARD_SIZES, 
   SLIDER_DENSITIES, 
   CARD_STYLES,
   LAYOUT_PRESETS 
-} from '../config/layoutConfig';
+} from '../../config/layoutConfig';
 
 const AdvancedViewSwitcher = ({ onLayoutChange }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);

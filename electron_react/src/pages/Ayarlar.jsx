@@ -12,7 +12,7 @@ import {
   CARD_STYLES,
   LAYOUT_PRESETS 
 } from '../config/layoutConfig';
-import Toast from '../components/Toast';
+import Toast from '../components/ui/Toast';
 
 const Ayarlar = () => {
   const { 

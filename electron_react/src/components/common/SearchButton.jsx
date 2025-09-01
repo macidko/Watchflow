@@ -5,11 +5,11 @@ import {
   searchTvShows, 
   batchSearchAnime,
   MediaTypes 
-} from '../api/index.js';
-import { TmdbApi } from '../api/providers/TmdbApi.js';
-import useContentStore from '../config/initialData.js';
-import { validateSearchQuery } from '../utils/validation.js';
-import { t } from '../i18n';
+} from '../../api/index.js';
+import { TmdbApi } from '../../api/providers/TmdbApi.js';
+import useContentStore from '../../config/initialData.js';
+import { validateSearchQuery } from '../../utils/validation.js';
+import { t } from '../../i18n';
 
 const SearchButton = () => {
   // Store

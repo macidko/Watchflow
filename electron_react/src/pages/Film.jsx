@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Slider from '../components/Slider';
-import DynamicSlider from '../components/DynamicSlider';
-import SliderManager from '../components/SliderManager';
-import SearchButton from '../components/SearchButton';
-import DetailModal from '../components/DetailModal';
-import ViewSwitcher from '../components/ViewSwitcher';
+import React, { useEffect, useState, useRef } from 'react';
+import Slider from '../components/layout/Slider';
+import DynamicSlider from '../components/layout/DynamicSlider';
+import SliderManager from '../components/layout/SliderManager';
+import SearchButton from '../components/common/SearchButton';
+import DetailModal from '../components/modals/DetailModal';
+import ViewSwitcher from '../components/layout/ViewSwitcher';
 import useContentStore from '../config/initialData';
 import { useDrag } from '../contexts/DragContext';
 import useViewMode from '../hooks/useViewMode';
+import '../css/pages/common.css';
 import { CATEGORIES, PAGES } from '../config/constants';
 import { t } from '../i18n';
 
@@ -100,39 +101,38 @@ const Film = () => {
           e.preventDefault();
           mainContentRef.current?.focus();
         }}
-  className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:px-6 focus:py-3 focus:shadow-xl focus:outline-none focus:ring-2 transition-all"
-  style={{ background: 'var(--accent-color)', color: 'var(--primary-text)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 70%, transparent)', outlineColor: 'color-mix(in srgb, var(--accent-color) 70%, transparent)' }}
+        className="page-skip-link"
         tabIndex={0}
       >
         {t('common.skipToContent')}
       </a>
-  <div style={{ minHeight: '100vh', background: 'var(--primary-bg)' }}>
+  <div className="page-main">
       {/* Header */}
-      <div style={{ paddingTop: 112, paddingBottom: 40, paddingLeft: 16, paddingRight: 16 }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <h1 style={{ fontSize: 30, fontWeight: 600, color: 'var(--primary-text)' }}>{t('pages.film.title')}</h1>
-              <p style={{ fontSize: 18, color: 'var(--secondary-text)' }}>{t('pages.film.description')}</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
-                <div style={{ height: 4, width: 64, borderRadius: 999, boxShadow: 'var(--card-shadow)', background: 'linear-gradient(90deg, var(--accent-color) 60%, transparent 100%)' }}></div>
-                <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 400 }}>
+      <div className="page-header">
+        <div className="page-header-container">
+          <div className="page-header-content">
+            <div className="page-header-info">
+              <h1 className="page-title">{t('pages.film.title')}</h1>
+              <p className="page-description">{t('pages.film.description')}</p>
+              <div className="page-meta-info">
+                <div className="page-accent-bar"></div>
+                <span className="page-content-count">
                   {sliders.reduce((total, slider) => total + slider.items.length, 0)} {t('pages.film.count')}
                 </span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div className="page-header-actions">
               <ViewSwitcher viewMode={viewMode} toggleViewMode={toggleViewMode} />
               <SearchButton 
                 category={CATEGORIES.FILM} 
-                style={{ background: 'var(--accent-color)', color: 'var(--primary-text)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent)' }}
+                className="page-search-button"
               />
               <button
                 onClick={() => setShowManager(true)}
-                style={{ padding: '12px 24px', color: 'var(--primary-text)', background: 'var(--accent-color)', borderRadius: 16, fontWeight: 500, border: '1px solid color-mix(in srgb, var(--accent-color) 50%, transparent)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent)', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.3s' }}
+                className="page-manager-button"
               >
-                <svg style={{ width: 20, height: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.lists')} focusable="false">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.lists')} focusable="false">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                 </svg>
                 {t('common.lists')}
@@ -143,27 +143,27 @@ const Film = () => {
       </div>
 
       {/* Content */}
-      <div style={{ paddingLeft: 16, paddingRight: 16, paddingBottom: 64 }} id="main-content" tabIndex={-1} ref={mainContentRef}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <div className="page-content" id="main-content" tabIndex={-1} ref={mainContentRef}>
+        <div className="page-content-container">
           {sliders.length === 0 ? (
             /* Empty State */
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
-              <div style={{ textAlign: 'center', maxWidth: 400 }}>
-                <div style={{ width: 80, height: 80, margin: '0 auto', marginBottom: 24, background: 'var(--card-bg)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg style={{ width: 40, height: 40, color: 'var(--secondary-text)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <svg style={{ width: 32, height: 32, margin: '0 auto 8px auto' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
+            <div className="page-empty-state">
+              <div className="page-empty-content">
+                <div className="page-empty-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
                       <title>{t('pages.film.empty.noContentTitle')}</title>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h4a1 1 0 011 1v18a1 1 0 01-1 1H3a1 1 0 01-1-1V1a1 1 0 011-1h4a1 1 0 011 1v3m0 0h8M7 4H3" />
                     </svg>
                   </svg>
                 </div>
-                <h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 16 }}>{t('pages.film.empty.noContentTitle')}</h2>
-                <p style={{ color: 'var(--secondary-text)', marginBottom: 24 }}>
+                <h2 className="page-empty-title">{t('pages.film.empty.noContentTitle')}</h2>
+                <p className="page-empty-description">
                   {t('pages.film.empty.noContentDescription')}
                 </p>
                 <SearchButton 
                   category={CATEGORIES.FILM} 
-                  style={{ background: 'var(--accent-color)', color: 'var(--primary-text)' }}
+                  className="page-empty-search-button"
                 />
               </div>
             </div>
@@ -173,7 +173,7 @@ const Film = () => {
                 <DynamicSlider
                   key={slider.id}
                   rootRef={el => (sliderRefs.current[slider.id] = el)}
-                  title={<h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>{slider.title}</h2>}
+                  title={<h2 className="page-slider-title">{slider.title}</h2>}
                   items={slider.items}
                   onCardClick={handleCardClick}
                   onCardMove={handleCardMove}

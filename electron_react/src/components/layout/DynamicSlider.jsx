@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import DynamicCard from './DynamicCard';
-import CardSkeleton from './CardSkeleton';
-import { useDrag } from '../contexts/DragContext';
-import { useLayoutDynamic } from '../hooks/useLayoutDynamic';
-import { t } from '../i18n';
-import { LAYOUT_MODES, CARD_SIZES } from '../config/layoutConfig';
+import DynamicCard from '../ui/DynamicCard';
+import CardSkeleton from '../ui/CardSkeleton';
+import { useDrag } from '../../contexts/DragContext';
+import { useLayoutDynamic } from '../../hooks/useLayoutDynamic';
+import { t } from '../../i18n';
+import { LAYOUT_MODES, CARD_SIZES } from '../../config/layoutConfig';
 
 const DynamicSlider = ({ 
   title, 

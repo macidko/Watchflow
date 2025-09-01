@@ -1,0 +1,714 @@
+/* DynamicCard.css */
+
+/* ========== CARD CONTAINER ========== */
+.dynamic-card {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  flex: none;
+  transition: all 0.3s ease;
+}
+
+.dynamic-card:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.dynamic-card[draggable="true"] {
+  user-select: none;
+}
+
+/* ========== DRAG STATES ========== */
+.dynamic-card--dragging {
+  opacity: 0.7;
+  transform: scale(0.95);
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.dynamic-card:not(.dynamic-card--dragging):hover {
+  transform: scale(1.02);
+}
+
+/* ========== CARD SIZES ========== */
+.dynamic-card--small {
+  width: 120px;
+  height: 160px;
+  border-radius: 6px;
+}
+
+.dynamic-card--medium {
+  width: 160px;
+  height: 240px;
+  border-radius: 8px;
+}
+
+.dynamic-card--large {
+  width: 200px;
+  height: 300px;
+  border-radius: 10px;
+}
+
+.dynamic-card--xlarge {
+  width: 240px;
+  height: 360px;
+  border-radius: 12px;
+}
+
+/* ========== CARD STYLES - BASE ========== */
+.dynamic-card--minimal {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.dynamic-card--classic {
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.dynamic-card--compact {
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+.dynamic-card--artistic {
+  background: linear-gradient(135deg, var(--card-bg), var(--secondary-bg));
+  border: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dynamic-card--professional {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+}
+
+.dynamic-card--modern {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== HOVER EFFECTS ========== */
+.dynamic-card--minimal:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.dynamic-card--classic:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.dynamic-card--compact:hover {
+  background: var(--hover-bg);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.dynamic-card--artistic:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+}
+
+.dynamic-card--professional:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.dynamic-card--modern:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+/* ========== CONTENT CONTAINERS ========== */
+.dynamic-card__content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.dynamic-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.3s ease;
+  user-select: none;
+  filter: contrast(110%) saturate(110%);
+}
+
+.dynamic-card__image--loading {
+  opacity: 0;
+}
+
+.dynamic-card__image--loaded {
+  opacity: 1;
+}
+
+/* ========== OVERLAY GRADIENTS ========== */
+.dynamic-card__gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%, rgba(0,0,0,0.1) 100%);
+}
+
+.dynamic-card__gradient-overlay--artistic {
+  background: linear-gradient(to bottom right, rgba(147,51,234,0.2) 0%, transparent 50%, rgba(30,64,175,0.2) 100%);
+}
+
+/* ========== RATING BADGE ========== */
+.dynamic-card__rating {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(4px);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dynamic-card__rating-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--accent-color);
+}
+
+.dynamic-card__rating-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+}
+
+/* ========== TEXT CONTENT ========== */
+.dynamic-card__text-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.dynamic-card__title {
+  color: white;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 2px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.dynamic-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.dynamic-card__release-date {
+  color: rgb(156, 163, 175);
+}
+
+.dynamic-card__genre {
+  color: rgb(107, 114, 128);
+  background: rgba(0,0,0,0.3);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  backdrop-filter: blur(4px);
+}
+
+/* ========== SIZE-BASED TEXT SIZES ========== */
+.dynamic-card--small .dynamic-card__text-overlay {
+  padding: 8px;
+}
+
+.dynamic-card--small .dynamic-card__title {
+  font-size: 12px;
+}
+
+.dynamic-card--small .dynamic-card__release-date,
+.dynamic-card--small .dynamic-card__genre {
+  font-size: 10px;
+}
+
+.dynamic-card--medium .dynamic-card__text-overlay {
+  padding: 12px;
+}
+
+.dynamic-card--medium .dynamic-card__title {
+  font-size: 14px;
+}
+
+.dynamic-card--medium .dynamic-card__release-date,
+.dynamic-card--medium .dynamic-card__genre {
+  font-size: 11px;
+}
+
+.dynamic-card--large .dynamic-card__text-overlay {
+  padding: 16px;
+}
+
+.dynamic-card--large .dynamic-card__title {
+  font-size: 16px;
+}
+
+.dynamic-card--large .dynamic-card__release-date,
+.dynamic-card--large .dynamic-card__genre {
+  font-size: 12px;
+}
+
+.dynamic-card--xlarge .dynamic-card__text-overlay {
+  padding: 20px;
+}
+
+.dynamic-card--xlarge .dynamic-card__title {
+  font-size: 18px;
+}
+
+.dynamic-card--xlarge .dynamic-card__release-date,
+.dynamic-card--xlarge .dynamic-card__genre {
+  font-size: 13px;
+}
+
+/* ========== NO IMAGE PLACEHOLDER ========== */
+.dynamic-card__no-image {
+  width: 100%;
+  height: 100%;
+  background: rgb(31, 41, 55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dynamic-card__no-image-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+  color: rgb(107, 114, 128);
+}
+
+.dynamic-card__no-image-text {
+  font-size: 12px;
+  color: rgb(107, 114, 128);
+  margin-bottom: 8px;
+}
+
+.dynamic-card__no-image-title {
+  color: white;
+  font-weight: 600;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.dynamic-card__no-image-date {
+  color: rgb(156, 163, 175);
+}
+
+/* ========== MINIMAL STYLE ========== */
+.dynamic-card--minimal .dynamic-card__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.dynamic-card--minimal .dynamic-card__image-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+.dynamic-card--minimal .dynamic-card__image-placeholder {
+  background: rgb(243, 244, 246);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dynamic-card--minimal .dynamic-card__image-placeholder-icon {
+  width: 32px;
+  height: 32px;
+  color: rgb(156, 163, 175);
+}
+
+.dynamic-card--minimal .dynamic-card__info {
+  padding: 12px;
+}
+
+.dynamic-card--minimal .dynamic-card__info-title {
+  font-weight: 500;
+  color: rgb(17, 24, 39);
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+}
+
+.dynamic-card--minimal .dynamic-card__info-date {
+  color: rgb(107, 114, 128);
+  margin-top: 4px;
+}
+
+/* ========== COMPACT STYLE ========== */
+.dynamic-card--compact .dynamic-card__content {
+  display: flex;
+  height: 100%;
+}
+
+.dynamic-card--compact .dynamic-card__compact-image {
+  width: 64px;
+  flex-shrink: 0;
+}
+
+.dynamic-card--compact .dynamic-card__compact-image-placeholder {
+  background: rgb(229, 231, 235);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dynamic-card--compact .dynamic-card__compact-image-placeholder-icon {
+  width: 24px;
+  height: 24px;
+  color: rgb(156, 163, 175);
+}
+
+.dynamic-card--compact .dynamic-card__compact-info {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dynamic-card--compact .dynamic-card__compact-title {
+  font-weight: 500;
+  color: rgb(17, 24, 39);
+  line-height: 1.2;
+  font-size: 14px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.dynamic-card--compact .dynamic-card__compact-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.dynamic-card--compact .dynamic-card__compact-date {
+  font-size: 12px;
+  color: rgb(107, 114, 128);
+}
+
+.dynamic-card--compact .dynamic-card__compact-rating {
+  font-size: 12px;
+  color: rgb(234, 88, 12);
+  font-weight: 500;
+}
+
+/* ========== CLASSIC STYLE ========== */
+.dynamic-card--classic .dynamic-card__classic-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 12px;
+}
+
+.dynamic-card--classic .dynamic-card__classic-title {
+  font-weight: 600;
+  color: rgb(17, 24, 39);
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+}
+
+.dynamic-card--classic .dynamic-card__classic-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.dynamic-card--classic .dynamic-card__classic-date {
+  font-size: 14px;
+  color: rgb(75, 85, 99);
+}
+
+.dynamic-card--classic .dynamic-card__classic-rating {
+  font-size: 14px;
+  color: rgb(234, 88, 12);
+  font-weight: 500;
+}
+
+/* ========== ARTISTIC STYLE ========== */
+.dynamic-card--artistic .dynamic-card__artistic-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+.dynamic-card--artistic .dynamic-card__artistic-info {
+  backdrop-filter: blur(4px);
+  background: rgba(0,0,0,0.3);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.dynamic-card--artistic .dynamic-card__artistic-title {
+  color: white;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.dynamic-card--artistic .dynamic-card__artistic-description {
+  color: rgba(255,255,255,0.8);
+  font-size: 12px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.dynamic-card--artistic .dynamic-card__artistic-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dynamic-card--artistic .dynamic-card__artistic-date {
+  color: rgba(255,255,255,0.7);
+  font-size: 12px;
+}
+
+.dynamic-card--artistic .dynamic-card__artistic-rating {
+  color: rgb(251, 191, 36);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ========== PROFESSIONAL STYLE ========== */
+.dynamic-card--professional .dynamic-card__content {
+  background: white;
+}
+
+.dynamic-card--professional .dynamic-card__professional-image {
+  height: 66.666667%;
+}
+
+.dynamic-card--professional .dynamic-card__professional-image-placeholder {
+  background: rgb(243, 244, 246);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dynamic-card--professional .dynamic-card__professional-image-placeholder-icon {
+  width: 32px;
+  height: 32px;
+  color: rgb(156, 163, 175);
+}
+
+.dynamic-card--professional .dynamic-card__professional-info {
+  height: 33.333333%;
+  padding: 12px;
+  background: white;
+}
+
+.dynamic-card--professional .dynamic-card__professional-title {
+  font-weight: 600;
+  color: rgb(17, 24, 39);
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.dynamic-card--professional .dynamic-card__professional-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.dynamic-card--professional .dynamic-card__professional-date {
+  font-size: 14px;
+  color: rgb(75, 85, 99);
+}
+
+.dynamic-card--professional .dynamic-card__professional-rating-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dynamic-card--professional .dynamic-card__professional-rating-label {
+  font-size: 12px;
+  color: rgb(107, 114, 128);
+}
+
+.dynamic-card--professional .dynamic-card__professional-rating-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgb(17, 24, 39);
+}
+
+/* ========== QUICK MOVE BUTTON ========== */
+.dynamic-card__quick-move {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+
+.dynamic-card__quick-move-btn {
+  width: 28px;
+  height: 28px;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(4px);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.8);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0;
+}
+
+.dynamic-card:hover .dynamic-card__quick-move-btn {
+  opacity: 1;
+}
+
+.dynamic-card__quick-move-btn:hover {
+  color: white;
+  background: rgba(0,0,0,0.9);
+}
+
+.dynamic-card__quick-move-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.dynamic-card__dropdown {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  background: rgb(38, 38, 38);
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgb(64, 64, 64);
+  padding: 4px 0;
+  z-index: 50;
+  min-width: 160px;
+}
+
+.dynamic-card__dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: white;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dynamic-card__dropdown-item:hover {
+  background: rgb(64, 64, 64);
+}
+
+/* ========== DRAG INDICATOR ========== */
+.dynamic-card__drag-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(249, 115, 22, 0.3);
+}
+
+.dynamic-card__drag-indicator-text {
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  background: rgb(249, 115, 22);
+}
+
+/* ========== DARK THEME ADJUSTMENTS ========== */
+.theme-dark .dynamic-card--minimal .dynamic-card__info-title {
+  color: white;
+}
+
+.theme-dark .dynamic-card--minimal .dynamic-card__image-placeholder {
+  background: rgb(55, 65, 81);
+}
+
+.theme-dark .dynamic-card--compact .dynamic-card__compact-title {
+  color: white;
+}
+
+.theme-dark .dynamic-card--compact .dynamic-card__compact-image-placeholder {
+  background: rgb(55, 65, 81);
+}
+
+.theme-dark .dynamic-card--classic .dynamic-card__classic-overlay {
+  background: var(--card-bg);
+}
+
+.theme-dark .dynamic-card--classic .dynamic-card__classic-title {
+  color: white;
+}
+
+.theme-dark .dynamic-card--professional .dynamic-card__content,
+.theme-dark .dynamic-card--professional .dynamic-card__professional-info {
+  background: var(--card-bg);
+}
+
+.theme-dark .dynamic-card--professional .dynamic-card__professional-title {
+  color: white;
+}
+
+.theme-dark .dynamic-card--professional .dynamic-card__professional-image-placeholder {
+  background: rgb(55, 65, 81);
+}
+
+.theme-dark .dynamic-card--professional .dynamic-card__professional-rating-value {
+  color: white;
+}

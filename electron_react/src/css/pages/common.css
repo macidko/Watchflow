@@ -1,0 +1,346 @@
+/* Common Page Layout Styles */
+
+/* Skip to content link - common for all pages */
+.page-skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  background: var(--accent-color);
+  color: var(--primary-text);
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.page-skip-link:focus {
+  position: fixed;
+  width: auto;
+  height: auto;
+  padding: 12px 24px;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  top: 16px;
+  left: 16px;
+  z-index: 50;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Main layout - common for all pages */
+.page-main {
+  min-height: 100vh;
+  background: var(--primary-bg);
+}
+
+/* Header section - common for all pages */
+.page-header {
+  padding-top: 112px;
+  padding-bottom: 40px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.page-header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.page-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-title {
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--primary-text);
+}
+
+.page-description {
+  font-size: 18px;
+  color: var(--secondary-text);
+}
+
+.page-meta-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.page-accent-bar {
+  height: 4px;
+  width: 64px;
+  border-radius: 999px;
+  box-shadow: var(--card-shadow);
+  background: linear-gradient(90deg, var(--accent-color) 60%, transparent 100%);
+}
+
+.page-content-count {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.page-header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.page-manager-button {
+  padding: 12px 24px;
+  color: var(--primary-text);
+  background: var(--accent-color);
+  border-radius: 16px;
+  font-weight: 500;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 50%, transparent);
+  box-shadow: 0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.page-manager-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--accent-color) 40%, transparent);
+}
+
+.page-manager-button:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent-color) 50%, transparent);
+  outline-offset: 2px;
+}
+
+.page-manager-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Content section - common for all pages */
+.page-content {
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 64px;
+}
+
+.page-content-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Empty state - common for all pages */
+.page-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 384px;
+}
+
+.page-empty-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.page-empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  margin-bottom: 24px;
+  background: var(--card-bg);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-empty-icon svg,
+.page-empty-svg {
+  width: 40px;
+  height: 40px;
+  color: var(--secondary-text);
+}
+
+.page-empty-icon svg:last-child,
+.page-empty-inner-svg {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 8px auto;
+}
+
+.page-empty-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.page-empty-description {
+  color: var(--secondary-text);
+  margin-bottom: 24px;
+}
+
+.page-slider-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-text);
+  margin-bottom: 8px;
+}
+
+/* Sliders section - common for all pages */
+.page-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.page-slider-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-text);
+  margin-bottom: 8px;
+}
+
+/* Search button styling overrides */
+.page-search-button {
+  background: var(--accent-color);
+  color: var(--primary-text);
+  box-shadow: 0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent);
+}
+
+.page-empty-search-button {
+  background: var(--accent-color);
+  color: var(--primary-text);
+}
+
+/* Loading state - common for all pages */
+.page-loading-container {
+  min-height: 100vh;
+  background: var(--primary-bg);
+  padding-top: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-loading-text {
+  color: var(--text-muted);
+  font-size: 24px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .page-header {
+    padding-top: 96px;
+    padding-bottom: 32px;
+  }
+  
+  .page-header-content {
+    flex-direction: column;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  
+  .page-title {
+    font-size: 24px;
+  }
+  
+  .page-description {
+    font-size: 16px;
+  }
+  
+  .page-header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .page-manager-button {
+    justify-content: center;
+  }
+}
+
+/* Loading state */
+.page-loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.page-loading-text {
+  font-size: 16px;
+  color: var(--secondary-text);
+}
+
+/* Empty state subtitle */
+.page-empty-subtitle {
+  font-size: 14px;
+  color: var(--secondary-text);
+  line-height: 1.5;
+}
+
+/* Search button in page context */
+.page-search-button {
+  background: var(--accent-color);
+  color: var(--primary-text);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px 0 color-mix(in srgb, var(--accent-color) 30%, transparent);
+}
+
+.page-search-button:hover {
+  background: color-mix(in srgb, var(--accent-color) 90%, white);
+  transform: translateY(-1px);
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .page-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .page-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header,
+  .page-content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .page-title {
+    font-size: 20px;
+  }
+  
+  .page-empty-content {
+    max-width: 300px;
+  }
+}

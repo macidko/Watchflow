@@ -1,0 +1,65 @@
+/* CardSkeleton.css */
+
+/* ========== SKELETON CONTAINER ========== */
+.card-skeleton {
+  width: 176px; /* w-44 */
+  height: 256px; /* h-64 */
+  border-radius: 12px; /* rounded-xl */
+  background: rgba(38, 38, 38, 0.6); /* bg-neutral-800/60 */
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+  border: 1px solid rgb(38, 38, 38);
+  box-shadow: var(--card-shadow, 0 6px 18px rgba(0,0,0,0.18));
+}
+
+/* ========== SKELETON ANIMATION ========== */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* ========== SKELETON GRADIENT OVERLAY ========== */
+.card-skeleton__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%, rgba(0,0,0,0.1) 100%);
+  border-radius: 12px;
+}
+
+/* ========== SKELETON CONTENT ========== */
+.card-skeleton__content {
+  padding: 12px;
+}
+
+.card-skeleton__title {
+  height: 16px;
+  width: 75%;
+  background: rgb(55, 65, 81);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.card-skeleton__meta {
+  height: 12px;
+  width: 50%;
+  background: rgb(55, 65, 81);
+  border-radius: 4px;
+}
+
+/* ========== DARK THEME ADJUSTMENTS ========== */
+.theme-dark .card-skeleton {
+  background: rgba(55, 65, 81, 0.6);
+  border-color: var(--border-color);
+}
+
+.theme-dark .card-skeleton__title,
+.theme-dark .card-skeleton__meta {
+  background: var(--secondary-bg);
+}

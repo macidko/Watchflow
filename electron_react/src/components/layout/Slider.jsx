@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Card from './Card';
-import CardSkeleton from './CardSkeleton';
-import { useDrag } from '../contexts/DragContext';
-import { t } from '../i18n';
+import Card from '../ui/Card';
+import CardSkeleton from '../ui/CardSkeleton';
+import { useDrag } from '../../contexts/DragContext';
+import { t } from '../../i18n';
 
 const Slider = ({ title, items = [], onCardClick, onCardMove, sliderId, isLoading = false, onQuickMove, rootRef }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
