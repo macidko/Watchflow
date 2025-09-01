@@ -1,5 +1,71 @@
 /* Navbar Animations and Styles */
 
+/* Main navbar container */
+.navbar-main {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: var(--primary-bg);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.18);
+}
+
+/* Navbar header for dragging */
+.navbar-header {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  user-select: none;
+  -webkit-app-region: drag;
+}
+
+/* Logo container */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Logo text */
+.navbar-logo-text {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--primary-text);
+  margin-left: 8px;
+}
+
+/* Right controls */
+.navbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Content wrapper */
+.navbar-content {
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--secondary-bg);
+  border-top: 1px solid var(--border-color);
+  padding: 0 16px;
+}
+
+/* Navigation container */
+.navbar-nav {
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  flex: 1;
+}
+
 /* Logo float animation */
 @keyframes logoFloat {
   0%, 100% {
@@ -13,7 +79,31 @@
 /* Nav Link Styles */
 .nav-link {
   position: relative;
-  transition: color 0.25s ease;
+  min-width: 96px;
+  padding: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--secondary-text);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: color 0.25s ease, background 0.25s ease;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  color: var(--accent-color);
+  background: rgba(255, 102, 0, 0.05);
+}
+
+.nav-link.active {
+  color: var(--accent-color);
+  background: rgba(255, 102, 0, 0.1);
 }
 
 /* Alt çizgi base elementi */

@@ -12,12 +12,46 @@
 
 .export-import-btn {
   margin-left: 10px;
+  padding: 8px 16px;
+  background: var(--accent-color);
+  color: var(--primary-text);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.export-import-btn:hover {
+  background: color-mix(in srgb, var(--accent-color) 90%, white);
+  transform: translateY(-1px);
+}
+
+.export-import-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .export-import-reset-btn {
   margin-left: 10px;
+  padding: 8px 16px;
   background-color: #ff6b6b;
   color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.export-import-reset-btn:hover {
+  background-color: #ff5252;
+  transform: translateY(-1px);
+}
+
+.export-import-reset-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .export-import-info-box {

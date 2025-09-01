@@ -205,7 +205,9 @@ const Navbar = () => {
   };
 
   return (
-    <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, background: 'var(--primary-bg)', borderBottom: '1px solid var(--border-color)', boxShadow: '0 2px 8px 0 rgba(0,0,0,0.18)' }}>
+    <nav className="navbar-main"
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, borderBottom: '1px solid var(--border-color)', boxShadow: '0 2px 8px 0 rgba(0,0,0,0.18)' }}
+    >
       {/* Header */}
       <div 
         style={{ width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', userSelect: 'none' }}
