@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
 import useContentStore from '../../config/initialData';
+import RelatedContent from './RelatedContent';
 import '../../css/components/modals/DetailModal.css';
 
 const DetailModal = ({ item, onClose }) => {
@@ -108,21 +109,19 @@ if (
   const [seasonsLoading, setSeasonsLoading] = React.useState(false);
   const [seasonsError, setSeasonsError] = React.useState(null);
 
-  // Memoize relations flattening - hooks must be top-level
-  const flatRelations = useMemo(() => {
-    const out = [];
-    if (!apiData?.relations) return out;
-    const pageId = content?.pageId;
-    Object.entries(apiData.relations).forEach(([relType, relArr]) => {
-      if (relType === 'status') return;
-      // Only include 'related' for TV/Film (dizi/film). Keep prequel/sequel for anime/providers that provide them.
-      if (relType === 'related' && !(pageId === 'dizi' || pageId === 'film')) return;
-      if (Array.isArray(relArr) && relArr.length > 0) {
-        relArr.forEach(r => out.push(Object.assign({}, r, { relType })));
-      }
-    });
-    return out;
-  }, [apiData?.relations, content?.pageId]);
+  // İlişkili içerikler güncelleme fonksiyonu
+  const handleUpdateRelations = async () => {
+    setRelationsError(null);
+    try {
+      setRelationsLoading(true);
+      await fetchAndUpdateRelations(item.id);
+    } catch (err) {
+      console.error('Relations update failed:', err);
+      setRelationsError('İlişkili içerikler güncellenirken hata oluştu');
+    } finally {
+      setRelationsLoading(false);
+    }
+  };
 
 
   // Tüm useEffect hook'ları return'dan önce olmalı
@@ -620,98 +619,14 @@ if (
             </div>
           )}
 
-          {/* Relations: thin, single-row items (one per line) with poster fallback and add button; no horizontal scroll. */}
-          {apiData?.relations && (
-            <div className="mb-4" aria-label="İlişkili içerikler">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold mb-2" style={{color: 'var(--accent-color, #ff4500)'}}>İlişkili İçerikler</h4>
-                <div>
-                  <button
-                    onClick={async () => {
-                      setRelationsError(null);
-                      try {
-                        setRelationsLoading(true);
-                        await fetchAndUpdateRelations(item.id);
-                      } catch (err) {
-                        console.error(err);
-                        setRelationsError('Güncelleme başarısız oldu');
-                      } finally {
-                        setRelationsLoading(false);
-                      }
-                    }}
-                    disabled={relationsLoading}
-                    className="text-xs px-2 py-1 rounded bg-[#374151] hover:bg-[#4b5563] text-white"
-                    title="İlişkileri güncelle"
-                  >
-                    {relationsLoading ? 'Güncelleniyor...' : 'Güncelle'}
-                  </button>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                {flatRelations.length > 0 ? flatRelations.map((rel, idx) => {
-                  const key = rel.id || rel.title || idx;
-                  // poster fallback candidates
-                  const src = rel.poster || rel.image || rel.cover || rel.poster_path || rel.thumbnail || '';
-                  return (
-                    <div key={key} className="w-full rounded-md border bg-[#23272f] p-2 flex items-center gap-3" style={{borderColor:'var(--border-color,#2a2a2a)', minHeight: '56px'}}>
-                      <div className="w-12 h-12 rounded-sm overflow-hidden bg-[#181c22] flex-shrink-0 flex items-center justify-center">
-                        {src ? (
-                          <img
-                            src={src}
-                            alt={rel.title}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '' }}
-                          />
-                        ) : (
-                          <span className="text-lg opacity-30">🎬</span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[11px] text-[#cbd5e1] mb-0" style={{background:'transparent'}}>
-                          {rel.relType === 'prequel' ? 'Öncesi' : rel.relType === 'sequel' ? 'Devamı' : rel.relType}
-                        </div>
-                        <div className="font-medium text-sm truncate" style={{color: 'var(--primary-text, #fff)'}}>{rel.title}</div>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <button aria-label={`Ekle ${rel.title}`} className="px-3 py-1 rounded-md bg-[#16a34a] hover:bg-[#10b981] text-white text-sm shadow" title="İçeriği ekle">
-                          + Ekle
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }) : (
-                  <div className="rounded-lg p-4 border bg-[#23272f] flex flex-col items-center justify-center min-h-[120px]" style={{borderColor:'var(--border-color,#2a2a2a)'}}>
-                    <div className="mb-2 text-lg" style={{color:'var(--secondary-text,#9ca3af)'}}>İlişkili içerik bulunamadı</div>
-                    <div className="text-sm opacity-70 mb-3">Prequel veya sequel bilgisi mevcut değil.</div>
-                    <div>
-                      <button
-                        onClick={async () => {
-                          setRelationsError(null);
-                          try {
-                            setRelationsLoading(true);
-                            await fetchAndUpdateRelations(item.id);
-                          } catch (err) {
-                            console.error('Relations fetch failed', err);
-                            setRelationsError('Tekrar deneme başarısız oldu');
-                          } finally {
-                            setRelationsLoading(false);
-                          }
-                        }}
-                        disabled={relationsLoading}
-                        className="px-3 py-1 rounded-md bg-[#2563eb] hover:bg-[#3b82f6] text-white text-sm shadow"
-                        title="Tekrar dene"
-                      >
-                        {relationsLoading ? 'Tekrar deneniyor...' : 'Tekrar Dene'}
-                      </button>
-                      {relationsError && (
-                        <div className="text-xs text-red-400 mt-2">{relationsError}</div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* İlişkili İçerikler - Yeni Modern Component */}
+          <RelatedContent 
+            item={{...item, pageId: content?.pageId}}
+            relations={apiData?.relations}
+            onUpdateRelations={handleUpdateRelations}
+            relationsLoading={relationsLoading}
+            relationsError={relationsError}
+          />
         </div>
 
         {/* Footer - Kompakt butonlar */}
