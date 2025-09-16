@@ -150,21 +150,10 @@ const RelatedContent = ({
     return flattened;
   }, [relations]);
 
-  // Poster URL'ini düzelt
+  // Poster URL'ini al - artık normalize edilmiş
   const getPosterUrl = (rel) => {
-    let posterUrl = rel.poster || rel.image || rel.cover || rel.poster_path || rel.thumbnail;
-    
-    // TMDB poster path'ini full URL'e çevir
-    if (posterUrl && posterUrl.startsWith('/')) {
-      posterUrl = `https://image.tmdb.org/t/p/w500${posterUrl}`;
-    }
-    
-    // Kitsu poster URL'lerini kontrol et
-    if (rel.poster && typeof rel.poster === 'object') {
-      posterUrl = rel.poster.large || rel.poster.medium || rel.poster.small || rel.poster.original;
-    }
-    
-    return posterUrl;
+    // Relations'lardan gelen poster bilgileri artık normalize edilmiş
+    return rel.poster || rel.image || rel.cover || null;
   };
 
   const texts = getContentTypeTexts(item.pageId);

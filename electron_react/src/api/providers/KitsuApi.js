@@ -50,7 +50,7 @@ export class KitsuApi extends ApiInterface {
 
   async getDetails(id) {
     try {
-      const url = `${this.baseUrl}/anime/${id}?include=genres,categories`;
+      const url = `${this.baseUrl}/anime/${id}?include=genres,categories,media-relationships,destination`;
       const response = await this.makeRequest(url, {
         headers: {
           'Accept': 'application/vnd.api+json'

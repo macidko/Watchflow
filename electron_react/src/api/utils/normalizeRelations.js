@@ -26,7 +26,9 @@ export function normalizeRelations(raw, provider) {
       const id = r.id || r.media_id || r.tmdb_id;
       const title = r.title || r.name || r.original_title || r.original_name || '';
       const media_type = r.media_type || (raw.media_type ? raw.media_type : 'movie');
-      if (id) related.push({ id, title, media_type });
+      // TMDB poster URL'ini oluştur
+      const poster = r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : null;
+      if (id) related.push({ id, title, media_type, poster });
     };
 
     if (raw.recommendations && Array.isArray(raw.recommendations.results)) {
@@ -78,7 +80,7 @@ export function normalizeRelations(raw, provider) {
       nextEpisode,
       prequel: [],
       sequel: [],
-      related,
+      related: dedupedRelated, // TMDB için recommendations/similar'ı related olarak döndür
       collection: raw.belongs_to_collection ? { id: raw.belongs_to_collection.id, name: raw.belongs_to_collection.name } : null
     };
   }
@@ -198,12 +200,23 @@ function mapAniListRelation(rel) {
   return { 
     id: rel.id, 
     title: rel.title?.english || rel.title?.romaji || rel.title?.native || 'Unknown', 
-    type: rel.format || rel.type || 'Unknown' 
+    type: rel.format || rel.type || 'Unknown',
+    poster: rel.coverImage?.large || rel.coverImage?.medium
   };
 }
 function mapKitsuRelation(rel) {
-  return { id: rel.id, title: rel.attributes?.canonicalTitle || '', type: rel.type || '' };
+  return { 
+    id: rel.id, 
+    title: rel.attributes?.canonicalTitle || '', 
+    type: rel.type || '',
+    poster: rel.attributes?.posterImage?.original || rel.attributes?.posterImage?.large
+  };
 }
 function mapJikanRelation(rel) {
-  return { id: rel.mal_id, title: rel.name, type: rel.type };
+  return { 
+    id: rel.mal_id, 
+    title: rel.name, 
+    type: rel.type,
+    poster: rel.images?.jpg?.large_image_url || rel.images?.jpg?.image_url
+  };
 }

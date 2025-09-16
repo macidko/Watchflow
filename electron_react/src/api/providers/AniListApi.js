@@ -93,6 +93,7 @@ export class AniListApi extends ApiInterface {
                 id
                 title { romaji english }
                 format
+                coverImage { large }
               }
             }
           }

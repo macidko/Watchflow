@@ -40,10 +40,20 @@ export class JikanApi extends ApiInterface {
 
   async getDetails(id) {
     return this.retryWithBackoff(async () => {
+      // Ana anime bilgilerini al
       const url = `${this.baseUrl}/anime/${id}/full`;
       const response = await this.makeRequest(url);
-
       const item = response.data;
+
+      // Relations bilgilerini ayrı olarak al
+      let relations = {};
+      try {
+        const relationsUrl = `${this.baseUrl}/anime/${id}/relations`;
+        const relationsResponse = await this.makeRequest(relationsUrl);
+        relations = relationsResponse.data || {};
+      } catch (error) {
+        console.warn('Jikan relations fetch failed:', error.message);
+      }
       
       return {
         ...this.normalizeResponse({
@@ -62,7 +72,7 @@ export class JikanApi extends ApiInterface {
           source: item.source,
           rating: item.rating
         }, MediaTypes.ANIME),
-        relations: normalizeRelations(item, 'jikan')
+        relations: normalizeRelations({...item, related: relations}, 'jikan')
       };
     });
   }

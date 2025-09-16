@@ -588,31 +588,62 @@ const useContentStore = create()(
       fetchAndUpdateRelations: async (contentId) => {
         const { contents } = get();
         const content = contents[contentId];
-        
+
         if (!content || !content.apiData) return;
-        
+
         try {
           let updatedApiData = null;
-          
-          // Provider'a göre relations fetch et
-          if (content.apiData.tmdbId) {
-            const { TmdbApi } = await import('../api/providers/TmdbApi.js');
-            const api = new TmdbApi();
-            updatedApiData = await api.getDetails(content.apiData.tmdbId);
-          } else if (content.apiData.kitsuId) {
-            const { KitsuApi } = await import('../api/providers/KitsuApi.js');
-            const api = new KitsuApi();
-            updatedApiData = await api.getDetails(content.apiData.kitsuId);
-          } else if (content.apiData.anilistId) {
-            const { AniListApi } = await import('../api/providers/AniListApi.js');
-            const api = new AniListApi();
-            updatedApiData = await api.getDetails(content.apiData.anilistId);
-          } else if (content.apiData.jikanId) {
-            const { JikanApi } = await import('../api/providers/JikanApi.js');
-            const api = new JikanApi();
-            updatedApiData = await api.getDetails(content.apiData.jikanId);
+
+          // İçerik türüne göre media type belirle
+          let mediaType;
+          if (content.pageId === 'film') {
+            mediaType = 'movie';
+          } else if (content.pageId === 'dizi') {
+            mediaType = 'tv';
+          } else if (content.pageId === 'anime') {
+            mediaType = 'anime';
+          } else {
+            console.warn('Unknown pageId for relations fetch:', content.pageId);
+            return;
           }
-          
+
+          // ApiManager kullanarak relations fetch et
+          const { ApiManager } = await import('../api/ApiManager.js');
+          const { MediaTypes } = await import('../api/base/MediaTypes.js');
+
+          const apiManager = new ApiManager();
+
+          // İçerik ID'sini belirle
+          let contentIdentifier = null;
+          let preferredProvider = null;
+
+          if (content.apiData.tmdbId) {
+            contentIdentifier = { provider: 'tmdb', id: content.apiData.tmdbId };
+            preferredProvider = 'tmdb';
+          } else if (content.apiData.anilistId) {
+            contentIdentifier = { provider: 'anilist', id: content.apiData.anilistId };
+            preferredProvider = 'anilist';
+          } else if (content.apiData.kitsuId) {
+            contentIdentifier = { provider: 'kitsu', id: content.apiData.kitsuId };
+            preferredProvider = 'kitsu';
+          } else if (content.apiData.jikanId) {
+            contentIdentifier = { provider: 'jikan', id: content.apiData.jikanId };
+            preferredProvider = 'jikan';
+          } else {
+            console.warn('No valid ID found for relations fetch:', content.apiData);
+            return;
+          }
+
+          // Relations bilgisini al
+          // Anime için fallback chain kullan, diğerleri için belirli provider
+          if (mediaType === 'anime') {
+            // Anime için fallback chain: AniList -> Kitsu -> Jikan
+            updatedApiData = await apiManager.getDetails(contentIdentifier.id, mediaType);
+          } else {
+            // Film/Dizi için belirli provider kullan
+            updatedApiData = await apiManager.getDetails(contentIdentifier.id, mediaType, preferredProvider);
+          }
+
           if (updatedApiData && updatedApiData.relations) {
             // Relations bilgisini güncelle
             set((state) => {
@@ -622,6 +653,8 @@ const useContentStore = create()(
               }
             });
             console.log('Relations güncellendi:', contentId, updatedApiData.relations);
+          } else {
+            console.log('No relations found for:', contentId);
           }
         } catch (error) {
           console.error('Relations fetch hatası:', error);
