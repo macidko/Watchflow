@@ -1,0 +1,106 @@
+/* ShowAllModal Styles */
+.show-all-modal-backdrop {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.show-all-modal {
+  animation: slideIn 0.3s ease-out;
+  transform-origin: center;
+}
+
+.show-all-modal-content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) var(--secondary-bg);
+}
+
+.show-all-modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.show-all-modal-content::-webkit-scrollbar-track {
+  background: var(--secondary-bg);
+  border-radius: 4px;
+}
+
+.show-all-modal-content::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+
+.show-all-modal-content::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--accent-color) 80%, transparent);
+}
+
+/* Grid and list specific styles handled inline */
+
+/* Search input focus styles */
+.show-all-modal-controls input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
+}
+
+/* Select focus styles */
+.show-all-modal-controls select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .show-all-modal {
+    margin: 10px;
+    max-height: 95vh;
+  }
+  
+  .show-all-modal-header,
+  .show-all-modal-controls,
+  .show-all-modal-content {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  
+  .show-all-modal-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .show-all-modal-grid.grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .show-all-modal-header h2 {
+    font-size: 20px;
+  }
+  
+  .show-all-modal-grid.grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+}

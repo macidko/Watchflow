@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   LAYOUT_MODES, 
   CARD_SIZES, 
-  SLIDER_DENSITIES, 
-  CARD_STYLES,
+  SLIDER_DENSITIES,
   LAYOUT_PRESETS,
   DEFAULT_LAYOUT,
   LAYOUT_STORAGE_KEY
@@ -194,7 +193,6 @@ export const useLayoutDynamic = () => {
     availablePresets: Object.keys(LAYOUT_PRESETS),
     availableModes: Object.values(LAYOUT_MODES),
     availableCardSizes: Object.values(CARD_SIZES),
-    availableDensities: Object.values(SLIDER_DENSITIES),
-    availableStyles: Object.values(CARD_STYLES)
+    availableDensities: Object.values(SLIDER_DENSITIES)
   };
 };

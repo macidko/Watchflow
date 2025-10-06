@@ -1,127 +1,77 @@
-// Layout Configuration System - Dynamic Slider & Card Layouts
+// Layout Configuration System - Simplified & Functional
 
 export const LAYOUT_MODES = {
-  SLIDER: 'slider',
-  GRID: 'grid',
-  LIST: 'list',
-  MASONRY: 'masonry',
-  CAROUSEL: 'carousel',
-  TIMELINE: 'timeline'
+  SLIDER: 'slider',    // Horizontal scrolling (Netflix-style) - PRIMARY
+  GRID: 'grid',        // Responsive grid layout - SECONDARY
+  LIST: 'list'         // Compact vertical list - TERTIARY
 };
 
 export const CARD_SIZES = {
-  COMPACT: 'compact',       // 140x200
-  SMALL: 'small',          // 180x260  
-  MEDIUM: 'medium',        // 220x320 (default)
-  LARGE: 'large',          // 280x400
-  EXTRA_LARGE: 'xl'        // 340x480
+  COMPACT: 'compact',  // 160x230 - Mobile optimized
+  MEDIUM: 'medium',    // 220x320 - Default, balanced
+  LARGE: 'large'       // 280x400 - Desktop, detailed
 };
 
 export const SLIDER_DENSITIES = {
-  TIGHT: 'tight',          // 8px gap, 4-6 cards visible
-  NORMAL: 'normal',        // 16px gap, 3-5 cards visible (default)
-  RELAXED: 'relaxed',      // 24px gap, 2-4 cards visible
-  SPACIOUS: 'spacious'     // 32px gap, 1-3 cards visible
+  TIGHT: 'tight',      // 12px gap - More items visible
+  NORMAL: 'normal',    // 20px gap - Balanced (default)
+  RELAXED: 'relaxed'   // 32px gap - Fewer items, spacious
 };
 
-export const CARD_STYLES = {
-  MODERN: 'modern',        // Current style with gradients
-  MINIMAL: 'minimal',      // Clean, flat design
-  CLASSIC: 'classic',      // Traditional poster style
-  COMPACT: 'compact',      // Information dense
-  ARTISTIC: 'artistic',    // Creative layouts
-  PROFESSIONAL: 'professional' // Corporate style
-};
+// Removed CARD_STYLES - not implemented in DynamicCard
+// Will be added back when properly implemented
+
+// Removed CARD_STYLES - not implemented in DynamicCard
+// Will be added back when properly implemented
 
 export const LAYOUT_PRESETS = {
-  // Netflix-style horizontal scrolling
-  NETFLIX: {
+  // Default: Netflix-style horizontal scrolling
+  DEFAULT: {
     mode: LAYOUT_MODES.SLIDER,
     cardSize: CARD_SIZES.MEDIUM,
     density: SLIDER_DENSITIES.NORMAL,
-    style: CARD_STYLES.MODERN,
-    gap: 16,
-    itemsPerView: 'auto',
-    showNavigation: true,
-    showProgress: false
+    gap: 20
   },
   
-  // IMDb-style grid layout
-  GRID_CLASSIC: {
+  // Compact: Smaller cards, tighter spacing
+  COMPACT: {
+    mode: LAYOUT_MODES.SLIDER,
+    cardSize: CARD_SIZES.COMPACT,
+    density: SLIDER_DENSITIES.TIGHT,
+    gap: 12
+  },
+  
+  // Grid: Responsive grid layout
+  GRID: {
     mode: LAYOUT_MODES.GRID,
-    cardSize: CARD_SIZES.SMALL,
+    cardSize: CARD_SIZES.MEDIUM,
     density: SLIDER_DENSITIES.NORMAL,
-    style: CARD_STYLES.CLASSIC,
-    columns: 'auto-fill',
-    gap: 20,
-    showNavigation: false,
-    showProgress: false
+    gap: 20
   },
   
-  // Compact list view
-  COMPACT_LIST: {
+  // Gallery: Large cards in grid
+  GALLERY: {
+    mode: LAYOUT_MODES.GRID,
+    cardSize: CARD_SIZES.LARGE,
+    density: SLIDER_DENSITIES.RELAXED,
+    gap: 32
+  },
+  
+  // List: Compact vertical list
+  LIST: {
     mode: LAYOUT_MODES.LIST,
     cardSize: CARD_SIZES.COMPACT,
     density: SLIDER_DENSITIES.TIGHT,
-    style: CARD_STYLES.COMPACT,
-    itemHeight: 80,
-    gap: 8,
-    showNavigation: false,
-    showProgress: false
-  },
-  
-  // Pinterest-style masonry
-  MASONRY: {
-    mode: LAYOUT_MODES.MASONRY,
-    cardSize: CARD_SIZES.MEDIUM,
-    density: SLIDER_DENSITIES.NORMAL,
-    style: CARD_STYLES.ARTISTIC,
-    columns: 'auto-fill',
-    gap: 16,
-    showNavigation: false,
-    showProgress: false
-  },
-  
-  // Carousel with large cards
-  CAROUSEL_LARGE: {
-    mode: LAYOUT_MODES.CAROUSEL,
-    cardSize: CARD_SIZES.LARGE,
-    density: SLIDER_DENSITIES.RELAXED,
-    style: CARD_STYLES.MODERN,
-    itemsPerView: 1,
-    gap: 24,
-    showNavigation: true,
-    showProgress: true,
-    autoplay: false
-  },
-  
-  // Timeline view for chronological content
-  TIMELINE: {
-    mode: LAYOUT_MODES.TIMELINE,
-    cardSize: CARD_SIZES.SMALL,
-    density: SLIDER_DENSITIES.NORMAL,
-    style: CARD_STYLES.MINIMAL,
-    orientation: 'vertical',
-    gap: 16,
-    showNavigation: false,
-    showProgress: true
+    gap: 8
   }
 };
 
 export const CARD_SIZE_CONFIG = {
   [CARD_SIZES.COMPACT]: {
-    width: 140,
-    height: 200,
+    width: 160,
+    height: 230,
     titleSize: '14px',
     metaSize: '11px',
-    padding: '8px',
-    borderRadius: '8px'
-  },
-  [CARD_SIZES.SMALL]: {
-    width: 180,
-    height: 260,
-    titleSize: '15px',
-    metaSize: '12px',
     padding: '10px',
     borderRadius: '10px'
   },
@@ -140,44 +90,28 @@ export const CARD_SIZE_CONFIG = {
     metaSize: '14px',
     padding: '16px',
     borderRadius: '16px'
-  },
-  [CARD_SIZES.EXTRA_LARGE]: {
-    width: 340,
-    height: 480,
-    titleSize: '20px',
-    metaSize: '15px',
-    padding: '20px',
-    borderRadius: '20px'
   }
 };
 
 export const DENSITY_CONFIG = {
   [SLIDER_DENSITIES.TIGHT]: {
-    gap: 8,
-    padding: '12px',
-    itemsVisible: { mobile: 2, tablet: 4, desktop: 6 }
+    gap: 12,
+    padding: '12px'
   },
   [SLIDER_DENSITIES.NORMAL]: {
-    gap: 16,
-    padding: '16px',
-    itemsVisible: { mobile: 1.5, tablet: 3, desktop: 5 }
+    gap: 20,
+    padding: '16px'
   },
   [SLIDER_DENSITIES.RELAXED]: {
-    gap: 24,
-    padding: '20px',
-    itemsVisible: { mobile: 1.2, tablet: 2.5, desktop: 4 }
-  },
-  [SLIDER_DENSITIES.SPACIOUS]: {
     gap: 32,
-    padding: '24px',
-    itemsVisible: { mobile: 1, tablet: 2, desktop: 3 }
+    padding: '24px'
   }
 };
 
 // Default layout settings
 export const DEFAULT_LAYOUT = {
-  preset: 'NETFLIX',
-  ...LAYOUT_PRESETS.NETFLIX
+  preset: 'DEFAULT',
+  ...LAYOUT_PRESETS.DEFAULT
 };
 
 // Storage key for user preferences

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import Slider from '../components/layout/Slider';
 import DynamicSlider from '../components/layout/DynamicSlider';
 import SliderManager from '../components/layout/SliderManager';
 import SearchButton from '../components/common/SearchButton';
 import DetailModal from '../components/modals/DetailModal';
+import ShowAllModal from '../components/modals/ShowAllModal';
 import ViewSwitcher from '../components/layout/ViewSwitcher';
 import useContentStore from '../config/initialData';
 import { useDrag } from '../contexts/DragContext';
@@ -17,6 +17,7 @@ const Dizi = () => {
   const mainContentRef = useRef(null);
   const [showManager, setShowManager] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [showAllModal, setShowAllModal] = useState({ isOpen: false, title: '', items: [] });
   
   // Görünüm modu için custom hook (grid/list)
   const { viewMode, toggleViewMode } = useViewMode(PAGES.DIZI);
@@ -43,10 +44,16 @@ const Dizi = () => {
       id: `dizi-${status.id}`,
       title: status.title,
       items: contents.map(content => ({
-        id: content.id,
+        id: content.id, // Önce unique content ID
+        ...content.apiData, // Sonra API verileri
         apiData: content.apiData || {},
         seasons: content.seasons || {},
-        ...content.apiData
+        pageId: content.pageId, // pageId'yi de ekle
+        statusId: content.statusId, // statusId'yi de ekle
+        title: content.apiData?.title || content.title,
+        poster: content.apiData?.poster || content.poster || content.imageUrl,
+        rating: content.apiData?.rating || content.rating || content.score,
+        releaseDate: content.apiData?.releaseDate || content.releaseDate || content.year
       }))
     };
   });
@@ -54,6 +61,19 @@ const Dizi = () => {
   // Card tıklama handler'ı
   const handleCardClick = (item) => {
     setSelectedItem(item);
+  };
+
+  // Tümünü göster handler'ı
+  const handleShowAll = (title, items) => {
+    setShowAllModal({
+      isOpen: true,
+      title: title,
+      items: items
+    });
+  };
+
+  const handleShowAllClose = () => {
+    setShowAllModal({ isOpen: false, title: '', items: [] });
   };
 
   const { isDragging } = useDrag();
@@ -76,15 +96,19 @@ const Dizi = () => {
 
   // Card taşıma handler'ı - slider'lar arası
   const handleCardMove = (cardItem, fromSliderId, toSliderId) => {
-    console.log('handleCardMove called:', { cardItem, fromSliderId, toSliderId });
-    
     // Slider ID'lerini status ID'lerine çevir
     const fromStatusId = fromSliderId.replace('dizi-', '');
     const toStatusId = toSliderId.replace('dizi-', '');
     
     // Dizi sayfasında olduğumuz için pageId'yi 'dizi' olarak geç
     const success = moveContentBetweenStatuses(cardItem, fromStatusId, toStatusId, PAGES.DIZI);
-    console.log('Move result:', success);
+    if (success) {
+      // Kart taşındıktan sonra hedef slider'a scroll
+      setTimeout(() => {
+        const ref = sliderRefs.current[toSliderId];
+        ref?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+      }, 200); // animasyon için küçük bir gecikme
+    }
   };
 
 
@@ -128,7 +152,7 @@ const Dizi = () => {
                 onClick={() => setShowManager(true)}
                 className="page-manager-button"
               >
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.lists')} focusable="false">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                 </svg>
                 {t('common.lists')}
@@ -146,11 +170,9 @@ const Dizi = () => {
             <div className="page-empty-state">
               <div className="page-empty-content">
                 <div className="page-empty-icon">
-                  <svg className="page-empty-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <svg className="page-empty-inner-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
-                      <title>{t('pages.dizi.empty.noContentTitle')}</title>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
+                  <svg className="page-empty-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <title>{t('pages.dizi.empty.noContentTitle')}</title>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <h2 className="page-empty-title">{t('pages.dizi.empty.noContentTitle')}</h2>
@@ -169,12 +191,13 @@ const Dizi = () => {
                 <DynamicSlider
                   key={slider.id}
                   rootRef={el => (sliderRefs.current[slider.id] = el)}
-                  title={<h2 className="page-slider-title">{slider.title}</h2>}
+                  title={slider.title}
                   items={slider.items}
                   onCardClick={handleCardClick}
                   onCardMove={handleCardMove}
                   sliderId={slider.id}
                   onQuickMove={quickMoveConfig}
+                  onShowAll={handleShowAll}
                 />
               ))}
             </div>
@@ -194,6 +217,15 @@ const Dizi = () => {
         <DetailModal 
           item={selectedItem} 
           onClose={() => setSelectedItem(null)} 
+        />
+      )}
+
+      {showAllModal.isOpen && (
+        <ShowAllModal
+          title={showAllModal.title}
+          items={showAllModal.items}
+          onClose={handleShowAllClose}
+          onCardClick={handleCardClick}
         />
       )}
       </main>

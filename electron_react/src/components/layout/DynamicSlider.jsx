@@ -1,10 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import DynamicCard from '../ui/DynamicCard';
 import CardSkeleton from '../ui/CardSkeleton';
 import { useDrag } from '../../contexts/DragContext';
 import { useLayoutDynamic } from '../../hooks/useLayoutDynamic';
 import { t } from '../../i18n';
 import { LAYOUT_MODES, CARD_SIZES } from '../../config/layoutConfig';
+
+// Helper function to parse title from various formats
+const parseTitle = (title) => {
+  if (React.isValidElement(title)) {
+    return title.props?.children || 'Slider';
+  }
+  if (typeof title === 'string') {
+    return title;
+  }
+  return 'Slider';
+};
 
 const DynamicSlider = ({ 
   title, 
@@ -15,13 +27,13 @@ const DynamicSlider = ({
   isLoading = false, 
   onQuickMove, 
   rootRef,
-  customLayout = null 
+  customLayout = null,
+  onShowAll = null // Tümünü göster callback'i
 }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [maxScroll, setMaxScroll] = useState(0);
   const [draggedItem, setDraggedItem] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -108,8 +120,9 @@ const DynamicSlider = ({
       if (data.sourceSlider !== sliderId && onCardMove) {
         onCardMove(data.item, data.sourceSlider, sliderId);
       }
-    } catch (error) {
-      console.error('Drop parsing error:', error);
+    } catch {
+      // Silently handle drop errors - invalid data format
+      // This can happen when dropping from external sources
     }
     
     setDraggedItem(null);
@@ -123,12 +136,6 @@ const DynamicSlider = ({
         return renderGridLayout();
       case LAYOUT_MODES.LIST:
         return renderListLayout();
-      case LAYOUT_MODES.MASONRY:
-        return renderMasonryLayout();
-      case LAYOUT_MODES.CAROUSEL:
-        return renderCarouselLayout();
-      case LAYOUT_MODES.TIMELINE:
-        return renderTimelineLayout();
       default:
         return renderSliderLayout();
     }
@@ -211,121 +218,14 @@ const DynamicSlider = ({
     </div>
   );
 
-  const renderMasonryLayout = () => (
-    <div 
-      className="columns-auto gap-4 p-4"
-      style={{
-        columnWidth: layoutCSS['--card-width'],
-        columnGap: layoutCSS['--layout-gap']
-      }}
-    >
-      {items.map((item, index) => (
-        <div key={item.id || index} className="break-inside-avoid mb-4">
-          <DynamicCard
-            item={item}
-            onClick={onCardClick}
-            onDragStart={handleCardDragStart}
-            onDragEnd={handleCardDragEnd}
-            isDragging={draggedItem?.item?.id === item.id && !globalDrag}
-            sliderId={sliderId}
-            onQuickMove={onQuickMove}
-            cardSize={activeLayout.cardSize}
-            cardStyle={activeLayout.style}
-            customCSS={{
-              width: '100%',
-              height: 'auto',
-              aspectRatio: Math.random() * 0.5 + 1.2 // Random aspect ratio for masonry effect
-            }}
-          />
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderCarouselLayout = () => {
-    return (
-      <div className="relative">
-        <div className="overflow-hidden">
-          <div 
-            className="flex transition-transform duration-500 ease-out"
-            style={{
-              transform: `translateX(-${currentIndex * 100}%)`,
-              gap: layoutCSS['--layout-gap']
-            }}
-          >
-            {items.map((item, index) => (
-              <div key={item.id || index} className="w-full flex-shrink-0 flex justify-center">
-                <DynamicCard
-                  item={item}
-                  onClick={onCardClick}
-                  onDragStart={handleCardDragStart}
-                  onDragEnd={handleCardDragEnd}
-                  isDragging={draggedItem?.item?.id === item.id && !globalDrag}
-                  sliderId={sliderId}
-                  onQuickMove={onQuickMove}
-                  cardSize={activeLayout.cardSize}
-                  cardStyle={activeLayout.style}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Carousel Navigation */}
-        <div className="flex justify-center mt-4 gap-2">
-          {items.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentIndex 
-                  ? 'bg-orange-500 w-4' 
-                  : 'bg-gray-300 hover:bg-gray-400'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderTimelineLayout = () => (
-    <div className="space-y-6 p-4">
-      {items.map((item, index) => (
-        <div key={item.id || index} className="flex gap-4 items-start">
-          <div className="flex flex-col items-center">
-            <div className="w-4 h-4 bg-orange-500 rounded-full"></div>
-            {index < items.length - 1 && (
-              <div className="w-px h-24 bg-gray-300 mt-2"></div>
-            )}
-          </div>
-          <div className="flex-1">
-            <DynamicCard
-              item={item}
-              onClick={onCardClick}
-              onDragStart={handleCardDragStart}
-              onDragEnd={handleCardDragEnd}
-              isDragging={draggedItem?.item?.id === item.id && !globalDrag}
-              sliderId={sliderId}
-              onQuickMove={onQuickMove}
-              cardSize={activeLayout.cardSize}
-              cardStyle={activeLayout.style}
-              customCSS={{
-                width: '300px'
-              }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
   // Compact view during global drag operations
   if (globalDrag && sourceSliderId !== sliderId) {
+    const titleText = parseTitle(title);
     return (
-      <div 
+      <section 
         ref={rootRef}
         className="slider-compact-item"
+        aria-label={`Slider: ${titleText}`}
         style={{
           position: 'relative',
           height: '120px',
@@ -379,10 +279,7 @@ const DynamicSlider = ({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap'
               }}>
-                {React.isValidElement(title) ? 
-                  title.props.children || 'Slider' : 
-                  (typeof title === 'string' ? title : 'Slider')
-                }
+                {parseTitle(title)}
               </h3>
             </div>
             {items.length > 0 && (
@@ -457,7 +354,7 @@ const DynamicSlider = ({
             </div>
           )}
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -466,13 +363,48 @@ const DynamicSlider = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-5 px-0 sm:px-1 gap-2">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div role="heading" aria-level={2} className="slider-title" style={{ fontSize: 20, fontWeight: 600, color: 'var(--primary-text)', position: 'relative' }}>
+          <h2 className="slider-title" style={{ fontSize: 20, fontWeight: 600, color: 'var(--primary-text)', position: 'relative', margin: 0 }}>
             {title}
             <div style={{ position: 'absolute', left: 0, bottom: -4, height: 3, width: 32, borderRadius: 4, background: 'color-mix(in srgb, var(--accent-color) 60%, transparent)' }} />
-          </div>
+          </h2>
           <div style={{ padding: '4px 12px', borderRadius: 999, border: '1px solid color-mix(in srgb, var(--accent-color) 30%, transparent)', background: 'var(--accent-color)', transition: 'background 0.2s, border 0.2s' }}>
             <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--primary-text)' }}>{items.length}</span>
           </div>
+          
+          {/* Show All Button */}
+          {items.length > 0 && onShowAll && (
+            <button
+              onClick={() => onShowAll(title, items)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '8px',
+                border: '1px solid color-mix(in srgb, var(--accent-color) 40%, transparent)',
+                background: 'color-mix(in srgb, var(--accent-color) 10%, transparent)',
+                color: 'var(--accent-color)',
+                fontSize: '12px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'color-mix(in srgb, var(--accent-color) 20%, transparent)';
+                e.target.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'color-mix(in srgb, var(--accent-color) 10%, transparent)';
+                e.target.style.transform = 'translateY(0)';
+              }}
+              title={t('common.showAll')}
+            >
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              {t('common.showAll')}
+            </button>
+          )}
           
           {/* Layout Mode Indicator */}
           <div style={{ 
@@ -537,8 +469,9 @@ const DynamicSlider = ({
       </div>
 
       {/* Slider Container */}
-      <div
+      <section
         className={`relative rounded-2xl border-2 border-dashed transition-all duration-300`}
+        aria-label="Drop zone for content cards"
         style={{
           borderColor: isDragOver ? 'var(--accent-color)' : 'var(--border-color)',
           backgroundColor: isDragOver ? 'color-mix(in srgb, var(--accent-color) 10%, transparent)' : 'var(--secondary-bg-transparent)',
@@ -549,41 +482,51 @@ const DynamicSlider = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {isLoading ? (
-          /* Loading skeleton */
-          <div className="p-5 grid grid-flow-col gap-5 overflow-x-auto">
-            {[1,2,3,4,5].map(n => (
-              <CardSkeleton key={n} />
-            ))}
-          </div>
-        ) : items.length === 0 && !isDragOver ? (
-          /* Empty State */
-          <div className="flex items-center justify-center h-80 text-center">
-            <div className="max-w-sm">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl" style={{ background: 'var(--card-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--secondary-text)' }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
+        {(() => {
+          if (isLoading) {
+            /* Loading skeleton */
+            return (
+              <div className="p-5 grid grid-flow-col gap-5 overflow-x-auto">
+                {[1,2,3,4,5].map(n => (
+                  <CardSkeleton key={n} />
+                ))}
               </div>
-              <h3 className="text-lg font-normal mb-2" style={{ color: 'var(--primary-text)' }}>{t('components.slider.emptyState.title')}</h3>
-              <p className="text-sm mb-4" style={{ color: 'var(--secondary-text)' }}>
-                {t('components.slider.emptyState.description')}
-              </p>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm" style={{ background: 'color-mix(in srgb, var(--accent-color) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--accent-color) 20%, transparent)', color: 'var(--accent-color)' }}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <span>{t('components.slider.emptyState.dragDrop')}</span>
+            );
+          }
+          
+          if (items.length === 0 && !isDragOver) {
+            /* Empty State */
+            return (
+              <div className="flex items-center justify-center h-80 text-center">
+                <div className="max-w-sm">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl" style={{ background: 'var(--card-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--secondary-text)' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-normal mb-2" style={{ color: 'var(--primary-text)' }}>{t('components.slider.emptyState.title')}</h3>
+                  <p className="text-sm mb-4" style={{ color: 'var(--secondary-text)' }}>
+                    {t('components.slider.emptyState.description')}
+                  </p>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm" style={{ background: 'color-mix(in srgb, var(--accent-color) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--accent-color) 20%, transparent)', color: 'var(--accent-color)' }}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>{t('components.slider.emptyState.dragDrop')}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ) : items.length === 0 && isDragOver ? (
-          /* Empty drag over state */
-          <div style={{ minHeight: '320px' }}></div>
-        ) : (
+            );
+          }
+          
+          if (items.length === 0 && isDragOver) {
+            /* Empty drag over state */
+            return <div style={{ minHeight: '320px' }}></div>;
+          }
+          
           /* Main Content */
-          renderLayoutContent()
-        )}
+          return renderLayoutContent();
+        })()}
 
         {/* Drop Zone Indicator */}
         {isDragOver && (
@@ -599,9 +542,54 @@ const DynamicSlider = ({
             </div>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
+};
+
+// PropTypes validation
+DynamicSlider.propTypes = {
+  title: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.element
+  ]).isRequired,
+  items: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    poster: PropTypes.string,
+    rating: PropTypes.number,
+    releaseDate: PropTypes.string
+  })),
+  onCardClick: PropTypes.func,
+  onCardMove: PropTypes.func,
+  sliderId: PropTypes.string.isRequired,
+  isLoading: PropTypes.bool,
+  onQuickMove: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.object
+  ]),
+  rootRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.any })
+  ]),
+  customLayout: PropTypes.shape({
+    mode: PropTypes.string,
+    cardSize: PropTypes.string,
+    style: PropTypes.string,
+    gap: PropTypes.number
+  }),
+  onShowAll: PropTypes.func
+};
+
+DynamicSlider.defaultProps = {
+  items: [],
+  isLoading: false,
+  customLayout: null,
+  onShowAll: null,
+  onCardClick: undefined,
+  onCardMove: undefined,
+  onQuickMove: undefined,
+  rootRef: undefined
 };
 
 export default DynamicSlider;

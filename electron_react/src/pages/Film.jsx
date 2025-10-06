@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import Slider from '../components/layout/Slider';
 import DynamicSlider from '../components/layout/DynamicSlider';
 import SliderManager from '../components/layout/SliderManager';
 import SearchButton from '../components/common/SearchButton';
 import DetailModal from '../components/modals/DetailModal';
+import ShowAllModal from '../components/modals/ShowAllModal';
 import ViewSwitcher from '../components/layout/ViewSwitcher';
 import useContentStore from '../config/initialData';
 import { useDrag } from '../contexts/DragContext';
@@ -17,6 +17,7 @@ const Film = () => {
   const mainContentRef = useRef(null);
   const [showManager, setShowManager] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [showAllModal, setShowAllModal] = useState({ isOpen: false, title: '', items: [] });
   
   // Görünüm modu için custom hook (grid/list)
   const { viewMode, toggleViewMode } = useViewMode(PAGES.FILM);
@@ -43,10 +44,16 @@ const Film = () => {
       id: `film-${status.id}`,
       title: status.title,
       items: contents.map(content => ({
-        id: content.id,
+        id: content.id, // Önce unique content ID
+        ...content.apiData, // Sonra API verileri
         apiData: content.apiData || {},
         seasons: content.seasons || {},
-        ...content.apiData
+        pageId: content.pageId, // pageId'yi de ekle
+        statusId: content.statusId, // statusId'yi de ekle
+        title: content.apiData?.title || content.title,
+        poster: content.apiData?.poster || content.poster || content.imageUrl,
+        rating: content.apiData?.rating || content.rating || content.score,
+        releaseDate: content.apiData?.releaseDate || content.releaseDate || content.year
       }))
     };
   });
@@ -54,6 +61,19 @@ const Film = () => {
   // Card tıklama handler'ı
   const handleCardClick = (item) => {
     setSelectedItem(item);
+  };
+
+  // Tümünü göster handler'ı
+  const handleShowAll = (title, items) => {
+    setShowAllModal({
+      isOpen: true,
+      title: title,
+      items: items
+    });
+  };
+
+  const handleShowAllClose = () => {
+    setShowAllModal({ isOpen: false, title: '', items: [] });
   };
 
   const { isDragging } = useDrag();
@@ -84,9 +104,7 @@ const Film = () => {
       // Kart taşındıktan sonra hedef slider'a scroll
       setTimeout(() => {
         const ref = sliderRefs.current[toSliderId];
-        if (ref && ref.scrollIntoView) {
-          ref.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        ref?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
       }, 200); // animasyon için küçük bir gecikme
     }
   };
@@ -132,7 +150,7 @@ const Film = () => {
                 onClick={() => setShowManager(true)}
                 className="page-manager-button"
               >
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.lists')} focusable="false">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                 </svg>
                 {t('common.lists')}
@@ -150,11 +168,9 @@ const Film = () => {
             <div className="page-empty-state">
               <div className="page-empty-content">
                 <div className="page-empty-icon">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
-                      <title>{t('pages.film.empty.noContentTitle')}</title>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h4a1 1 0 011 1v18a1 1 0 01-1 1H3a1 1 0 01-1-1V1a1 1 0 011-1h4a1 1 0 011 1v3m0 0h8M7 4H3" />
-                    </svg>
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <title>{t('pages.film.empty.noContentTitle')}</title>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h4a1 1 0 011 1v18a1 1 0 01-1 1H3a1 1 0 01-1-1V1a1 1 0 011-1h4a1 1 0 011 1v3m0 0h8M7 4H3" />
                   </svg>
                 </div>
                 <h2 className="page-empty-title">{t('pages.film.empty.noContentTitle')}</h2>
@@ -173,12 +189,13 @@ const Film = () => {
                 <DynamicSlider
                   key={slider.id}
                   rootRef={el => (sliderRefs.current[slider.id] = el)}
-                  title={<h2 className="page-slider-title">{slider.title}</h2>}
+                  title={slider.title}
                   items={slider.items}
                   onCardClick={handleCardClick}
                   onCardMove={handleCardMove}
                   sliderId={slider.id}
                   onQuickMove={quickMoveConfig}
+                  onShowAll={handleShowAll}
                 />
               ))}
             </div>
@@ -198,6 +215,15 @@ const Film = () => {
         <DetailModal 
           item={selectedItem} 
           onClose={() => setSelectedItem(null)} 
+        />
+      )}
+
+      {showAllModal.isOpen && (
+        <ShowAllModal
+          title={showAllModal.title}
+          items={showAllModal.items}
+          onClose={handleShowAllClose}
+          onCardClick={handleCardClick}
         />
       )}
       </div>

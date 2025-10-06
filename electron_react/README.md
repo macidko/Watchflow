@@ -52,6 +52,50 @@ npm start
 npm run electron-build
 ```
 
+## 🌐 Web Demo (Netlify Deploy)
+
+### Netlify'ya Deploy
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/macidko/Watchflow)
+
+#### Manuel Deploy:
+
+```bash
+# 1. Build al
+npm run build
+
+# 2. Netlify CLI ile deploy (ilk defa)
+npx netlify-cli deploy --prod
+
+# 3. Veya GitHub'a push et, Netlify otomatik deploy eder
+git push origin main
+```
+
+#### Netlify Yapılandırması:
+
+- **Build Command**: `npm run build`
+- **Publish Directory**: `dist`
+- **Node Version**: `18`
+
+**Not**: `.env.production` dosyasında API proxy path'leri ayarlıdır. CORS sorunlarını önlemek için Netlify proxy kullanılır.
+
+**TMDB API Key**: Netlify Dashboard > Site Settings > Environment Variables'dan `VITE_TMDB_API_KEY` ekleyin.
+
+### Netlify'da Çalışan Özellikler:
+
+✅ Tüm sayfalarda navigasyon (SPA routing)  
+✅ API proxy ile CORS bypass  
+✅ LocalStorage ile veri persistance  
+✅ Responsive tasarım  
+✅ Takvim ve bildirimler  
+
+### Netlify'da Çalışmayan Özellikler:
+
+❌ Electron API'leri (window management, native notifications)  
+❌ Dosya sistemi işlemleri (native import/export)  
+
+---
+
 ## 📁 Proje Yapısı
 
 ```

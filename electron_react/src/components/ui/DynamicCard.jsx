@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDrag } from '../../contexts/DragContext';
-import { CARD_STYLES } from '../../config/layoutConfig';
 import './../../css/components/ui/DynamicCard.css';
 
 const DynamicCard = ({ 
@@ -44,7 +43,6 @@ const DynamicCard = ({
   const genres = item.genres || item.genre || (item.apiData?.genres) || [];
   const releaseDate = item.releaseDate || item.year || (item.apiData?.releaseDate);
   const rating = item.rating || item.score || (item.apiData?.rating || item.apiData?.score);
-  const description = item.description || item.overview || (item.apiData?.description);
 
   const showImage = poster && !imgError;
 
@@ -89,20 +87,8 @@ const DynamicCard = ({
   };
 
   const renderContent = () => {
-    switch (cardStyle) {
-      case CARD_STYLES.COMPACT:
-        return renderCompactContent();
-      case CARD_STYLES.PROFESSIONAL:
-        return renderProfessionalContent();
-      case CARD_STYLES.ARTISTIC:
-        return renderArtisticContent();
-      case CARD_STYLES.MINIMAL:
-        return renderMinimalContent();
-      case CARD_STYLES.CLASSIC:
-        return renderClassicContent();
-      default:
-        return renderModernContent();
-    }
+    // Only modern card style is supported
+    return renderModernContent();
   };
 
   const renderModernContent = () => (
@@ -150,193 +136,6 @@ const DynamicCard = ({
       ) : (
         renderNoImagePlaceholder()
       )}
-    </div>
-  );
-
-  const renderMinimalContent = () => (
-    <div className="dynamic-card__content">
-      {showImage ? (
-        <div className="dynamic-card__image-container">
-          <img
-            src={poster}
-            alt={title}
-            className="dynamic-card__image"
-            onError={() => setImgError(true)}
-            draggable={false}
-          />
-        </div>
-      ) : (
-        <div className="dynamic-card__image-container">
-          <div className="dynamic-card__image-placeholder">
-            <svg className="dynamic-card__image-placeholder-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-        </div>
-      )}
-      
-      <div className="dynamic-card__info">
-        <h3 className="dynamic-card__info-title">
-          {title || 'Başlık Yok'}
-        </h3>
-        {releaseDate && (
-          <p className="dynamic-card__info-date">
-            {releaseDate}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-
-  const renderCompactContent = () => (
-    <div className="dynamic-card__content">
-      {showImage ? (
-        <div className="dynamic-card__compact-image">
-          <img
-            src={poster}
-            alt={title}
-            className="dynamic-card__image"
-            onError={() => setImgError(true)}
-            draggable={false}
-          />
-        </div>
-      ) : (
-        <div className="dynamic-card__compact-image">
-          <div className="dynamic-card__compact-image-placeholder">
-            <svg className="dynamic-card__compact-image-placeholder-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-        </div>
-      )}
-      
-      <div className="dynamic-card__compact-info">
-        <h3 className="dynamic-card__compact-title">
-          {title || 'Başlık Yok'}
-        </h3>
-        <div className="dynamic-card__compact-meta">
-          {releaseDate && (
-            <span className="dynamic-card__compact-date">{releaseDate}</span>
-          )}
-          {rating && (
-            <span className="dynamic-card__compact-rating">★ {Number(rating).toFixed(1)}</span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderClassicContent = () => (
-    <div className="dynamic-card__content">
-      {showImage ? (
-        <div className="dynamic-card__content">
-          <img
-            src={poster}
-            alt={title}
-            className="dynamic-card__image"
-            onError={() => setImgError(true)}
-            draggable={false}
-          />
-          
-          <div className="dynamic-card__classic-overlay">
-            <h3 className="dynamic-card__classic-title">
-              {title || 'Başlık Yok'}
-            </h3>
-            <div className="dynamic-card__classic-meta">
-              {releaseDate && (
-                <span className="dynamic-card__classic-date">{releaseDate}</span>
-              )}
-              {rating && (
-                <span className="dynamic-card__classic-rating">★ {Number(rating).toFixed(1)}</span>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : (
-        renderNoImagePlaceholder()
-      )}
-    </div>
-  );
-
-  const renderArtisticContent = () => (
-    <div className="dynamic-card__content">
-      {showImage ? (
-        <>
-          <img
-            src={poster}
-            alt={title}
-            className="dynamic-card__image"
-            onError={() => setImgError(true)}
-            draggable={false}
-          />
-          
-          <div className="dynamic-card__gradient-overlay--artistic"></div>
-          
-          <div className="dynamic-card__artistic-content">
-            <div className="dynamic-card__artistic-info">
-              <h3 className="dynamic-card__artistic-title">
-                {title || 'Başlık Yok'}
-              </h3>
-              {description && (
-                <p className="dynamic-card__artistic-description">
-                  {description}
-                </p>
-              )}
-              <div className="dynamic-card__artistic-meta">
-                {releaseDate && (
-                  <span className="dynamic-card__artistic-date">{releaseDate}</span>
-                )}
-                {rating && (
-                  <span className="dynamic-card__artistic-rating">★ {Number(rating).toFixed(1)}</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      ) : (
-        renderNoImagePlaceholder()
-      )}
-    </div>
-  );
-
-  const renderProfessionalContent = () => (
-    <div className="dynamic-card__content">
-      {showImage ? (
-        <div className="dynamic-card__professional-image">
-          <img
-            src={poster}
-            alt={title}
-            className="dynamic-card__image"
-            onError={() => setImgError(true)}
-            draggable={false}
-          />
-        </div>
-      ) : (
-        <div className="dynamic-card__professional-image">
-          <div className="dynamic-card__professional-image-placeholder">
-            <svg className="dynamic-card__professional-image-placeholder-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-        </div>
-      )}
-      
-      <div className="dynamic-card__professional-info">
-        <h3 className="dynamic-card__professional-title">
-          {title || 'Başlık Yok'}
-        </h3>
-        <div className="dynamic-card__professional-meta">
-          {releaseDate && (
-            <span className="dynamic-card__professional-date">{releaseDate}</span>
-          )}
-          {rating && (
-            <div className="dynamic-card__professional-rating-container">
-              <span className="dynamic-card__professional-rating-label">Rating:</span>
-              <span className="dynamic-card__professional-rating-value">{Number(rating).toFixed(1)}</span>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 

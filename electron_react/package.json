@@ -49,14 +49,15 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "postcss": "^8.5.6",
+    "prop-types": "^15.8.1",
     "standard-version": "^9.5.0",
     "tailwindcss": "^4.1.12",
     "vite": "^7.0.4",
     "wait-on": "^8.0.4"
   },
   "build": {
-  "appId": "com.watchflow.react",
-  "productName": "Watchflow React",
+    "appId": "com.watchflow.react",
+    "productName": "Watchflow React",
     "directories": {
       "output": "dist-electron"
     },

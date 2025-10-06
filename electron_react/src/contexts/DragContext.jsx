@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
+import PropTypes from 'prop-types';
 
 const DragContext = createContext();
 
@@ -59,13 +60,13 @@ export const DragProvider = ({ children }) => {
     }
   };
 
-  const value = {
+  const value = useMemo(() => ({
     isDragging,
     draggedItem,
     sourceSliderId,
     startDrag,
     endDrag
-  };
+  }), [isDragging, draggedItem, sourceSliderId]);
 
   // Fallback: bazı durumlarda dragend event'i kaynakta tetiklenmeyebilir, bu yüzden
   // window üzerinde genel bir dinleyici ekleyerek durumu güvenli şekilde sıfırlıyoruz.
@@ -73,19 +74,30 @@ export const DragProvider = ({ children }) => {
     const handler = () => {
       // küçük bir gecikme bırak; drop handler'larının tamamlanması için
       setTimeout(() => {
-        endDrag();
+        // State'i direkt set ederek closure problemini çözüyoruz
+        setIsDragging(false);
+        setDraggedItem(null);
+        setSourceSliderId(null);
+        
+        // HTML element cleanup
+        const html = document.documentElement;
+        if (html) {
+          html.classList.remove('no-scroll');
+          html.style.scrollBehavior = '';
+        }
       }, 80);
     };
     window.addEventListener('dragend', handler);
     return () => {
       window.removeEventListener('dragend', handler);
       // Sayfa kapanırken temizlik yap
-      if (htmlElement.current) {
-        htmlElement.current.classList.remove('no-scroll');
-        htmlElement.current.style.scrollBehavior = '';
+      const html = document.documentElement;
+      if (html) {
+        html.classList.remove('no-scroll');
+        html.style.scrollBehavior = '';
       }
     };
-  }, []);
+  }, []); // Boş dependency array OK - handler içinde state setter kullanıyor
 
   return (
     <DragContext.Provider value={value}>
@@ -93,3 +105,10 @@ export const DragProvider = ({ children }) => {
     </DragContext.Provider>
   );
 };
+
+// PropTypes validation
+DragProvider.propTypes = {
+  children: PropTypes.node.isRequired
+};
+
+export default DragProvider;

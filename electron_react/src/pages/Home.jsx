@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import Slider from '../components/layout/Slider';
 import DynamicSlider from '../components/layout/DynamicSlider';
 import SliderManager from '../components/layout/SliderManager';
 import SearchButton from '../components/common/SearchButton';
 import DetailModal from '../components/modals/DetailModal';
+import ShowAllModal from '../components/modals/ShowAllModal';
 import useContentStore from '../config/initialData';
 import { CATEGORIES, PAGES } from '../config/constants';
 import { t } from '../i18n';
@@ -14,6 +14,7 @@ const Home = () => {
   const mainContentRef = React.useRef(null);
   const [showManager, setShowManager] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [showAllModal, setShowAllModal] = useState({ isOpen: false, title: '', items: [] });
   
   // Zustand store'dan verileri al
   const { 
@@ -43,10 +44,17 @@ const Home = () => {
             id: `${page.id}-${status.id}`,
             title: `${page.title} - ${status.title}`,
             items: contents.map(content => ({
-              id: content.id,
+              id: content.id, // Önce unique content ID
+              ...content.apiData, // Sonra API verileri
               apiData: content.apiData || {},
               seasons: content.seasons || {},
-              ...content.apiData
+              pageId: content.pageId, // pageId'yi de ekle
+              statusId: content.statusId, // statusId'yi de ekle
+              // Ensure all fields are accessible
+              title: content.apiData?.title || content.title,
+              poster: content.apiData?.poster || content.poster || content.imageUrl,
+              rating: content.apiData?.rating || content.rating || content.score,
+              releaseDate: content.apiData?.releaseDate || content.releaseDate || content.year
             }))
           });
         }
@@ -63,6 +71,19 @@ const Home = () => {
 
   const handleManagerClose = () => {
     setShowManager(false);
+  };
+
+  // Tümünü göster handler'ı
+  const handleShowAll = (title, items) => {
+    setShowAllModal({
+      isOpen: true,
+      title: title,
+      items: items
+    });
+  };
+
+  const handleShowAllClose = () => {
+    setShowAllModal({ isOpen: false, title: '', items: [] });
   };
 
   // Loading kontrolü önce yapılmalı
@@ -118,7 +139,7 @@ const Home = () => {
                   onClick={() => setShowManager(true)}
                   className="page-manager-button"
                 >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.lists')} focusable="false">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                   </svg>
                   {t('common.lists')}
@@ -136,11 +157,9 @@ const Home = () => {
               <div className="page-empty-state">
                 <div className="page-empty-content">
                   <div className="page-empty-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
-                        <title>{t('pages.home.empty.noContentTitle')}</title>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <title>{t('pages.home.empty.noContentTitle')}</title>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                   </div>
                   <h2 className="page-empty-title">{t('pages.home.empty.noContentTitle')}</h2>
@@ -159,10 +178,11 @@ const Home = () => {
                 {sliderData.map((slider) => (
                   <DynamicSlider 
                     key={slider.id}
-                    title={<h2 className="page-slider-title">{slider.title}</h2>}
+                    title={slider.title}
                     items={slider.items} 
                     onCardClick={handleCardClick}
                     sliderId={slider.id}
+                    onShowAll={handleShowAll}
                   />
                 ))}
               </div>
@@ -182,6 +202,15 @@ const Home = () => {
           <DetailModal 
             item={selectedItem} 
             onClose={() => setSelectedItem(null)} 
+          />
+        )}
+
+        {showAllModal.isOpen && (
+          <ShowAllModal
+            title={showAllModal.title}
+            items={showAllModal.items}
+            onClose={handleShowAllClose}
+            onCardClick={handleCardClick}
           />
         )}
       </main>

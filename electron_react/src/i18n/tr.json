@@ -16,6 +16,7 @@
     "hide": "Gizle",
     "showMore": "Daha fazla",
     "showLess": "Daha az",
+    "showAll": "Tümünü Göster",
     "updating": "Güncelleniyor...",
     "skipToContent": "İçeriğe atla",
     "lists": "Listeler",
@@ -33,7 +34,18 @@
     "success": "Başarılı",
     "error": "Hata",
     "warning": "Uyarı",
-    "info": "Bilgi"
+    "info": "Bilgi",
+    "sortBy": "Sırala",
+    "default": "Varsayılan",
+    "title": "Başlık",
+    "year": "Yıl",
+    "rating": "Puan",
+    "gridView": "Izgara Görünümü",
+    "listView": "Liste Görünümü",
+    "noSearchResults": "Arama sonucu bulunamadı",
+    "noContent": "İçerik bulunamadı",
+    "tryDifferentSearch": "Farklı bir arama terimi deneyin",
+    "noContentDescription": "Görüntülenecek içerik bulunmuyor"
   },
   "pages": {
     "home": {

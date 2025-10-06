@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import useContentStore from '../../config/initialData';
 import { PAGES } from '../../config/constants';
 import '../../css/components/modals/RelatedContent.css';
@@ -71,14 +72,34 @@ const RelatedContent = ({
     setAddingContent(prev => ({ ...prev, [contentId]: true }));
     
     try {
-      // İçerik türünü belirle
+      // İçerik türünü belirle - relatedItem'dan gelen type'ı normalize et
+      let targetPageId;
       let contentType;
+      
+      // ÖNCE mevcut sayfaya bak - anime sayfasındaysak, related content da anime'dir
       if (item.pageId === PAGES.ANIME) {
+        targetPageId = PAGES.ANIME;
         contentType = 'anime';
       } else if (item.pageId === PAGES.DIZI) {
-        contentType = 'tv';
+        // Dizi sayfasındaysak, related content'in type'ına göre karar ver
+        const itemType = (relatedItem.type || relatedItem.media_type || '').toLowerCase();
+        if (itemType === 'movie' || itemType === 'film') {
+          targetPageId = PAGES.FILM;
+          contentType = 'movie';
+        } else {
+          targetPageId = PAGES.DIZI;
+          contentType = 'tv';
+        }
       } else {
-        contentType = 'movie';
+        // Film sayfasındaysak, related content'in type'ına göre karar ver
+        const itemType = (relatedItem.type || relatedItem.media_type || '').toLowerCase();
+        if (itemType === 'tv' || itemType === 'series') {
+          targetPageId = PAGES.DIZI;
+          contentType = 'tv';
+        } else {
+          targetPageId = PAGES.FILM;
+          contentType = 'movie';
+        }
       }
       
       // Daha zengin veri yapısı oluştur
@@ -91,10 +112,11 @@ const RelatedContent = ({
           rating: relatedItem.rating || relatedItem.vote_average || relatedItem.score,
           overview: relatedItem.overview || relatedItem.description || relatedItem.synopsis,
           genres: relatedItem.genres || [],
-          type: relatedItem.type || contentType,
+          type: contentType, // Normalize edilmiş type
           provider: relatedItem.provider || 'related_content',
-          tmdbId: relatedItem.tmdbId || relatedItem.id,
-          kitsuId: relatedItem.kitsuId,
+          tmdbId: relatedItem.tmdbId || (contentType !== 'anime' ? relatedItem.id : undefined),
+          kitsuId: relatedItem.kitsuId || (contentType === 'anime' ? relatedItem.id : undefined),
+          anilistId: relatedItem.anilistId,
           // İlişki bilgisini koru
           addedFrom: 'related_content',
           originalRelation: {
@@ -102,8 +124,8 @@ const RelatedContent = ({
             relationType: relatedItem.relType
           }
         },
-        pageId: item.pageId,
-        statusId: getDefaultStatusForPage(item.pageId),
+        pageId: targetPageId, // Doğru pageId
+        statusId: getDefaultStatusForPage(targetPageId),
         addedAt: new Date().toISOString()
       };
 
@@ -302,6 +324,17 @@ const RelatedContent = ({
       </div>
     </div>
   );
+};
+
+RelatedContent.propTypes = {
+  item: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    pageId: PropTypes.string
+  }),
+  relations: PropTypes.arrayOf(PropTypes.object),
+  onUpdateRelations: PropTypes.func,
+  relationsLoading: PropTypes.bool,
+  relationsError: PropTypes.string
 };
 
 export default RelatedContent;

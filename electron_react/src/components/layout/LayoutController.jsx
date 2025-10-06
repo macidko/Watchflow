@@ -1,49 +1,70 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { useLayoutDynamic } from '../../hooks/useLayoutDynamic';
 
 const LayoutController = ({ children }) => {
   const { currentLayout, getLayoutCSS } = useLayoutDynamic();
 
+  // Memoize layout CSS to prevent recalculation
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const layoutCSS = useMemo(() => getLayoutCSS(), [currentLayout]);
+
   useEffect(() => {
     // Apply layout CSS to document root
-    const layoutCSS = getLayoutCSS();
     const root = document.documentElement;
+    const appliedProperties = [];
     
     Object.entries(layoutCSS).forEach(([property, value]) => {
       root.style.setProperty(property, value);
+      appliedProperties.push(property);
     });
 
-    // Apply responsive classes
+    // Apply responsive classes efficiently
     const bodyClassList = document.body.classList;
     
-    // Remove existing layout classes
-    bodyClassList.remove(
+    // Store previous classes for cleanup
+    const layoutClasses = [
       'layout-slider', 'layout-grid', 'layout-list', 
       'layout-masonry', 'layout-carousel', 'layout-timeline'
-    );
-    
-    // Add current layout class
-    bodyClassList.add(`layout-${currentLayout.mode}`);
-    
-    // Add card size class
-    bodyClassList.remove(
+    ];
+    const cardSizeClasses = [
       'card-compact', 'card-small', 'card-medium', 
       'card-large', 'card-extra-large'
-    );
-    bodyClassList.add(`card-${currentLayout.cardSize.replace('_', '-')}`);
-    
-    // Add style class
-    bodyClassList.remove(
+    ];
+    const styleClasses = [
       'style-modern', 'style-minimal', 'style-classic',
       'style-compact', 'style-artistic', 'style-professional'
-    );
-    bodyClassList.add(`style-${currentLayout.style}`);
+    ];
     
-  }, [currentLayout, getLayoutCSS]);
+    // Remove all layout-related classes at once
+    bodyClassList.remove(...layoutClasses, ...cardSizeClasses, ...styleClasses);
+    
+    // Add new classes
+    bodyClassList.add(
+      `layout-${currentLayout.mode}`,
+      `card-${currentLayout.cardSize.replace('_', '-')}`,
+      `style-${currentLayout.style}`
+    );
+    
+    // Cleanup function
+    return () => {
+      // Remove applied CSS custom properties
+      appliedProperties.forEach(property => {
+        root.style.removeProperty(property);
+      });
+      
+      // Remove applied classes
+      bodyClassList.remove(
+        `layout-${currentLayout.mode}`,
+        `card-${currentLayout.cardSize.replace('_', '-')}`,
+        `style-${currentLayout.style}`
+      );
+    };
+  }, [currentLayout, layoutCSS]);
 
   return (
     <>
-      <style jsx global>{`
+      <style>{`
         /* Global Layout Styles */
         .layout-slider .dynamic-slider {
           --layout-flow: row;
@@ -164,22 +185,38 @@ const LayoutController = ({ children }) => {
         
         .dynamic-card {
           contain: layout style paint;
+        }
+        
+        /* Only apply will-change during interactions */
+        .dynamic-slider:hover .dynamic-card,
+        .dynamic-card:hover {
           will-change: transform;
         }
         
         .layout-carousel .dynamic-card,
         .layout-slider .dynamic-card {
           transform: translateZ(0);
+          backface-visibility: hidden;
         }
         
         /* Focus Management */
         .dynamic-slider:focus-within .dynamic-card:not(:focus-within) {
           opacity: 0.7;
+          transition: opacity 0.2s ease;
         }
         
         .dynamic-card:focus-within {
           z-index: 10;
-          transform: scale(1.02);
+          outline: 3px solid var(--accent-color);
+          outline-offset: 3px;
+          /* Avoid transform during focus for keyboard users */
+        }
+        
+        /* Only scale on mouse interactions, not keyboard */
+        @media (hover: hover) and (pointer: fine) {
+          .dynamic-card:hover {
+            transform: scale(1.02);
+          }
         }
         
         /* Loading States */
@@ -245,6 +282,10 @@ const LayoutController = ({ children }) => {
       {children}
     </>
   );
+};
+
+LayoutController.propTypes = {
+  children: PropTypes.node.isRequired
 };
 
 export default LayoutController;

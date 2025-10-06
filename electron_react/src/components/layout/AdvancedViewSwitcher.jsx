@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { useLayoutDynamic } from '../../hooks/useLayoutDynamic';
 import { 
   LAYOUT_MODES, 
   CARD_SIZES, 
-  SLIDER_DENSITIES, 
-  CARD_STYLES,
+  SLIDER_DENSITIES,
   LAYOUT_PRESETS 
 } from '../../config/layoutConfig';
 
@@ -15,8 +15,7 @@ const AdvancedViewSwitcher = ({ onLayoutChange }) => {
     applyPreset, 
     updateMode, 
     updateCardSize, 
-    updateDensity, 
-    updateStyle,
+    updateDensity,
     resetToDefault
   } = useLayoutDynamic();
 
@@ -48,13 +47,6 @@ const AdvancedViewSwitcher = ({ onLayoutChange }) => {
     }
   };
 
-  const handleStyleChange = (style) => {
-    updateStyle(style);
-    if (onLayoutChange) {
-      onLayoutChange({ ...currentLayout, style });
-    }
-  };
-
   const layoutIcons = {
     [LAYOUT_MODES.SLIDER]: (
       <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,51 +62,24 @@ const AdvancedViewSwitcher = ({ onLayoutChange }) => {
       <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
       </svg>
-    ),
-    [LAYOUT_MODES.MASONRY]: (
-      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 11a1 1 0 011-1h4a1 1 0 011 1v8a1 1 0 01-1 1h-4a1 1 0 01-1-1v-8z" />
-      </svg>
-    ),
-    [LAYOUT_MODES.CAROUSEL]: (
-      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16l13-8L7 4z" />
-      </svg>
-    ),
-    [LAYOUT_MODES.TIMELINE]: (
-      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
     )
   };
 
   const sizeIcons = {
     [CARD_SIZES.COMPACT]: "📱",
-    [CARD_SIZES.SMALL]: "📋",
     [CARD_SIZES.MEDIUM]: "🖼️",
-    [CARD_SIZES.LARGE]: "🖥️",
-    [CARD_SIZES.EXTRA_LARGE]: "📺"
+    [CARD_SIZES.LARGE]: "🖥️"
   };
 
   const densityIcons = {
     [SLIDER_DENSITIES.TIGHT]: "🤏",
     [SLIDER_DENSITIES.NORMAL]: "👌",
-    [SLIDER_DENSITIES.RELAXED]: "✋",
-    [SLIDER_DENSITIES.SPACIOUS]: "🙌"
-  };
-
-  const styleIcons = {
-    [CARD_STYLES.MODERN]: "✨",
-    [CARD_STYLES.MINIMAL]: "🎯",
-    [CARD_STYLES.CLASSIC]: "📽️",
-    [CARD_STYLES.COMPACT]: "📊",
-    [CARD_STYLES.ARTISTIC]: "🎨",
-    [CARD_STYLES.PROFESSIONAL]: "💼"
+    [SLIDER_DENSITIES.RELAXED]: "🙌"
   };
 
   return (
     <div className="advanced-view-switcher">
-      <style jsx>{`
+      <style>{`
         .advanced-view-switcher {
           display: flex;
           align-items: center;
@@ -340,7 +305,7 @@ const AdvancedViewSwitcher = ({ onLayoutChange }) => {
 
         {/* Quick Mode Switcher */}
         <div className="mode-switcher">
-          {Object.values(LAYOUT_MODES).slice(0, 4).map(mode => (
+          {Object.values(LAYOUT_MODES).map(mode => (
             <button
               key={mode}
               className={`mode-button ${currentLayout.mode === mode ? 'active' : ''}`}
@@ -390,26 +355,8 @@ const AdvancedViewSwitcher = ({ onLayoutChange }) => {
             </div>
           </div>
 
-          {/* Style Options */}
-          <div className="advanced-section">
-            <div className="section-title">Style</div>
-            <div className="option-grid">
-              {Object.values(CARD_STYLES).map(style => (
-                <button
-                  key={style}
-                  className={`option-button ${currentLayout.style === style ? 'active' : ''}`}
-                  onClick={() => handleStyleChange(style)}
-                  title={style.charAt(0).toUpperCase() + style.slice(1)}
-                >
-                  {styleIcons[style]}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Presets */}
-          <div className="advanced-section">
-            <div className="section-title">Presets</div>
+          <div className="advanced-section">\n            <div className="section-title">Presets</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
               {Object.keys(LAYOUT_PRESETS).map(presetName => (
                 <button
@@ -434,6 +381,14 @@ const AdvancedViewSwitcher = ({ onLayoutChange }) => {
       )}
     </div>
   );
+};
+
+AdvancedViewSwitcher.propTypes = {
+  onLayoutChange: PropTypes.func
+};
+
+AdvancedViewSwitcher.defaultProps = {
+  onLayoutChange: undefined
 };
 
 export default AdvancedViewSwitcher;

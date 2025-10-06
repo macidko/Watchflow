@@ -518,44 +518,85 @@ const useContentStore = create()(
       // Episode/Season tracking
       markEpisodeWatched: (contentId, seasonNumber, episodeNumber) => set((state) => {
         const content = state.contents[contentId];
-        if (content && content.seasons[seasonNumber]) {
-          const watchedEpisodes = content.seasons[seasonNumber].watchedEpisodes;
-          if (!watchedEpisodes.includes(episodeNumber)) {
-            watchedEpisodes.push(episodeNumber);
-            watchedEpisodes.sort((a, b) => a - b);
-          }
+        if (content && content.seasons) {
+          // Önce önceki tüm sezonları işaretle
+          Object.values(content.seasons).forEach(season => {
+            if (season.seasonNumber < seasonNumber) {
+              // Bu sezonun tüm bölümlerini işaretle
+              const allEpisodes = Array.from({ length: season.episodeCount }, (_, i) => i + 1);
+              season.watchedEpisodes = allEpisodes;
+            } else if (season.seasonNumber === seasonNumber) {
+              // Aynı sezondaki bu bölüme kadar olan tüm bölümleri işaretle
+              const watchedEpisodes = season.watchedEpisodes;
+              for (let ep = 1; ep <= episodeNumber; ep++) {
+                if (!watchedEpisodes.includes(ep)) {
+                  watchedEpisodes.push(ep);
+                }
+              }
+              watchedEpisodes.sort((a, b) => a - b);
+            }
+          });
           content.updatedAt = new Date().toISOString();
         }
       }),
 
       markEpisodeUnwatched: (contentId, seasonNumber, episodeNumber) => set((state) => {
         const content = state.contents[contentId];
-        if (content && content.seasons[seasonNumber]) {
-          const watchedEpisodes = content.seasons[seasonNumber].watchedEpisodes;
-          const index = watchedEpisodes.indexOf(episodeNumber);
-          if (index > -1) {
-            watchedEpisodes.splice(index, 1);
+        if (content && content.seasons) {
+          // Bu bölümü işaretsiz yap
+          if (content.seasons[seasonNumber]) {
+            const watchedEpisodes = content.seasons[seasonNumber].watchedEpisodes;
+            const index = watchedEpisodes.indexOf(episodeNumber);
+            if (index > -1) {
+              watchedEpisodes.splice(index, 1);
+            }
+            
+            // Bu bölümden sonraki tüm bölümleri de işaretsiz yap
+            for (let ep = episodeNumber + 1; ep <= content.seasons[seasonNumber].episodeCount; ep++) {
+              const idx = watchedEpisodes.indexOf(ep);
+              if (idx > -1) {
+                watchedEpisodes.splice(idx, 1);
+              }
+            }
           }
+          
+          // Sonraki sezonların tüm bölümlerini işaretsiz yap
+          Object.values(content.seasons).forEach(season => {
+            if (season.seasonNumber > seasonNumber) {
+              season.watchedEpisodes = [];
+            }
+          });
+          
           content.updatedAt = new Date().toISOString();
         }
       }),
 
       markSeasonWatched: (contentId, seasonNumber) => set((state) => {
         const content = state.contents[contentId];
-        if (content && content.seasons[seasonNumber]) {
-          const season = content.seasons[seasonNumber];
-          season.watchedEpisodes = Array.from(
-            { length: season.episodeCount }, 
-            (_, i) => i + 1
-          );
+        if (content && content.seasons) {
+          // Önce önceki tüm sezonları işaretle
+          Object.values(content.seasons).forEach(season => {
+            if (season.seasonNumber <= seasonNumber) {
+              // Bu sezon ve önceki sezonların tüm bölümlerini işaretle
+              season.watchedEpisodes = Array.from(
+                { length: season.episodeCount }, 
+                (_, i) => i + 1
+              );
+            }
+          });
           content.updatedAt = new Date().toISOString();
         }
       }),
 
       markSeasonUnwatched: (contentId, seasonNumber) => set((state) => {
         const content = state.contents[contentId];
-        if (content && content.seasons[seasonNumber]) {
-          content.seasons[seasonNumber].watchedEpisodes = [];
+        if (content && content.seasons) {
+          // Bu sezon ve sonraki tüm sezonları işaretsiz yap
+          Object.values(content.seasons).forEach(season => {
+            if (season.seasonNumber >= seasonNumber) {
+              season.watchedEpisodes = [];
+            }
+          });
           content.updatedAt = new Date().toISOString();
         }
       }),
@@ -609,40 +650,28 @@ const useContentStore = create()(
 
           // ApiManager kullanarak relations fetch et
           const { ApiManager } = await import('../api/ApiManager.js');
-          const { MediaTypes } = await import('../api/base/MediaTypes.js');
 
           const apiManager = new ApiManager();
 
           // İçerik ID'sini belirle
           let contentIdentifier = null;
-          let preferredProvider = null;
 
           if (content.apiData.tmdbId) {
             contentIdentifier = { provider: 'tmdb', id: content.apiData.tmdbId };
-            preferredProvider = 'tmdb';
           } else if (content.apiData.anilistId) {
             contentIdentifier = { provider: 'anilist', id: content.apiData.anilistId };
-            preferredProvider = 'anilist';
           } else if (content.apiData.kitsuId) {
             contentIdentifier = { provider: 'kitsu', id: content.apiData.kitsuId };
-            preferredProvider = 'kitsu';
           } else if (content.apiData.jikanId) {
             contentIdentifier = { provider: 'jikan', id: content.apiData.jikanId };
-            preferredProvider = 'jikan';
           } else {
             console.warn('No valid ID found for relations fetch:', content.apiData);
             return;
           }
 
           // Relations bilgisini al
-          // Anime için fallback chain kullan, diğerleri için belirli provider
-          if (mediaType === 'anime') {
-            // Anime için fallback chain: AniList -> Kitsu -> Jikan
-            updatedApiData = await apiManager.getDetails(contentIdentifier.id, mediaType);
-          } else {
-            // Film/Dizi için belirli provider kullan
-            updatedApiData = await apiManager.getDetails(contentIdentifier.id, mediaType, preferredProvider);
-          }
+          // Tüm içerik tipleri için fallback chain kullan (API rate limit/downtime durumlarında)
+          updatedApiData = await apiManager.getDetails(contentIdentifier.id, mediaType);
 
           if (updatedApiData && updatedApiData.relations) {
             // Relations bilgisini güncelle
@@ -665,23 +694,18 @@ const useContentStore = create()(
       debugFetchAllRelations: async () => {
         const { contents } = get();
         const ids = Object.keys(contents || {});
-        console.log('Debug: starting fetchAndUpdateRelations for', ids.length, 'contents');
         for (const id of ids) {
           try {
             const content = contents[id];
             if (!content || !content.apiData) continue;
             // Only try providers that we can handle
             if (content.apiData.tmdbId || content.apiData.kitsuId || content.apiData.anilistId || content.apiData.jikanId) {
-              console.log(`Debug: fetching relations for ${id} (${content.apiData.title || content.id})`);
               await get().fetchAndUpdateRelations(id);
-              const updated = get().contents[id];
-              console.log(`Debug: relations for ${id}:`, updated?.apiData?.relations);
             }
           } catch (err) {
-            console.error('Debug: fetch relations failed for', id, err);
+            console.warn('Failed to fetch relations for', id, err);
           }
         }
-        console.log('Debug: finished fetching relations for all contents');
       },
 
       fetchAndCacheSeasonData: async (contentId, force = false) => {
@@ -1058,28 +1082,36 @@ const useContentStore = create()(
       moveContentBetweenStatuses: (contentItem, fromStatusId, toStatusId, targetPageId = null) => {
         let moveSuccess = false;
         set((state) => {
-          // First, find the content by matching properties
-          const content = Object.values(state.contents).find(c => {
-            // Try to match by ID first
-            if (contentItem.id && c.id === contentItem.id) return true;
-            // Fallback: match by title and other properties
-            const itemTitle = contentItem.title || contentItem.apiData?.title;
-            const contentTitle = c.apiData?.title || c.title;
-            return itemTitle === contentTitle && 
-                   (contentItem.apiData?.tmdbId === c.apiData?.tmdbId ||
-                    contentItem.apiData?.kitsuId === c.apiData?.kitsuId);
-          });
-          if (content) {
-            console.log('Found content to move:', content);
+          // ID ile doğrudan eşleştir (en güvenilir yöntem)
+          const content = contentItem.id ? state.contents[contentItem.id] : null;
+          
+          // Eğer ID ile bulunamazsa, fallback olarak diğer özelliklere bak
+          if (!content) {
+            const foundContent = Object.values(state.contents).find(c => {
+              const itemTitle = contentItem.title || contentItem.apiData?.title;
+              const contentTitle = c.apiData?.title || c.title;
+              return itemTitle === contentTitle && 
+                     (contentItem.apiData?.tmdbId === c.apiData?.tmdbId ||
+                      contentItem.apiData?.kitsuId === c.apiData?.kitsuId ||
+                      contentItem.apiData?.anilistId === c.apiData?.anilistId);
+            });
+            
+            if (foundContent) {
+              foundContent.statusId = toStatusId;
+              if (targetPageId) {
+                foundContent.pageId = targetPageId;
+              }
+              foundContent.updatedAt = new Date().toISOString();
+              moveSuccess = true;
+            }
+          } else {
+            // ID ile bulundu, güncelle
             content.statusId = toStatusId;
-            // pageId'yi de güncelle - eğer targetPageId verilmişse onu kullan, yoksa mevcut pageId'yi koru
             if (targetPageId) {
               content.pageId = targetPageId;
             }
             content.updatedAt = new Date().toISOString();
             moveSuccess = true;
-          } else {
-            console.log('Content not found for moving');
           }
         });
         return moveSuccess;

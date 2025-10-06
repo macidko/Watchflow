@@ -15,6 +15,10 @@ dist-electron/
 .env.test.local
 .env.production.local
 
+# Netlify
+.netlify/
+.netlify.state
+
 # IDE
 .vscode/
 .idea/

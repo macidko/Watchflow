@@ -8,8 +8,7 @@ import { useLayoutDynamic } from '../hooks/useLayoutDynamic';
 import { 
   LAYOUT_MODES, 
   CARD_SIZES, 
-  SLIDER_DENSITIES, 
-  CARD_STYLES,
+  SLIDER_DENSITIES,
   LAYOUT_PRESETS 
 } from '../config/layoutConfig';
 import Toast from '../components/ui/Toast';
@@ -27,8 +26,7 @@ const Ayarlar = () => {
     applyPreset, 
     updateMode, 
     updateCardSize, 
-    updateDensity, 
-    updateStyle,
+    updateDensity,
     resetToDefault
   } = useLayoutDynamic();
   
@@ -226,17 +224,7 @@ const Ayarlar = () => {
     const densityLabels = {
       [SLIDER_DENSITIES.TIGHT]: 'Tight',
       [SLIDER_DENSITIES.NORMAL]: 'Normal',
-      [SLIDER_DENSITIES.RELAXED]: 'Relaxed',
-      [SLIDER_DENSITIES.SPACIOUS]: 'Spacious'
-    };
-
-    const styleLabels = {
-      [CARD_STYLES.MODERN]: 'Modern',
-      [CARD_STYLES.MINIMAL]: 'Minimal',
-      [CARD_STYLES.CLASSIC]: 'Classic',
-      [CARD_STYLES.COMPACT]: 'Compact',
-      [CARD_STYLES.ARTISTIC]: 'Artistic',
-      [CARD_STYLES.PROFESSIONAL]: 'Professional'
+      [SLIDER_DENSITIES.RELAXED]: 'Relaxed'
     };
 
     return (
@@ -290,22 +278,6 @@ const Ayarlar = () => {
                 onClick={() => updateDensity(density)}
               >
                 <span className="density-label">{densityLabels[density]}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Style */}
-        <div className="setting-group">
-          <label className="setting-label">Card Style</label>
-          <div className="style-options">
-            {Object.values(CARD_STYLES).map(style => (
-              <button
-                key={style}
-                className={`style-option ${currentLayout.style === style ? 'active' : ''}`}
-                onClick={() => updateStyle(style)}
-              >
-                <span className="style-label">{styleLabels[style]}</span>
               </button>
             ))}
           </div>

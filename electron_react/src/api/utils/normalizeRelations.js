@@ -67,12 +67,6 @@ export function normalizeRelations(raw, provider) {
         airDate: raw.nextAiringEpisode.airingAt ? new Date(raw.nextAiringEpisode.airingAt * 1000).toISOString().slice(0,10) : null
       };
     }
-    
-    console.log('TMDB normalizeRelations debug:', {
-      rawNextEpisode: raw.next_episode_to_air,
-      normalizedNextEpisode: nextEpisode,
-      status: raw.status
-    });
 
     return {
       status: raw.status === 'Ended' ? 'finished' : (raw.status === 'Returning Series' ? 'airing' : (raw.status === 'Planned' ? 'upcoming' : 'cancelled')),
@@ -94,12 +88,6 @@ export function normalizeRelations(raw, provider) {
       };
     }
     
-    console.log('AniList normalizeRelations debug:', {
-      rawNextAiring: raw.nextAiringEpisode,
-      normalizedNextEpisode: nextEpisode,
-      status: raw.status
-    });
-    
     return {
       status: mapAniListStatus(raw.status),
       nextSeason: null, // AniList'te sezon bilgisi yok
@@ -118,12 +106,6 @@ export function normalizeRelations(raw, provider) {
         airDate: raw.airingEpisode.airdate || null
       };
     }
-    
-    console.log('Kitsu normalizeRelations debug:', {
-      rawAiringEpisode: raw.airingEpisode,
-      normalizedNextEpisode: nextEpisode,
-      status: raw.status
-    });
     
     return {
       status: mapKitsuStatus(raw.status),
@@ -148,13 +130,6 @@ export function normalizeRelations(raw, provider) {
         airDate: raw.upcomingEpisode.airdate
       };
     }
-    
-    console.log('Jikan normalizeRelations debug:', {
-      rawBroadcast: raw.broadcast,
-      rawUpcomingEpisode: raw.upcomingEpisode,
-      normalizedNextEpisode: nextEpisode,
-      status: raw.status
-    });
     
     return {
       status: mapJikanStatus(raw.status),

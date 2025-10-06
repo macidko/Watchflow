@@ -385,10 +385,25 @@ const SearchButton = () => {
 
   // Add directly to status from dropdown - yeni store sistemi
   const addDirectlyToStatus = async (item, status) => {
-    // Duplicate check: same pageId, statusId, and providerId
+    // Duplicate check: Provider ID veya title benzerliği
     const existing = getContentsByPageAndStatus(status.pageId, status.id).find(c => {
+      if (!c.apiData) return false;
+      
+      // Provider ID eşleşmesi (aynı provider'dan aynı ID)
       const providerKey = item.provider + 'Id';
-      return c.apiData && c.apiData[providerKey] === item.id;
+      if (c.apiData[providerKey] === item.id) return true;
+      
+      // Title benzerliği (farklı provider'lardan aynı içerik)
+      const existingTitle = (c.apiData.title || '').toLowerCase().trim();
+      const newTitle = (item.title || '').toLowerCase().trim();
+      if (existingTitle === newTitle) return true;
+      
+      // Alternatif title kontrolleri
+      const existingOriginal = (c.apiData.originalTitle || '').toLowerCase().trim();
+      const newOriginal = (item.originalTitle || '').toLowerCase().trim();
+      if (existingOriginal && newOriginal && existingOriginal === newOriginal) return true;
+      
+      return false;
     });
     if (existing) {
       setToastMessage(`"${item.title}" zaten "${status.pageName} - ${status.title}" listesinde! ⚠️`);
@@ -508,12 +523,33 @@ const SearchButton = () => {
     if (!filteredResults.length) return;
 
     let addedCount = 0;
+    let skippedCount = 0;
     for (const item of filteredResults) {
-      // Duplicate check
+      // Duplicate check - Provider ID veya title benzerliği
       const existing = getContentsByPageAndStatus(status.pageId, status.id).find(c => {
+        if (!c.apiData) return false;
+        
+        // Provider ID eşleşmesi
         const providerKey = item.provider + 'Id';
-        return c.apiData && c.apiData[providerKey] === item.id;
+        if (c.apiData[providerKey] === item.id) return true;
+        
+        // Title benzerliği
+        const existingTitle = (c.apiData.title || '').toLowerCase().trim();
+        const newTitle = (item.title || '').toLowerCase().trim();
+        if (existingTitle === newTitle) return true;
+        
+        // Alternatif title kontrolleri
+        const existingOriginal = (c.apiData.originalTitle || '').toLowerCase().trim();
+        const newOriginal = (item.originalTitle || '').toLowerCase().trim();
+        if (existingOriginal && newOriginal && existingOriginal === newOriginal) return true;
+        
+        return false;
       });
+      
+      if (existing) {
+        skippedCount++;
+        continue;
+      }
       
       if (!existing) {
         try {
@@ -542,7 +578,10 @@ const SearchButton = () => {
       }
     }
     
-    setToastMessage(`${addedCount} içerik "${status.title}" listesine eklendi! ✅`);
+    const message = skippedCount > 0 
+      ? `${addedCount} içerik eklendi, ${skippedCount} duplicate atlandı! ✅` 
+      : `${addedCount} içerik "${status.title}" listesine eklendi! ✅`;
+    setToastMessage(message);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
     setShowAddAllDropdown(false);

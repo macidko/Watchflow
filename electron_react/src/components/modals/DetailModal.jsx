@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import useContentStore from '../../config/initialData';
 import RelatedContent from './RelatedContent';
 import '../../css/components/modals/DetailModal.css';
@@ -16,6 +17,27 @@ const DetailModal = ({ item, onClose }) => {
     fetchAndCacheSeasonData,
     fetchAndUpdateRelations
   } = useContentStore();
+
+  // Helper function for status badge
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      'finished': {
+        background: 'linear-gradient(90deg,#16a34a,#22d3ee)',
+        borderColor: '#16a34a',
+        text: 'Tamamlandı'
+      },
+      'airing': {
+        background: 'linear-gradient(90deg,#f59e42,#fbbf24)',
+        borderColor: '#f59e42',
+        text: 'Devam Ediyor'
+      }
+    };
+    return statusMap[status] || {
+      background: 'linear-gradient(90deg,#64748b,#334155)',
+      borderColor: '#64748b',
+      text: status
+    };
+  };
 
   // Store'dan güncel content'i al
   const content = getContentById(item?.id);
@@ -244,26 +266,29 @@ if (
                     {apiData?.title || 'Başlık Yok'}
                   </h2>
                   {/* Status badge başlığın hemen sağında, animasyonsuz */}
-                  {apiData?.relations?.status && (
-                    <span className="ml-1 px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-2"
-                      style={{
-                        background: apiData.relations.status === 'finished' ? 'linear-gradient(90deg,#16a34a,#22d3ee)' : apiData.relations.status === 'airing' ? 'linear-gradient(90deg,#f59e42,#fbbf24)' : 'linear-gradient(90deg,#64748b,#334155)',
-                        color: '#fff',
-                        borderColor: apiData.relations.status === 'finished' ? '#16a34a' : apiData.relations.status === 'airing' ? '#f59e42' : '#64748b',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-                        zIndex: 2
-                      }}
-                      title={apiData.relations.status === 'finished' ? 'Tamamlandı' : apiData.relations.status === 'airing' ? 'Devam Ediyor' : apiData.relations.status}
-                    >
-                      {apiData.relations.status === 'finished' ? 'Tamamlandı' : apiData.relations.status === 'airing' ? 'Devam Ediyor' : apiData.relations.status}
-                    </span>
-                  )}
+                  {apiData?.relations?.status && (() => {
+                    const badge = getStatusBadge(apiData.relations.status);
+                    return (
+                      <span className="ml-1 px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-2"
+                        style={{
+                          background: badge.background,
+                          color: '#fff',
+                          borderColor: badge.borderColor,
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                          zIndex: 2
+                        }}
+                        title={badge.text}
+                      >
+                        {badge.text}
+                      </span>
+                    );
+                  })()}
                 </div>
                 <button 
                   onClick={onClose} 
                   className="detail-modal-close"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <title>Kapat</title>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -285,11 +310,14 @@ if (
               {/* Description - Kompakt */}
               {apiData?.overview && (
                 <p className={`text-sm opacity-80 ${descExpanded ? '' : 'overflow-hidden'}`} 
-                   style={Object.assign({color: 'var(--primary-text, #fff)'}, !descExpanded ? {
-                     display: '-webkit-box',
-                     WebkitLineClamp: 2,
-                     WebkitBoxOrient: 'vertical'
-                   } : {})}>
+                   style={{
+                     color: 'var(--primary-text, #fff)',
+                     ...(!descExpanded && {
+                       display: '-webkit-box',
+                       WebkitLineClamp: 2,
+                       WebkitBoxOrient: 'vertical'
+                     })
+                   }}>
                   {apiData.overview}
                 </p>
               )}
@@ -429,8 +457,8 @@ if (
                   <div className="mt-3">
                     <h4 className="text-xs font-medium text-[#029096] mb-2">Başrol Oyuncuları</h4>
                     <div className="flex flex-wrap gap-1">
-                      {apiData.cast.slice(0, 4).map((actor, index) => (
-                        <span key={index} className="px-2 py-1 rounded-full text-xs opacity-70" style={{background: 'var(--secondary-bg, #1e1e1e)', color: 'var(--primary-text, #fff)'}}>
+                      {apiData.cast.slice(0, 4).map((actor) => (
+                        <span key={actor.id || actor.name || actor} className="px-2 py-1 rounded-full text-xs opacity-70" style={{background: 'var(--secondary-bg, #1e1e1e)', color: 'var(--primary-text, #fff)'}}>
                           {actor.name || actor}
                         </span>
                       ))}
@@ -665,6 +693,15 @@ if (
       </div>
     </div>
   );
+};
+
+DetailModal.propTypes = {
+  item: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    title: PropTypes.string,
+    pageId: PropTypes.string
+  }),
+  onClose: PropTypes.func.isRequired
 };
 
 export default DetailModal;

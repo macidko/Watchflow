@@ -16,6 +16,7 @@
     "hide": "Hide",
     "showMore": "Show more",
     "showLess": "Show less",
+    "showAll": "Show All",
     "updating": "Updating...",
     "skipToContent": "Skip to content",
     "lists": "Lists",
@@ -33,7 +34,18 @@
     "success": "Success",
     "error": "Error",
     "warning": "Warning",
-    "info": "Info"
+    "info": "Info",
+    "sortBy": "Sort by",
+    "default": "Default",
+    "title": "Title",
+    "year": "Year",
+    "rating": "Rating",
+    "gridView": "Grid View",
+    "listView": "List View",
+    "noSearchResults": "No search results",
+    "noContent": "No content found",
+    "tryDifferentSearch": "Try a different search term",
+    "noContentDescription": "There is no content to display"
   },
   "components": {
     "navbar": {

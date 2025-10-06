@@ -4,7 +4,6 @@ import { useToast } from '../../contexts/ToastContext';
 import { t } from '../../i18n';
 import { validateTitle } from '../../utils/validation';
 import AdvancedViewSwitcher from './AdvancedViewSwitcher';
-import DynamicSlider from './DynamicSlider';
 
 // Custom hook for debouncing
 const useDebounce = (callback, delay) => {
@@ -189,25 +188,31 @@ const SliderManager = ({ page, onClose }) => {
   const isAddValid = newSliderTitle.trim().length >= 3;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm px-2 sm:px-0" tabIndex={-1} onClick={onClose} style={{ background: 'var(--overlay-bg)' }}>
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm px-2 sm:px-0" 
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="slider-manager-title"
+      onClick={onClose} 
+      onKeyDown={(e) => e.key === 'Enter' && onClose()}
+      style={{ background: 'var(--overlay-bg)' }}
+    >
       <div
         ref={modalRef}
-  className="relative w-full max-w-lg rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col gap-5 sm:gap-6"
-  style={{ background: 'var(--primary-bg)', border: '1px solid var(--border-color)' }}
-        tabIndex={0}
+        className="relative w-full max-w-lg rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col gap-5 sm:gap-6"
+        style={{ background: 'var(--primary-bg)', border: '1px solid var(--border-color)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between mb-1 sm:mb-2 gap-2">
-          <h2 className="text-xl font-semibold drop-shadow-lg" style={{ color: 'var(--primary-text)' }}>
+          <h2 id="slider-manager-title" className="text-xl font-semibold drop-shadow-lg" style={{ color: 'var(--primary-text)' }}>
             Listeleri Yönet
           </h2>
           <div className="flex items-center gap-3">
             {/* Layout Switcher */}
             <div className="hidden sm:block">
-              <AdvancedViewSwitcher onLayoutChange={(layout) => {
+              <AdvancedViewSwitcher onLayoutChange={(_layout) => {
                 // Layout değişikliği burada handle edilebilir
-                console.log('Layout changed:', layout);
               }} />
             </div>
             <button
@@ -225,16 +230,18 @@ const SliderManager = ({ page, onClose }) => {
 
         {/* Mobile Layout Switcher */}
         <div className="block sm:hidden mb-4">
-          <AdvancedViewSwitcher onLayoutChange={(layout) => {
-            console.log('Layout changed:', layout);
+          <AdvancedViewSwitcher onLayoutChange={(_layout) => {
+            // Layout değişikliği burada handle edilebilir
           }} />
         </div>
 
         {/* Slider List */}
-  <div className="space-y-3 sm:space-y-4">
+  <div className="space-y-3 sm:space-y-4" role="list" aria-label="Slider listesi">
           {sliders.map((slider, idx) => (
             <div
               key={slider.id}
+              role="listitem"
+              aria-label={`${slider.title} - ${slider.visible ? 'Görünür' : 'Gizli'}`}
               className={`flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 rounded-xl transition-all duration-300 ${draggedItem === slider.id ? 'ring-2' : ''}`}
               style={draggedItem === slider.id ? { boxShadow: '0 0 0 2px var(--accent-color)', background: 'var(--secondary-bg)', border: '1px solid var(--accent-color)' } : { background: 'var(--secondary-bg)', border: '1px solid var(--border-color)' }}
               draggable
@@ -311,9 +318,15 @@ const SliderManager = ({ page, onClose }) => {
             </button>
           </div>
           {showAddForm && (
-            <div className="fixed inset-0 z-60 flex items-center justify-center backdrop-blur-sm" style={{ background: 'var(--overlay-bg)' }}>
+            <div 
+              className="fixed inset-0 z-60 flex items-center justify-center backdrop-blur-sm" 
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="new-list-title"
+              style={{ background: 'var(--overlay-bg)' }}
+            >
               <div style={{ background: 'var(--primary-bg)', border: '1px solid var(--border-color)', borderRadius: '16px', boxShadow: 'var(--popup-shadow)', padding: '32px', width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>Yeni Liste Oluştur</h3>
+                <h3 id="new-list-title" style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>Yeni Liste Oluştur</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <input
                     ref={addInputRef}
