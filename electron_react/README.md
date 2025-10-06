@@ -1,170 +1,56 @@
+<div align="center">
 
-# Watchflow - İçerik Takip Uygulaması
+# Watchflow
 
-Modern ve kullanıcı dostu bir Electron uygulaması ile film, dizi ve anime içeriklerini takip edin.
+### Modern Content Tracking Platform
 
-## 🚀 Özellikler
+Track your movies, TV shows, and anime with style. Built with React, powered by multiple APIs, designed for content enthusiasts.
 
-- **Çoklu Platform Desteği**: Film, Dizi ve Anime içerikleri
-- **Gelişmiş Arama**: AniList, Kitsu, TMDB ve Jikan API entegrasyonları
-- **Sürükle-Bırak**: Kolay içerik yönetimi
-- **Kişisel Takvim**: Yayın takvimi ve hatırlatmalar
-- **Döküman İçe/Çıkarma**: Verilerinizi yedekleyin ve geri yükleyin
-- **Koyu/Açık Tema**: Göz yorucu olmayan arayüz
-- **Responsive Tasarım**: Tüm ekran boyutlarında mükemmel görünüm
+[![Live Demo](https://img.shields.io/badge/demo-live-success?style=for-the-badge&logo=netlify)](https://watchflow-demo.netlify.app/)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite)](https://vitejs.dev/)
+[![Electron](https://img.shields.io/badge/Electron-Latest-47848F?style=for-the-badge&logo=electron)](https://www.electronjs.org/)
 
-## 🛠️ Teknoloji Stack
-
-- **Frontend**: React 19, Vite
-- **Desktop**: Electron
-- **State Management**: Zustand
-- **Styling**: Tailwind CSS, CSS Variables
-- **API**: AniList, Kitsu, TMDB, Jikan
-- **Build**: Vite, Electron Builder
-
-## 📦 Kurulum
-
-### Ön Gereksinimler
-
-- Node.js 18+
-- npm veya yarn
-
-### Development
-
-```bash
-# Bağımlılıkları yükle
-npm install
-
-# Development modunda çalıştır
-npm run dev
-```
-
-### Production Build
-
-```bash
-# React uygulamasını build et
-npm run build
-
-# Electron uygulamasını başlat
-npm start
-
-# Veya tam executable oluştur
-npm run electron-build
-```
-
-## 🌐 Web Demo (Netlify Deploy)
-
-### Netlify'ya Deploy
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/macidko/Watchflow)
-
-#### Manuel Deploy:
-
-```bash
-# 1. Build al
-npm run build
-
-# 2. Netlify CLI ile deploy (ilk defa)
-npx netlify-cli deploy --prod
-
-# 3. Veya GitHub'a push et, Netlify otomatik deploy eder
-git push origin main
-```
-
-#### Netlify Yapılandırması:
-
-- **Build Command**: `npm run build`
-- **Publish Directory**: `dist`
-- **Node Version**: `18`
-
-**Not**: `.env.production` dosyasında API proxy path'leri ayarlıdır. CORS sorunlarını önlemek için Netlify proxy kullanılır.
-
-**TMDB API Key**: Netlify Dashboard > Site Settings > Environment Variables'dan `VITE_TMDB_API_KEY` ekleyin.
-
-### Netlify'da Çalışan Özellikler:
-
-✅ Tüm sayfalarda navigasyon (SPA routing)  
-✅ API proxy ile CORS bypass  
-✅ LocalStorage ile veri persistance  
-✅ Responsive tasarım  
-✅ Takvim ve bildirimler  
-
-### Netlify'da Çalışmayan Özellikler:
-
-❌ Electron API'leri (window management, native notifications)  
-❌ Dosya sistemi işlemleri (native import/export)  
+[Live Demo](https://watchflow-demo.netlify.app/) • [Features](#features) • [Getting Started](#getting-started) • [Tech Stack](#tech-stack)
 
 ---
 
-## 📁 Proje Yapısı
+## Overview
 
-```
-src/
-├── components/          # Yeniden kullanılabilir bileşenler
-│   ├── Card.jsx        # İçerik kartı bileşeni
-│   ├── Navbar.jsx      # Navigasyon çubuğu
-│   └── ...
-├── pages/              # Sayfa bileşenleri
-│   ├── Home.jsx        # Ana sayfa
-│   ├── Film.jsx        # Film sayfası
-│   └── ...
-├── contexts/           # React context'ler
-├── hooks/              # Özel hook'lar
-├── services/           # İş mantığı servisleri
-├── config/             # Yapılandırma dosyaları
-├── css/                # Stil dosyaları
-└── api/                # API entegrasyonları
-```
+Watchflow is a comprehensive content tracking platform that helps you organize and manage your entertainment library. Whether you're a movie buff, TV series addict, or anime enthusiast, Watchflow provides a unified interface to track everything you watch.
 
-## 🔧 Yapılandırma
+### Key Highlights
 
-### API Anahtarları
+- **Multi-Platform Content Management** - Track movies, TV shows, and anime in one place
+- **Smart Search Integration** - Powered by TMDB, AniList, Kitsu, and Jikan APIs
+- **Intuitive Drag & Drop** - Organize content with effortless drag-and-drop functionality
+- **Episode Tracking** - Mark episodes as watched with cascade logic for seasons
+- **Personal Calendar** - Never miss a release date with built-in calendar and notifications
+- **Data Portability** - Import/export your collection anytime
+- **Responsive Design** - Seamless experience across desktop, tablet, and mobile
 
-API anahtarlarını environment variables olarak ayarlayın:
+## Features
 
-```bash
-# .env dosyası
-VITE_TMDB_API_KEY=your_tmdb_api_key
-VITE_ANILIST_CLIENT_ID=your_anilist_client_id
-```
+### Content Management
 
-### Tema Yapılandırması
+- Create custom lists and organize content by status (Watching, Completed, Plan to Watch, etc.)
+- Drag and drop items between lists
+- Bulk operations for quick management
+- Advanced search with filters and auto-suggestions
+- Duplicate detection across providers
 
-`src/css/variables.css` dosyasından tema değişkenlerini özelleştirin.
+### Tracking & Discovery
 
-## 🧪 Test
+- Episode/season tracking with progress indicators
+- Related content suggestions (sequels, prequels, spin-offs)
+- Unified search across multiple APIs (TMDB, AniList, Kitsu, Jikan)
+- Calendar view for upcoming releases
+- Smart notifications for today/tomorrow releases
 
-```bash
-# Lint kontrolü
-npm run lint
+## Acknowledgments
 
-# Build testi
-npm run build
-```
-
-## 📋 API Entegrasyonları
-
-- **AniList**: Anime verileri
-- **Kitsu**: Anime ve manga verileri
-- **TMDB**: Film ve dizi verileri
-- **Jikan**: MyAnimeList API wrapper
-
-## 🤝 Katkıda Bulunma
-
-1. Fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Commit edin (`git commit -m 'Add amazing feature'`)
-4. Push edin (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
-
-## 📄 Lisans
-
-Bu proje MIT lisansı altında lisanslanmıştır.
-
-## 👥 Geliştirici
-
-**Macid Koçak** - [GitHub](https://github.com/macidko)
-
----
-
-⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın!
+- [TMDB](https://www.themoviedb.org/) for movie and TV data
+- [AniList](https://anilist.co/) for anime information
+- [Kitsu](https://kitsu.io/) for alternative anime data
+- [Jikan](https://jikan.moe/) for MyAnimeList integration
