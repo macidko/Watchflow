@@ -399,13 +399,53 @@ const useContentStore = create()(
         if (contentData.apiData && contentData.apiData.relations) {
           apiData.relations = contentData.apiData.relations;
         }
-        // Duplicate kontrolü: aynı tmdbId veya kitsuId ile içerik varsa ekleme
+        
+        // **KRİTİK FIX**: Kapsamlı duplicate kontrolü
+        // 1. Provider ID eşleşmesi
+        // 2. Title benzerliği  
+        // 3. Original title benzerliği
         const isDuplicate = Object.values(state.contents).some(c => {
-          if (apiData.tmdbId && c.apiData?.tmdbId === apiData.tmdbId) return true;
-          if (apiData.kitsuId && c.apiData?.kitsuId === apiData.kitsuId) return true;
+          if (!c.apiData) return false;
+          
+          // Aynı provider ID kontrolü - tüm provider'lar için
+          const providers = ['tmdb', 'anilist', 'kitsu', 'jikan', 'mal'];
+          for (const provider of providers) {
+            const providerKey = provider + 'Id';
+            if (apiData[providerKey] && c.apiData[providerKey] === apiData[providerKey]) {
+              console.log(`Duplicate found: same ${provider}Id`, apiData[providerKey]);
+              return true;
+            }
+          }
+          
+          // Title benzerliği kontrolü
+          const existingTitle = (c.apiData.title || '').toLowerCase().trim();
+          const newTitle = (apiData.title || '').toLowerCase().trim();
+          if (existingTitle && newTitle && existingTitle === newTitle) {
+            // Aynı sayfa ve status'ta mı kontrol et (farklı sayfada aynı isimli içerik olabilir)
+            if (c.pageId === contentData.pageId) {
+              console.log('Duplicate found: same title in same page', newTitle);
+              return true;
+            }
+          }
+          
+          // Original title benzerliği
+          const existingOriginal = (c.apiData.originalTitle || '').toLowerCase().trim();
+          const newOriginal = (apiData.originalTitle || '').toLowerCase().trim();
+          if (existingOriginal && newOriginal && existingOriginal === newOriginal) {
+            if (c.pageId === contentData.pageId) {
+              console.log('Duplicate found: same originalTitle in same page', newOriginal);
+              return true;
+            }
+          }
+          
           return false;
         });
-        if (isDuplicate) return;
+        
+        if (isDuplicate) {
+          console.warn('Content already exists, skipping add:', apiData.title);
+          return;
+        }
+        
         const id = contentData.id || `content_${Date.now()}`;
         const now = new Date().toISOString();
 
@@ -650,41 +690,116 @@ const useContentStore = create()(
 
           // ApiManager kullanarak relations fetch et
           const { ApiManager } = await import('../api/ApiManager.js');
-
           const apiManager = new ApiManager();
 
-          // İçerik ID'sini belirle
-          let contentIdentifier = null;
+          // İçerik ID'sini belirle - FALLBACK CHAIN kullan
+          let providerChain = [];
 
+          // Provider chain'i oluştur - birincil provider önce gelir
           if (content.apiData.tmdbId) {
-            contentIdentifier = { provider: 'tmdb', id: content.apiData.tmdbId };
-          } else if (content.apiData.anilistId) {
-            contentIdentifier = { provider: 'anilist', id: content.apiData.anilistId };
-          } else if (content.apiData.kitsuId) {
-            contentIdentifier = { provider: 'kitsu', id: content.apiData.kitsuId };
-          } else if (content.apiData.jikanId) {
-            contentIdentifier = { provider: 'jikan', id: content.apiData.jikanId };
-          } else {
+            providerChain.push({ provider: 'tmdb', id: content.apiData.tmdbId });
+          }
+          if (content.apiData.anilistId) {
+            providerChain.push({ provider: 'anilist', id: content.apiData.anilistId });
+          }
+          if (content.apiData.kitsuId) {
+            providerChain.push({ provider: 'kitsu', id: content.apiData.kitsuId });
+          }
+          if (content.apiData.jikanId) {
+            providerChain.push({ provider: 'jikan', id: content.apiData.jikanId });
+          }
+
+          if (providerChain.length === 0) {
             console.warn('No valid ID found for relations fetch:', content.apiData);
             return;
           }
 
-          // Relations bilgisini al
-          // Tüm içerik tipleri için fallback chain kullan (API rate limit/downtime durumlarında)
-          updatedApiData = await apiManager.getDetails(contentIdentifier.id, mediaType);
-
-          if (updatedApiData && updatedApiData.relations) {
-            // Relations bilgisini güncelle
-            set((state) => {
-              if (state.contents[contentId]) {
-                state.contents[contentId].apiData.relations = updatedApiData.relations;
-                state.contents[contentId].updatedAt = new Date().toISOString();
+          // Fallback chain ile dene
+          let lastError = null;
+          let successfulProvider = null;
+          for (const providerInfo of providerChain) {
+            try {
+              console.log(`Trying to fetch details from ${providerInfo.provider} for content:`, contentId);
+              
+              // **KRİTİK FIX**: getDetails TÜM detaylı bilgileri döndürüyor
+              // Sadece relations değil, tüm bilgileri güncellememiz gerekiyor
+              updatedApiData = await apiManager.getDetails(providerInfo.id, mediaType);
+              
+              if (updatedApiData) {
+                console.log(`Successfully fetched details from ${providerInfo.provider}:`, {
+                  hasRelations: !!updatedApiData.relations,
+                  hasRuntime: !!updatedApiData.duration,
+                  hasEpisodeCount: !!updatedApiData.episodeCount,
+                  hasCast: !!updatedApiData.cast
+                });
+                
+                // Başarılı, döngüden çık
+                successfulProvider = providerInfo.provider;
+                break;
               }
-            });
-            console.log('Relations güncellendi:', contentId, updatedApiData.relations);
-          } else {
-            console.log('No relations found for:', contentId);
+            } catch (error) {
+              lastError = error;
+              console.warn(`Failed to fetch from ${providerInfo.provider}:`, error.message);
+              // Bir sonraki provider'a geç
+              continue;
+            }
           }
+
+          if (!updatedApiData) {
+            console.error('All providers failed for relations fetch:', lastError);
+            return;
+          }
+
+          console.log(`Using data from provider: ${successfulProvider}`);
+
+          // **KRİTİK FIX**: TÜM detaylı bilgileri güncelle, sadece relations değil
+          set((state) => {
+            if (state.contents[contentId]) {
+              // Mevcut API data'yı koruyarak yeni bilgilerle zenginleştir
+              const existingApiData = state.contents[contentId].apiData;
+              
+              // Relations mutlaka güncelle
+              if (updatedApiData.relations) {
+                existingApiData.relations = updatedApiData.relations;
+              }
+              
+              // Diğer detayları da güncelle (eğer yoksa veya güncellenebilirse)
+              if (updatedApiData.duration && !existingApiData.runtime) {
+                existingApiData.runtime = updatedApiData.duration;
+              }
+              if (updatedApiData.cast && (!existingApiData.cast || existingApiData.cast.length === 0)) {
+                existingApiData.cast = updatedApiData.cast;
+              }
+              if (updatedApiData.director && !existingApiData.director) {
+                existingApiData.director = updatedApiData.director;
+              }
+              if (updatedApiData.budget && !existingApiData.budget) {
+                existingApiData.budget = updatedApiData.budget;
+              }
+              if (updatedApiData.revenue && !existingApiData.revenue) {
+                existingApiData.revenue = updatedApiData.revenue;
+              }
+              if (updatedApiData.episodeCount && !existingApiData.episodeCount) {
+                existingApiData.episodeCount = updatedApiData.episodeCount;
+              }
+              if (updatedApiData.seasonCount && !existingApiData.seasonCount) {
+                existingApiData.seasonCount = updatedApiData.seasonCount;
+              }
+              if (updatedApiData.status && !existingApiData.status) {
+                existingApiData.status = updatedApiData.status;
+              }
+              if (updatedApiData.studios && (!existingApiData.studios || existingApiData.studios.length === 0)) {
+                existingApiData.studios = updatedApiData.studios;
+              }
+              
+              state.contents[contentId].updatedAt = new Date().toISOString();
+              
+              console.log('Content details updated comprehensively:', contentId, {
+                relationsAdded: !!updatedApiData.relations,
+                detailsEnriched: true
+              });
+            }
+          });
         } catch (error) {
           console.error('Relations fetch hatası:', error);
         }
@@ -733,34 +848,38 @@ const useContentStore = create()(
           console.log('API Data:', apiData);
           console.log('Content pageId:', content.pageId);
 
-          // TMDB API için sezon verisi al (dizi/anime)
-          if (apiData.tmdbId && (content.pageId === 'dizi' || content.pageId === 'anime')) {
+          // **KRİTİK FIX**: FALLBACK CHAIN kullan - önce TMDB, sonra diğer provider'lar
+          let fetchSuccess = false;
+
+          // 1. ÖNCE TMDB dene (dizi/anime için)
+          if (apiData.tmdbId && (content.pageId === 'dizi' || content.pageId === 'anime') && !fetchSuccess) {
             console.log('TMDB API çağrısı yapılıyor...');
             
-            // Electron ortamında mı kontrol et
-            if (window.electronAPI?.getTvShowSeasons) {
-              const tmdbSeasons = await window.electronAPI.getTvShowSeasons(apiData.tmdbId);
-              console.log('TMDB yanıtı:', tmdbSeasons);
-              if (tmdbSeasons && tmdbSeasons.seasons) {
-                tmdbSeasons.seasons.forEach(season => {
-                  seasonData[season.seasonNumber] = {
-                    seasonNumber: season.seasonNumber,
-                    episodeCount: season.episodes?.length || season.episodeCount || 0,
-                    title: season.seasonName || `Season ${season.seasonNumber}`,
-                    watchedEpisodes: []
-                  };
-                });
-              }
-            } else {
-              // Web ortamında doğrudan TMDB API'sini kullan
-              console.log('Web ortamında TMDB API çağrısı yapılıyor...');
-              try {
+            try {
+              // Electron ortamında mı kontrol et
+              if (window.electronAPI?.getTvShowSeasons) {
+                const tmdbSeasons = await window.electronAPI.getTvShowSeasons(apiData.tmdbId);
+                console.log('TMDB yanıtı:', tmdbSeasons);
+                if (tmdbSeasons && tmdbSeasons.seasons) {
+                  tmdbSeasons.seasons.forEach(season => {
+                    seasonData[season.seasonNumber] = {
+                      seasonNumber: season.seasonNumber,
+                      episodeCount: season.episodes?.length || season.episodeCount || 0,
+                      title: season.seasonName || `Season ${season.seasonNumber}`,
+                      watchedEpisodes: []
+                    };
+                  });
+                  fetchSuccess = true;
+                }
+              } else {
+                // Web ortamında doğrudan TMDB API'sini kullan
+                console.log('Web ortamında TMDB API çağrısı yapılıyor...');
                 const { TmdbApi } = await import('../api/providers/TmdbApi.js');
                 const tmdbApi = new TmdbApi();
                 const tmdbSeasons = await tmdbApi.getSeasons(apiData.tmdbId);
                 console.log('TMDB yanıtı (web):', tmdbSeasons);
                 
-                if (tmdbSeasons && Array.isArray(tmdbSeasons)) {
+                if (tmdbSeasons && Array.isArray(tmdbSeasons) && tmdbSeasons.length > 0) {
                   tmdbSeasons.forEach(season => {
                     seasonData[season.seasonNumber] = {
                       seasonNumber: season.seasonNumber,
@@ -769,110 +888,81 @@ const useContentStore = create()(
                       watchedEpisodes: []
                     };
                   });
+                  fetchSuccess = true;
                 }
-              } catch (webApiError) {
-                console.error('Web TMDB API çağrısı sırasında hata:', webApiError);
               }
+            } catch (tmdbError) {
+              console.warn('TMDB API çağrısı başarısız, fallback deneniyor:', tmdbError);
             }
           }
           
-          // Kitsu API için episode verisi al
-          else if (apiData.kitsuId && content.pageId === 'anime') {
-            console.log('Kitsu API episode çağrısı yapılıyor...');
-            try {
-              // Kitsu'dan episode listesini çek
-              const episodeUrl = `https://kitsu.io/api/edge/anime/${apiData.kitsuId}/episodes`;
-              const episodeResponse = await fetch(episodeUrl, {
-                headers: {
-                  'Accept': 'application/vnd.api+json',
-                  'Content-Type': 'application/vnd.api+json'
-                }
-              });
-              
-              if (episodeResponse.ok) {
-                const episodeData = await episodeResponse.json();
-                console.log('Kitsu episode yanıtı:', episodeData);
+          // 2. TMDB başarısız olduysa, Anime için diğer provider'ları dene
+          if (content.pageId === 'anime' && !fetchSuccess) {
+            // 2a. Kitsu API dene
+            if (apiData.kitsuId && !fetchSuccess) {
+              console.log('Kitsu API episode çağrısı yapılıyor...');
+              try {
+                const episodeUrl = `https://kitsu.io/api/edge/anime/${apiData.kitsuId}/episodes`;
+                const episodeResponse = await fetch(episodeUrl, {
+                  headers: {
+                    'Accept': 'application/vnd.api+json',
+                    'Content-Type': 'application/vnd.api+json'
+                  }
+                });
                 
-                const episodes = episodeData.data || [];
-                const totalEpisodes = episodeData.meta?.count || episodes.length;
-                
-                if (totalEpisodes > 0) {
-                  // Sezon numaralarına göre gruplandır
-                  const seasonGroups = {};
-                  episodes.forEach(ep => {
-                    const seasonNum = ep.attributes?.seasonNumber || 1;
-                    if (!seasonGroups[seasonNum]) {
-                      seasonGroups[seasonNum] = [];
-                    }
-                    seasonGroups[seasonNum].push(ep);
-                  });
+                if (episodeResponse.ok) {
+                  const episodeData = await episodeResponse.json();
+                  console.log('Kitsu episode yanıtı:', episodeData);
                   
-                  // Eğer sezon bilgisi yoksa tek sezon olarak kaydet
-                  if (Object.keys(seasonGroups).length === 0 || (Object.keys(seasonGroups).length === 1 && seasonGroups[1])) {
-                    seasonData[1] = {
-                      seasonNumber: 1,
-                      episodeCount: totalEpisodes,
-                      title: apiData.title || 'Anime',
-                      watchedEpisodes: []
-                    };
-                  } else {
-                    // Çoklu sezon varsa her birini kaydet
-                    Object.keys(seasonGroups).forEach(seasonNum => {
-                      seasonData[seasonNum] = {
-                        seasonNumber: parseInt(seasonNum),
-                        episodeCount: seasonGroups[seasonNum].length,
-                        title: `Season ${seasonNum}`,
+                  const episodes = episodeData.data || [];
+                  const totalEpisodes = episodeData.meta?.count || episodes.length;
+                  
+                  if (totalEpisodes > 0) {
+                    // Sezon numaralarına göre gruplandır
+                    const seasonGroups = {};
+                    episodes.forEach(ep => {
+                      const seasonNum = ep.attributes?.seasonNumber || 1;
+                      if (!seasonGroups[seasonNum]) {
+                        seasonGroups[seasonNum] = [];
+                      }
+                      seasonGroups[seasonNum].push(ep);
+                    });
+                    
+                    // Eğer sezon bilgisi yoksa tek sezon olarak kaydet
+                    if (Object.keys(seasonGroups).length === 0 || (Object.keys(seasonGroups).length === 1 && seasonGroups[1])) {
+                      seasonData[1] = {
+                        seasonNumber: 1,
+                        episodeCount: totalEpisodes,
+                        title: apiData.title || 'Anime',
                         watchedEpisodes: []
                       };
-                    });
+                    } else {
+                      // Çoklu sezon varsa her birini kaydet
+                      Object.keys(seasonGroups).forEach(seasonNum => {
+                        seasonData[seasonNum] = {
+                          seasonNumber: parseInt(seasonNum),
+                          episodeCount: seasonGroups[seasonNum].length,
+                          title: `Season ${seasonNum}`,
+                          watchedEpisodes: []
+                        };
+                      });
+                    }
+                    fetchSuccess = true;
                   }
-                } else if (apiData.episodeCount && apiData.episodeCount > 0) {
-                  // Fallback: episodeCount varsa kullan
-                  seasonData[1] = {
-                    seasonNumber: 1,
-                    episodeCount: apiData.episodeCount,
-                    title: apiData.title || 'Anime',
-                    watchedEpisodes: []
-                  };
                 }
-              } else {
-                console.warn('Kitsu episode API çağrısı başarısız:', episodeResponse.status);
-                // Fallback: episodeCount varsa kullan
-                if (apiData.episodeCount && apiData.episodeCount > 0) {
-                  seasonData[1] = {
-                    seasonNumber: 1,
-                    episodeCount: apiData.episodeCount,
-                    title: apiData.title || 'Anime',
-                    watchedEpisodes: []
-                  };
-                }
-              }
-            } catch (kitsuError) {
-              console.error('Kitsu API çağrısı sırasında hata:', kitsuError);
-              // Fallback: episodeCount varsa kullan
-              if (apiData.episodeCount && apiData.episodeCount > 0) {
-                seasonData[1] = {
-                  seasonNumber: 1,
-                  episodeCount: apiData.episodeCount,
-                  title: apiData.title || 'Anime',
-                  watchedEpisodes: []
-                };
+              } catch (kitsuError) {
+                console.warn('Kitsu API çağrısı başarısız:', kitsuError);
               }
             }
-          }
-          
-          // AniList API için episode verisi al
-          else if ((apiData.anilistId || apiData.id) && content.pageId === 'anime') {
-            console.log('AniList API episode çağrısı yapılıyor...');
-            console.log('apiData.anilistId:', apiData.anilistId);
-            console.log('apiData.id:', apiData.id);
-            console.log('apiData.episodes:', apiData.episodes);
-            console.log('Tüm apiData:', apiData);
-            try {
-              const anilistId = apiData.anilistId || apiData.id;
-              
-              // AniList GraphQL API'sinden episode sayısını çek
-              const query = `
+            
+            // 2b. AniList API dene
+            if ((apiData.anilistId || apiData.id) && !fetchSuccess) {
+              console.log('AniList API episode çağrısı yapılıyor...');
+              try {
+                const anilistId = apiData.anilistId || apiData.id;
+                
+                // AniList GraphQL API'sinden episode sayısını çek
+                const query = `
                 query ($id: Int) {
                   Media(id: $id, type: ANIME) {
                     episodes
@@ -910,109 +1000,67 @@ const useContentStore = create()(
                     title: apiData.title || anilistData?.data?.Media?.title?.english || anilistData?.data?.Media?.title?.romaji || 'Anime',
                     watchedEpisodes: []
                   };
-                } else {
-                  console.log('AniList episodes bulunamadı, null veya 0');
+                  fetchSuccess = true;
                 }
-              } else {
-                console.warn('AniList GraphQL API çağrısı başarısız:', response.status);
               }
-              
-              // Eğer API'dan episode sayısı gelmezse, zaten mevcut apiData'dan kullan
-              if (Object.keys(seasonData).length === 0 && apiData.episodes && apiData.episodes > 0) {
-                console.log('AniList fallback: mevcut episodes kullanılıyor:', apiData.episodes);
-                seasonData[1] = {
-                  seasonNumber: 1,
-                  episodeCount: apiData.episodes,
-                  title: apiData.title || 'Anime',
-                  watchedEpisodes: []
-                };
+              } catch (anilistError) {
+                console.warn('AniList API çağrısı başarısız:', anilistError);
               }
-            } catch (anilistError) {
-              console.error('AniList API çağrısı sırasında hata:', anilistError);
-              // Fallback: mevcut apiData'dan episodes kullan
-              if (apiData.episodes && apiData.episodes > 0) {
-                seasonData[1] = {
-                  seasonNumber: 1,
-                  episodeCount: apiData.episodes,
-                  title: apiData.title || 'Anime',
-                  watchedEpisodes: []
-                };
+            }
+            
+            // 2c. Jikan API dene
+            if ((apiData.jikanId || apiData.mal_id) && !fetchSuccess) {
+              console.log('Jikan API episode çağrısı yapılıyor...');
+              try {
+                const jikanId = apiData.jikanId || apiData.mal_id;
+                const episodeUrl = `https://api.jikan.moe/v4/anime/${jikanId}/episodes`;
+                const episodeResponse = await fetch(episodeUrl);
+                
+                if (episodeResponse.ok) {
+                  const episodeData = await episodeResponse.json();
+                  console.log('Jikan episode yanıtı:', episodeData);
+                  
+                  const episodes = episodeData.data || [];
+                  const totalEpisodes = episodes.length;
+                  
+                  if (totalEpisodes > 0) {
+                    seasonData[1] = {
+                      seasonNumber: 1,
+                      episodeCount: totalEpisodes,
+                      title: apiData.title || 'Anime',
+                      watchedEpisodes: []
+                    };
+                    fetchSuccess = true;
+                  }
+                }
+              } catch (jikanError) {
+                console.warn('Jikan API çağrısı başarısız:', jikanError);
               }
             }
           }
           
-          // Jikan API için episode verisi al
-          else if ((apiData.jikanId || apiData.mal_id) && content.pageId === 'anime') {
-            console.log('Jikan API episode çağrısı yapılıyor...');
-            console.log('apiData.jikanId:', apiData.jikanId);
-            console.log('apiData.mal_id:', apiData.mal_id);
-            console.log('apiData.episodes:', apiData.episodes);
-            try {
-              const jikanId = apiData.jikanId || apiData.mal_id;
-              const episodeUrl = `https://api.jikan.moe/v4/anime/${jikanId}/episodes`;
-              const episodeResponse = await fetch(episodeUrl);
-              
-              if (episodeResponse.ok) {
-                const episodeData = await episodeResponse.json();
-                console.log('Jikan episode yanıtı:', episodeData);
-                
-                const episodes = episodeData.data || [];
-                const totalEpisodes = episodes.length;
-                
-                if (totalEpisodes > 0) {
-                  seasonData[1] = {
-                    seasonNumber: 1,
-                    episodeCount: totalEpisodes,
-                    title: apiData.title || 'Anime',
-                    watchedEpisodes: []
-                  };
-                } else if (apiData.episodes && apiData.episodes > 0) {
-                  // Fallback: episodes sayısını kullan
-                  seasonData[1] = {
-                    seasonNumber: 1,
-                    episodeCount: apiData.episodes,
-                    title: apiData.title || 'Anime',
-                    watchedEpisodes: []
-                  };
-                }
-              } else {
-                console.warn('Jikan episode API çağrısı başarısız:', episodeResponse.status);
-                // Fallback: episodes sayısını kullan
-                if (apiData.episodes && apiData.episodes > 0) {
-                  seasonData[1] = {
-                    seasonNumber: 1,
-                    episodeCount: apiData.episodes,
-                    title: apiData.title || 'Anime',
-                    watchedEpisodes: []
-                  };
-                }
-              }
-            } catch (jikanError) {
-              console.error('Jikan API çağrısı sırasında hata:', jikanError);
-              // Fallback: episodes sayısını kullan
-              if (apiData.episodes && apiData.episodes > 0) {
-                seasonData[1] = {
-                  seasonNumber: 1,
-                  episodeCount: apiData.episodes,
-                  title: apiData.title || 'Anime',
-                  watchedEpisodes: []
-                };
-              }
-            }
-          }
-          
-          // Genel fallback: Hangi API olursa olsun, episodes varsa kullan
-          else if (content.pageId === 'anime' && apiData.episodes && apiData.episodes > 0) {
-            console.log('Genel anime fallback kullanılıyor, episodes:', apiData.episodes);
+          // 3. SON FALLBACK: Hiçbir API başarısız olduysa ve episodeCount varsa kullan
+          if (!fetchSuccess && apiData.episodeCount && apiData.episodeCount > 0) {
+            console.log('Son fallback: episodeCount kullanılıyor:', apiData.episodeCount);
+            seasonData[1] = {
+              seasonNumber: 1,
+              episodeCount: apiData.episodeCount,
+              title: apiData.title || (content.pageId === 'anime' ? 'Anime' : 'Season 1'),
+              watchedEpisodes: []
+            };
+            fetchSuccess = true;
+          } else if (!fetchSuccess && apiData.episodes && apiData.episodes > 0) {
+            console.log('Son fallback: episodes kullanılıyor:', apiData.episodes);
             seasonData[1] = {
               seasonNumber: 1,
               episodeCount: apiData.episodes,
-              title: apiData.title || 'Anime',
+              title: apiData.title || (content.pageId === 'anime' ? 'Anime' : 'Season 1'),
               watchedEpisodes: []
             };
+            fetchSuccess = true;
           }
 
-          console.log('Oluşturulan sezon verisi:', seasonData);
+          console.log('Oluşturulan sezon verisi:', seasonData, 'fetchSuccess:', fetchSuccess);
 
           // Store'da güncelle (mevcut watchedEpisodes korunacak şekilde birleştir)
           set((state) => {

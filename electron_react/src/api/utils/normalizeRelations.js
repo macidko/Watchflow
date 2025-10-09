@@ -28,7 +28,32 @@ export function normalizeRelations(raw, provider) {
       const media_type = r.media_type || (raw.media_type ? raw.media_type : 'movie');
       // TMDB poster URL'ini oluştur
       const poster = r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : null;
-      if (id) related.push({ id, title, media_type, poster });
+      const backdrop = r.backdrop_path ? `https://image.tmdb.org/t/p/w1280${r.backdrop_path}` : null;
+      
+      // **KRİTİK FIX**: TÜM detaylı bilgileri ekle
+      if (id) {
+        related.push({ 
+          id, 
+          title,
+          originalTitle: r.original_title || r.original_name,
+          type: media_type,        // ✅ EKSTRA: 'type' alanı ekle (filtreleme için)
+          media_type,              // ✅ TMDB'nin orijinal alanı
+          poster,
+          backdrop,
+          // **EKSTRA BİLGİLER**
+          overview: r.overview || '',
+          rating: r.vote_average || 0,
+          voteCount: r.vote_count || 0,
+          popularity: r.popularity || 0,
+          releaseDate: r.release_date || r.first_air_date || '',
+          year: (r.release_date || r.first_air_date || '').split('-')[0] || '',
+          genres: r.genre_ids || r.genres || [],
+          adult: r.adult || false,
+          // Provider bilgisi
+          tmdbId: id,
+          provider: 'tmdb'
+        });
+      }
     };
 
     if (raw.recommendations && Array.isArray(raw.recommendations.results)) {
@@ -88,12 +113,41 @@ export function normalizeRelations(raw, provider) {
       };
     }
     
+    // **KRİTİK FIX**: Relations için detaylı mapping
+    const mapAniListRelationDetailed = (edge) => {
+      const node = edge.node;
+      return {
+        id: node.id,
+        title: node.title?.english || node.title?.romaji || node.title?.native || 'Unknown',
+        originalTitle: node.title?.romaji || node.title?.native,
+        type: node.format || node.type || 'anime',
+        poster: node.coverImage?.large || node.coverImage?.medium,
+        backdrop: node.bannerImage || node.coverImage?.extraLarge,
+        // **EKSTRA BİLGİLER**
+        overview: node.description || '',
+        rating: node.averageScore ? node.averageScore / 10 : 0,
+        popularity: node.popularity || 0,
+        year: node.startDate?.year || node.seasonYear || '',
+        releaseDate: node.startDate ? `${node.startDate.year}-${String(node.startDate.month || 1).padStart(2, '0')}-${String(node.startDate.day || 1).padStart(2, '0')}` : '',
+        genres: node.genres || [],
+        episodes: node.episodes,
+        status: node.status,
+        // Provider bilgisi
+        anilistId: node.id,
+        provider: 'anilist'
+      };
+    };
+    
     return {
       status: mapAniListStatus(raw.status),
       nextSeason: null, // AniList'te sezon bilgisi yok
       nextEpisode,
-      prequel: (raw.relations?.edges || []).filter(r => r.relationType === 'PREQUEL').map(edge => mapAniListRelation(edge.node)),
-      sequel: (raw.relations?.edges || []).filter(r => r.relationType === 'SEQUEL').map(edge => mapAniListRelation(edge.node)),
+      prequel: (raw.relations?.edges || []).filter(r => r.relationType === 'PREQUEL').map(mapAniListRelationDetailed),
+      sequel: (raw.relations?.edges || []).filter(r => r.relationType === 'SEQUEL').map(mapAniListRelationDetailed),
+      // **KRİTİK FIX**: Diğer relation type'ları da ekle
+      related: (raw.relations?.edges || [])
+        .filter(r => !['PREQUEL', 'SEQUEL'].includes(r.relationType))
+        .map(mapAniListRelationDetailed),
       collection: null
     };
   }
@@ -107,12 +161,39 @@ export function normalizeRelations(raw, provider) {
       };
     }
     
+    // **KRİTİK FIX**: Kitsu relations için detaylı mapping
+    const mapKitsuRelationDetailed = (rel) => {
+      const attrs = rel.attributes || {};
+      return {
+        id: rel.id,
+        title: attrs.canonicalTitle || attrs.titles?.en || '',
+        originalTitle: attrs.titles?.en_jp || attrs.titles?.ja_jp,
+        type: rel.type || 'anime',
+        poster: attrs.posterImage?.original || attrs.posterImage?.large || attrs.posterImage?.medium,
+        backdrop: attrs.coverImage?.original || attrs.coverImage?.large,
+        // **EKSTRA BİLGİLER**
+        overview: attrs.synopsis || attrs.description || '',
+        rating: attrs.averageRating ? parseFloat(attrs.averageRating) / 10 : 0,
+        popularity: attrs.popularityRank || 0,
+        year: attrs.startDate ? attrs.startDate.split('-')[0] : '',
+        releaseDate: attrs.startDate || '',
+        genres: [], // Kitsu'da genres ayrı endpoint'te
+        episodes: attrs.episodeCount,
+        status: attrs.status,
+        // Provider bilgisi
+        kitsuId: rel.id,
+        provider: 'kitsu'
+      };
+    };
+    
     return {
       status: mapKitsuStatus(raw.status),
       nextSeason: null,
       nextEpisode,
-      prequel: raw.relationships?.prequel?.data ? [mapKitsuRelation(raw.relationships.prequel.data)] : [],
-      sequel: raw.relationships?.sequel?.data ? [mapKitsuRelation(raw.relationships.sequel.data)] : [],
+      prequel: raw.relationships?.prequel?.data ? [mapKitsuRelationDetailed(raw.relationships.prequel.data)] : [],
+      sequel: raw.relationships?.sequel?.data ? [mapKitsuRelationDetailed(raw.relationships.sequel.data)] : [],
+      // **KRİTİK FIX**: Diğer relations da ekle
+      related: [],
       collection: null
     };
   }
@@ -131,12 +212,41 @@ export function normalizeRelations(raw, provider) {
       };
     }
     
+    // **KRİTİK FIX**: Jikan relations için detaylı mapping
+    const mapJikanRelationDetailed = (rel) => {
+      return {
+        id: rel.mal_id,
+        title: rel.name || rel.title,
+        originalTitle: rel.title_japanese || rel.title,
+        type: rel.type || 'anime',
+        poster: rel.images?.jpg?.large_image_url || rel.images?.jpg?.image_url,
+        backdrop: rel.images?.jpg?.large_image_url,
+        // **EKSTRA BİLGİLER**
+        overview: rel.synopsis || '',
+        rating: rel.score || 0,
+        popularity: rel.popularity || 0,
+        year: rel.year || (rel.aired?.from ? new Date(rel.aired.from).getFullYear() : ''),
+        releaseDate: rel.aired?.from || '',
+        genres: rel.genres?.map(g => g.name) || [],
+        episodes: rel.episodes,
+        status: rel.status,
+        // Provider bilgisi
+        jikanId: rel.mal_id,
+        malId: rel.mal_id,
+        provider: 'jikan'
+      };
+    };
+    
     return {
       status: mapJikanStatus(raw.status),
       nextSeason: null,
       nextEpisode,
-      prequel: raw.related?.Prequel ? raw.related.Prequel.map(mapJikanRelation) : [],
-      sequel: raw.related?.Sequel ? raw.related.Sequel.map(mapJikanRelation) : [],
+      prequel: raw.related?.Prequel ? raw.related.Prequel.map(mapJikanRelationDetailed) : [],
+      sequel: raw.related?.Sequel ? raw.related.Sequel.map(mapJikanRelationDetailed) : [],
+      // **KRİTİK FIX**: Diğer relation type'ları da ekle
+      related: Object.keys(raw.related || {})
+        .filter(key => !['Prequel', 'Sequel'].includes(key))
+        .flatMap(key => (raw.related[key] || []).map(mapJikanRelationDetailed)),
       collection: null
     };
   }
@@ -170,28 +280,4 @@ function mapJikanStatus(status) {
   if (status === 'Currently Airing') return 'airing';
   if (status === 'Not yet aired') return 'upcoming';
   return 'unknown';
-}
-function mapAniListRelation(rel) {
-  return { 
-    id: rel.id, 
-    title: rel.title?.english || rel.title?.romaji || rel.title?.native || 'Unknown', 
-    type: rel.format || rel.type || 'Unknown',
-    poster: rel.coverImage?.large || rel.coverImage?.medium
-  };
-}
-function mapKitsuRelation(rel) {
-  return { 
-    id: rel.id, 
-    title: rel.attributes?.canonicalTitle || '', 
-    type: rel.type || '',
-    poster: rel.attributes?.posterImage?.original || rel.attributes?.posterImage?.large
-  };
-}
-function mapJikanRelation(rel) {
-  return { 
-    id: rel.mal_id, 
-    title: rel.name, 
-    type: rel.type,
-    poster: rel.images?.jpg?.large_image_url || rel.images?.jpg?.image_url
-  };
 }

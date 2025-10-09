@@ -383,6 +383,63 @@ const SearchButton = () => {
     setShowDropdownFor(item.id);
   }, [activeTab, getPages, getStatusesByPage]);
 
+  // Helper: Fetch detailed API data based on provider and type
+  const fetchDetailedData = async (item, pageId) => {
+    try {
+      // Her content type için detaylı veri çek
+      if (item.provider === 'tmdb') {
+        const tmdbApi = new TmdbApi();
+        let mediaType;
+        
+        if (pageId === 'film') {
+          mediaType = MediaTypes.MOVIE;
+        } else if (pageId === 'dizi') {
+          mediaType = MediaTypes.TV;
+        } else {
+          return null; // Anime için TMDB detayı yok
+        }
+        
+        console.log(`Fetching detailed ${mediaType} data for:`, item.title);
+        const detailedData = await tmdbApi.getDetails(item.id, mediaType);
+        
+        return {
+          runtime: detailedData.duration,
+          budget: detailedData.budget,
+          revenue: detailedData.revenue,
+          cast: detailedData.cast,
+          director: detailedData.director,
+          vote_average: detailedData.score,
+          episodeCount: detailedData.episodeCount,
+          seasonCount: detailedData.seasonCount,
+          status: detailedData.status,
+          // Relations bilgisi de gelebilir
+          relations: detailedData.relations
+        };
+      } else if (item.provider === 'anilist' || item.provider === 'kitsu' || item.provider === 'jikan') {
+        // Anime provider'lar için ApiManager kullan
+        const { ApiManager } = await import('../../api/ApiManager.js');
+        const apiManager = new ApiManager();
+        
+        console.log(`Fetching detailed anime data for:`, item.title);
+        const detailedData = await apiManager.getDetails(item.id, MediaTypes.ANIME);
+        
+        return {
+          episodeCount: detailedData.episodeCount || detailedData.episodes,
+          status: detailedData.status,
+          duration: detailedData.duration,
+          studios: detailedData.studios,
+          // Relations bilgisi
+          relations: detailedData.relations
+        };
+      }
+    } catch (error) {
+      console.warn(`Failed to fetch detailed data for ${item.title}:`, error);
+      return null;
+    }
+    
+    return null;
+  };
+
   // Add directly to status from dropdown - yeni store sistemi
   const addDirectlyToStatus = async (item, status) => {
     // Duplicate check: Provider ID veya title benzerliği
@@ -417,6 +474,7 @@ const SearchButton = () => {
       setToastMessage(`"${item.title}" ekleniyor... ⏳`);
       setShowToast(true);
       
+      // Temel API data
       let detailedApiData = {
         title: item.title,
         originalTitle: item.originalTitle,
@@ -432,36 +490,21 @@ const SearchButton = () => {
         provider: item.provider
       };
 
-      // Film için TMDB'den detaylı bilgileri çek
-      if (item.provider === 'tmdb' && status.pageId === 'film') {
-        try {
-          console.log('Fetching detailed movie data for:', item.title);
-          const tmdbApi = new TmdbApi();
-          const detailedData = await tmdbApi.getDetails(item.id, MediaTypes.MOVIE);
-          
-          // Detaylı bilgileri ekle
-          detailedApiData = {
-            ...detailedApiData,
-            runtime: detailedData.duration, // duration olarak normalize ediliyor
-            budget: detailedData.budget,
-            revenue: detailedData.revenue,
-            cast: detailedData.cast,
-            director: detailedData.director,
-            vote_average: detailedData.score // TMDB puanını kaydet
-          };
-          
-          console.log('Detailed movie data fetched:', {
-            title: item.title,
-            runtime: detailedData.duration,
-            budget: detailedData.budget,
-            revenue: detailedData.revenue,
-            castCount: detailedData.cast?.length,
-            director: detailedData.director
-          });
-        } catch (error) {
-          console.warn('Failed to fetch detailed movie data:', error);
-          // Hata olursa temel bilgilerle devam et
-        }
+      // **KRİTİK**: TÜM içerik tipleri için detaylı veri çek
+      const detailedData = await fetchDetailedData(item, status.pageId);
+      
+      if (detailedData) {
+        detailedApiData = {
+          ...detailedApiData,
+          ...detailedData
+        };
+        console.log('Detailed data fetched:', {
+          title: item.title,
+          hasRuntime: !!detailedData.runtime,
+          hasCast: !!detailedData.cast,
+          hasRelations: !!detailedData.relations,
+          hasEpisodeCount: !!detailedData.episodeCount
+        });
       }
 
       // Prepare content data for the new store structure
@@ -477,7 +520,7 @@ const SearchButton = () => {
         pageId: status.pageId, 
         statusId: status.id, 
         title: item.title,
-        hasDetailedData: !!detailedApiData.runtime
+        hasDetailedData: !!detailedData
       });
       
       addContent(contentData);
@@ -524,6 +567,11 @@ const SearchButton = () => {
 
     let addedCount = 0;
     let skippedCount = 0;
+    let errorCount = 0;
+    
+    setToastMessage(`${filteredResults.length} içerik işleniyor... ⏳`);
+    setShowToast(true);
+    
     for (const item of filteredResults) {
       // Duplicate check - Provider ID veya title benzerliği
       const existing = getContentsByPageAndStatus(status.pageId, status.id).find(c => {
@@ -551,39 +599,74 @@ const SearchButton = () => {
         continue;
       }
       
-      if (!existing) {
+      try {
+        // Temel API data
+        let detailedApiData = {
+          title: item.title,
+          originalTitle: item.originalTitle,
+          overview: item.overview || item.description || '',
+          poster: item.imageUrl,
+          rating: item.score || item.rating || 0,
+          releaseDate: item.year || item.releaseDate || '',
+          genres: Array.isArray(item.genres)
+            ? item.genres.map(g => typeof g === 'string' ? g : String(g))
+            : (item.genre ? [String(item.genre)] : []),
+          [item.provider + 'Id']: item.id,
+          provider: item.provider
+        };
+        
+        // **KRİTİK**: TÜM içerik tipleri için detaylı veri çek
         try {
-          const contentData = {
-            pageId: status.pageId,
-            statusId: status.id,
-            apiData: {
-              title: item.title,
-              originalTitle: item.originalTitle,
-              overview: item.overview || item.description || '',
-              poster: item.imageUrl,
-              rating: item.score || item.rating || 0,
-              releaseDate: item.year || item.releaseDate || '',
-              genres: Array.isArray(item.genres)
-                ? item.genres.map(g => typeof g === 'string' ? g : String(g))
-                : (item.genre ? [String(item.genre)] : []),
-              [item.provider + 'Id']: item.id,
-              provider: item.provider
-            }
-          };
-          addContent(contentData);
-          addedCount++;
-        } catch (error) {
-          console.error('Error adding content:', error);
+          const detailedData = await fetchDetailedData(item, status.pageId);
+          
+          if (detailedData) {
+            detailedApiData = {
+              ...detailedApiData,
+              ...detailedData
+            };
+          }
+        } catch (detailError) {
+          console.warn(`Failed to fetch details for ${item.title}, using basic data:`, detailError);
+          // Detay çekilemezse temel bilgilerle devam et
         }
+        
+        const contentData = {
+          pageId: status.pageId,
+          statusId: status.id,
+          apiData: detailedApiData,
+          // Initialize seasons if TV/Anime
+          seasons: (item.type === MediaTypes.TV || item.type === MediaTypes.ANIME) ? {} : undefined
+        };
+        
+        addContent(contentData);
+        addedCount++;
+        
+        // Rate limiting - Her 5 içerikten sonra kısa bekle
+        if (addedCount % 5 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      } catch (error) {
+        console.error('Error adding content:', error);
+        errorCount++;
       }
     }
     
-    const message = skippedCount > 0 
-      ? `${addedCount} içerik eklendi, ${skippedCount} duplicate atlandı! ✅` 
-      : `${addedCount} içerik "${status.title}" listesine eklendi! ✅`;
+    // Sonuç mesajı
+    let message = '';
+    if (addedCount > 0) {
+      message = `${addedCount} içerik eklendi`;
+    }
+    if (skippedCount > 0) {
+      message += `${message ? ', ' : ''}${skippedCount} duplicate atlandı`;
+    }
+    if (errorCount > 0) {
+      message += `${message ? ', ' : ''}${errorCount} hata oluştu`;
+    }
+    message += '! ' + (errorCount > 0 ? '⚠️' : '✅');
+    
     setToastMessage(message);
     setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    setTimeout(() => setShowToast(false), 4000);
     setShowAddAllDropdown(false);
   };
 

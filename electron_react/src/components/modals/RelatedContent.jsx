@@ -72,62 +72,180 @@ const RelatedContent = ({
     setAddingContent(prev => ({ ...prev, [contentId]: true }));
     
     try {
-      // İçerik türünü belirle - relatedItem'dan gelen type'ı normalize et
-      let targetPageId;
-      let contentType;
+      // **KRİTİK FIX**: İçerik türü zaten filtrelenmiş durumda
+      // Artık tür kontrolü yapmamıza gerek yok - her zaman mevcut pageId'ye ekle
+      const targetPageId = item.pageId;
       
-      // ÖNCE mevcut sayfaya bak - anime sayfasındaysak, related content da anime'dir
-      if (item.pageId === PAGES.ANIME) {
-        targetPageId = PAGES.ANIME;
+      // İçerik tipini belirle
+      let contentType;
+      if (targetPageId === PAGES.ANIME) {
         contentType = 'anime';
-      } else if (item.pageId === PAGES.DIZI) {
-        // Dizi sayfasındaysak, related content'in type'ına göre karar ver
-        const itemType = (relatedItem.type || relatedItem.media_type || '').toLowerCase();
-        if (itemType === 'movie' || itemType === 'film') {
-          targetPageId = PAGES.FILM;
-          contentType = 'movie';
-        } else {
-          targetPageId = PAGES.DIZI;
-          contentType = 'tv';
-        }
+      } else if (targetPageId === PAGES.DIZI) {
+        contentType = 'tv';
       } else {
-        // Film sayfasındaysak, related content'in type'ına göre karar ver
-        const itemType = (relatedItem.type || relatedItem.media_type || '').toLowerCase();
-        if (itemType === 'tv' || itemType === 'series') {
-          targetPageId = PAGES.DIZI;
-          contentType = 'tv';
-        } else {
-          targetPageId = PAGES.FILM;
-          contentType = 'movie';
-        }
+        contentType = 'movie';
       }
       
-      // Daha zengin veri yapısı oluştur
+      console.log('➕ Adding related content to list:', {
+        contentTitle: relatedItem.title,
+        targetPage: targetPageId,
+        contentType: contentType,
+        relationType: relatedItem.relType
+      });
+      
+      // Temel API data - normalizeRelations'tan gelen TÜM bilgileri koru
+      let detailedApiData = {
+        title: relatedItem.title || relatedItem.name,
+        originalTitle: relatedItem.originalTitle || relatedItem.original_title || relatedItem.original_name,
+        poster: getPosterUrl(relatedItem),
+        backdrop: relatedItem.backdrop || relatedItem.backdrop_path,
+        year: relatedItem.year || relatedItem.releaseDate?.split('-')[0] || relatedItem.first_air_date?.split('-')[0] || relatedItem.release_date?.split('-')[0],
+        releaseDate: relatedItem.releaseDate || relatedItem.release_date || relatedItem.first_air_date,
+        rating: relatedItem.rating || relatedItem.vote_average || relatedItem.score,
+        voteCount: relatedItem.voteCount || relatedItem.vote_count,
+        popularity: relatedItem.popularity,
+        overview: relatedItem.overview || relatedItem.description || relatedItem.synopsis,
+        genres: relatedItem.genres || [],
+        episodes: relatedItem.episodes || relatedItem.episodeCount || relatedItem.episode_count,
+        episodeCount: relatedItem.episodeCount || relatedItem.episode_count || relatedItem.episodes,
+        seasonCount: relatedItem.seasonCount || relatedItem.season_count || relatedItem.number_of_seasons,
+        status: relatedItem.status,
+        adult: relatedItem.adult,
+        duration: relatedItem.duration || relatedItem.runtime || relatedItem.episode_run_time?.[0],
+        runtime: relatedItem.runtime || relatedItem.duration || relatedItem.episode_run_time?.[0],
+        studios: relatedItem.studios,
+        type: contentType,
+        provider: relatedItem.provider || 'related_content',
+        tmdbId: relatedItem.tmdbId || (contentType !== 'anime' && relatedItem.provider === 'tmdb' ? relatedItem.id : undefined),
+        kitsuId: relatedItem.kitsuId || (contentType === 'anime' && relatedItem.provider === 'kitsu' ? relatedItem.id : undefined),
+        anilistId: relatedItem.anilistId || (relatedItem.provider === 'anilist' ? relatedItem.id : undefined),
+        jikanId: relatedItem.jikanId || (relatedItem.provider === 'jikan' ? relatedItem.id : undefined),
+        malId: relatedItem.malId || relatedItem.mal_id,
+        // İlişki bilgisini koru
+        addedFrom: 'related_content',
+        originalRelation: {
+          fromId: item.id,
+          fromTitle: item.title,
+          relationType: relatedItem.relType
+        }
+      };
+      
+      // **ARTIK ÇOK DAHA AZ DETAY ÇEKMEMİZ LAZIM** çünkü normalizeRelations zaten dolu bilgi gönderiyor
+      // Sadece eksik önemli bilgiler varsa detay çek
+      const needsDetailFetch = !detailedApiData.overview || 
+                               !detailedApiData.genres?.length || 
+                               (!detailedApiData.runtime && contentType === 'movie') ||
+                               (!detailedApiData.episodeCount && contentType !== 'movie');
+      
+      if (needsDetailFetch) {
+        try {
+          const providerId = relatedItem.tmdbId || relatedItem.anilistId || relatedItem.kitsuId || relatedItem.jikanId;
+          const provider = relatedItem.provider;
+          
+          if (providerId && provider) {
+            console.log(`Fetching additional details for related content: ${relatedItem.title} (${provider}:${providerId})`);
+            
+            if (provider === 'tmdb') {
+              const { TmdbApi } = await import('../../api/providers/TmdbApi.js');
+              const tmdbApi = new TmdbApi();
+              
+              // Türe göre detay çek
+              const mediaType = contentType === 'movie' ? 'movie' : 'tv';
+              const details = await tmdbApi.getDetails(providerId, mediaType);
+              
+              // Eksik bilgileri doldur - TÜM detayları al
+              if (!detailedApiData.overview) detailedApiData.overview = details.overview;
+              if (!detailedApiData.genres?.length) detailedApiData.genres = details.genres;
+              if (!detailedApiData.runtime) {
+                detailedApiData.runtime = details.duration || details.runtime;
+                detailedApiData.duration = details.duration || details.runtime;
+              }
+              if (!detailedApiData.cast) detailedApiData.cast = details.cast;
+              if (!detailedApiData.director) detailedApiData.director = details.director;
+              if (!detailedApiData.budget) detailedApiData.budget = details.budget;
+              if (!detailedApiData.revenue) detailedApiData.revenue = details.revenue;
+              if (!detailedApiData.episodeCount) {
+                detailedApiData.episodeCount = details.episodeCount || details.number_of_episodes;
+                detailedApiData.episodes = details.episodeCount || details.number_of_episodes;
+              }
+              if (!detailedApiData.seasonCount) detailedApiData.seasonCount = details.seasonCount || details.number_of_seasons;
+              if (!detailedApiData.status) detailedApiData.status = details.status;
+              if (!detailedApiData.originalTitle) detailedApiData.originalTitle = details.originalTitle;
+              // Relations bilgisini de ekle
+              if (details.relations && !detailedApiData.relations) {
+                detailedApiData.relations = details.relations;
+              }
+            } else if (['anilist', 'kitsu', 'jikan'].includes(provider)) {
+              const { ApiManager } = await import('../../api/ApiManager.js');
+              const apiManager = new ApiManager();
+              
+              const details = await apiManager.getDetails(providerId, 'anime');
+              
+              // Eksik bilgileri doldur - TÜM detayları al
+              if (!detailedApiData.overview) detailedApiData.overview = details.overview;
+              if (!detailedApiData.genres?.length) detailedApiData.genres = details.genres;
+              if (!detailedApiData.episodeCount) {
+                detailedApiData.episodeCount = details.episodeCount || details.episodes;
+                detailedApiData.episodes = details.episodeCount || details.episodes;
+              }
+              if (!detailedApiData.duration) detailedApiData.duration = details.duration;
+              if (!detailedApiData.studios) detailedApiData.studios = details.studios;
+              if (!detailedApiData.status) detailedApiData.status = details.status;
+              if (!detailedApiData.rating && details.score) detailedApiData.rating = details.score;
+              // Relations bilgisini de ekle
+              if (details.relations && !detailedApiData.relations) {
+                detailedApiData.relations = details.relations;
+              }
+            }
+            
+            console.log(`Additional details fetched for related content:`, {
+              title: relatedItem.title,
+              hadOverview: !!relatedItem.overview,
+              hasOverviewNow: !!detailedApiData.overview,
+              hadGenres: !!relatedItem.genres?.length,
+              hasGenresNow: !!detailedApiData.genres?.length
+            });
+          }
+        } catch (detailError) {
+          console.warn(`Failed to fetch additional details for related content, using available info:`, detailError);
+          // Detay çekimi başarısız olursa normalize edilmiş bilgilerle devam
+        }
+      } else {
+        console.log(`Related content already has sufficient details from normalization:`, {
+          title: relatedItem.title,
+          hasOverview: !!detailedApiData.overview,
+          hasGenres: !!detailedApiData.genres?.length,
+          hasRating: !!detailedApiData.rating
+        });
+      }
+      
+      // İçeriği ekle - DETAYLI LOG
       const contentToAdd = {
         id: relatedItem.id || `related_${Date.now()}`,
-        apiData: {
-          title: relatedItem.title || relatedItem.name,
-          poster: getPosterUrl(relatedItem),
-          year: relatedItem.year || relatedItem.release_date?.split('-')[0] || relatedItem.first_air_date?.split('-')[0],
-          rating: relatedItem.rating || relatedItem.vote_average || relatedItem.score,
-          overview: relatedItem.overview || relatedItem.description || relatedItem.synopsis,
-          genres: relatedItem.genres || [],
-          type: contentType, // Normalize edilmiş type
-          provider: relatedItem.provider || 'related_content',
-          tmdbId: relatedItem.tmdbId || (contentType !== 'anime' ? relatedItem.id : undefined),
-          kitsuId: relatedItem.kitsuId || (contentType === 'anime' ? relatedItem.id : undefined),
-          anilistId: relatedItem.anilistId,
-          // İlişki bilgisini koru
-          addedFrom: 'related_content',
-          originalRelation: {
-            fromId: item.id,
-            relationType: relatedItem.relType
-          }
-        },
-        pageId: targetPageId, // Doğru pageId
+        apiData: detailedApiData,
+        pageId: targetPageId,
         statusId: getDefaultStatusForPage(targetPageId),
         addedAt: new Date().toISOString()
       };
+
+      console.log('📦 Adding related content to store:', {
+        title: detailedApiData.title,
+        type: detailedApiData.type,
+        provider: detailedApiData.provider,
+        dataCompleteness: {
+          hasOverview: !!detailedApiData.overview,
+          hasGenres: !!detailedApiData.genres?.length,
+          hasRating: !!detailedApiData.rating,
+          hasEpisodes: !!detailedApiData.episodeCount,
+          hasRuntime: !!detailedApiData.runtime,
+          hasCast: !!detailedApiData.cast,
+          hasDirector: !!detailedApiData.director,
+          hasRelations: !!detailedApiData.relations,
+          hasBackdrop: !!detailedApiData.backdrop,
+          hasOriginalTitle: !!detailedApiData.originalTitle,
+        },
+        apiData: detailedApiData
+      });
 
       await addContent(contentToAdd);
       
@@ -153,24 +271,73 @@ const RelatedContent = ({
     return 'to-watch';
   };
 
-  // Boş relations dizisini düz hale getir
+  // Boş relations dizisini düz hale getir ve TİP UYUMLU OLMAYANLARI FİLTRELE
   const flatRelations = React.useMemo(() => {
+    // **KRİTİK FIX**: İçerik türüne göre uyumlu olanları filtrele
+    const isCompatibleContent = (relatedItem, currentPageId) => {
+      const itemType = (relatedItem.type || relatedItem.media_type || '').toLowerCase();
+      
+      console.log('🔍 Checking compatibility:', {
+        title: relatedItem.title,
+        type: relatedItem.type,
+        media_type: relatedItem.media_type,
+        itemType,
+        currentPageId,
+        provider: relatedItem.provider
+      });
+      
+      // Anime sayfasındaysa, sadece anime göster
+      if (currentPageId === PAGES.ANIME) {
+        const isAnime = itemType === 'anime' || itemType === 'tv' || itemType === 'ova' || itemType === 'movie' || itemType === 'special';
+        console.log(`  → Anime page: ${isAnime ? '✅' : '❌'}`);
+        return isAnime;
+      }
+      
+      // Dizi sayfasındaysa, sadece dizi/series göster
+      if (currentPageId === PAGES.DIZI) {
+        const isSeries = itemType === 'tv' || itemType === 'series' || itemType === 'tv_series';
+        console.log(`  → TV page: ${isSeries ? '✅' : '❌'}`);
+        return isSeries;
+      }
+      
+      // Film sayfasındaysa, sadece film göster
+      if (currentPageId === PAGES.FILM) {
+        const isMovie = itemType === 'movie' || itemType === 'film';
+        console.log(`  → Movie page: ${isMovie ? '✅' : '❌'}`);
+        return isMovie;
+      }
+      
+      // Varsayılan: tümünü göster
+      console.log('  → Default: ✅');
+      return true;
+    };
+    
     if (!relations || Object.keys(relations).length === 0) return [];
     
     const flattened = [];
     Object.entries(relations).forEach(([relType, relArray]) => {
       if (Array.isArray(relArray)) {
         relArray.forEach(rel => {
-          flattened.push({
-            ...rel,
-            relType
-          });
+          // **KRİTİK FIX**: Sadece uyumlu içerikleri ekle
+          if (isCompatibleContent(rel, item.pageId)) {
+            flattened.push({
+              ...rel,
+              relType
+            });
+          }
         });
       }
     });
     
+    console.log('📊 Filtered relations:', {
+      pageId: item.pageId,
+      totalBefore: Object.values(relations).flat().length,
+      filteredCount: flattened.length,
+      filtered: flattened.map(r => ({ title: r.title, type: r.type || r.media_type }))
+    });
+    
     return flattened;
-  }, [relations]);
+  }, [relations, item.pageId]);
 
   // Poster URL'ini al - artık normalize edilmiş
   const getPosterUrl = (rel) => {
