@@ -559,12 +559,13 @@ const useContentStore = create()(
       markEpisodeWatched: (contentId, seasonNumber, episodeNumber) => set((state) => {
         const content = state.contents[contentId];
         if (content && content.seasons) {
-          // Önce önceki tüm sezonları işaretle
+          // **FIX: Cascade logic - mevcut watchedEpisodes'u koru, override etme!**
           Object.values(content.seasons).forEach(season => {
             if (season.seasonNumber < seasonNumber) {
-              // Bu sezonun tüm bölümlerini işaretle
+              // Bu sezonun tüm bölümlerini işaretle (mevcut array'e EKLE)
               const allEpisodes = Array.from({ length: season.episodeCount }, (_, i) => i + 1);
-              season.watchedEpisodes = allEpisodes;
+              // Set kullanarak duplicate'leri engelle
+              season.watchedEpisodes = [...new Set([...season.watchedEpisodes, ...allEpisodes])].sort((a, b) => a - b);
             } else if (season.seasonNumber === seasonNumber) {
               // Aynı sezondaki bu bölüme kadar olan tüm bölümleri işaretle
               const watchedEpisodes = season.watchedEpisodes;
@@ -577,6 +578,17 @@ const useContentStore = create()(
             }
           });
           content.updatedAt = new Date().toISOString();
+          
+          console.log('✅ Episode marked watched with cascade:', {
+            contentId,
+            season: seasonNumber,
+            episode: episodeNumber,
+            updatedSeasons: Object.values(content.seasons).map(s => ({
+              season: s.seasonNumber,
+              watched: s.watchedEpisodes.length,
+              total: s.episodeCount
+            }))
+          });
         }
       }),
 
