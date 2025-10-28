@@ -22,8 +22,8 @@ const DetailModal = ({ item, onClose }) => {
   const getStatusBadge = (status) => {
     const statusMap = {
       'finished': {
-        background: 'linear-gradient(90deg,#16a34a,#22d3ee)',
-        borderColor: '#16a34a',
+        background: `linear-gradient(90deg,var(--success-color),#22d3ee)`,
+        borderColor: 'var(--success-color)',
         text: 'Tamamlandı'
       },
       'airing': {
@@ -579,27 +579,17 @@ if (
                             <button
                               key={ep}
                               onClick={() => handleEpisodeToggle(season.seasonNumber, ep)}
-                              className={`group relative w-8 h-8 rounded-lg text-xs font-bold flex items-center justify-center transition-all duration-200`}
-                              style={isWatched ? {
-                                background: 'var(--accent-color, #ff4500)',
-                                color: 'var(--primary-text, #fff)',
-                                boxShadow: 'var(--card-shadow, 0 4px 10px rgba(0,0,0,0.3))',
-                                border: '2px solid var(--accent-color, #ff4500)'
-                              } : {
-                                background: 'var(--card-bg, #1e1e1e)',
-                                color: 'var(--primary-text, #fff)',
-                                border: '2px solid var(--border-color, #2a2a2a)',
-                                boxShadow: 'var(--card-shadow, 0 4px 10px rgba(0,0,0,0.3))',
-                              }}
+                              aria-pressed={!!isWatched}
+                              className={`detail-modal-episode-btn group relative transition-all duration-200 ${isWatched ? 'watched' : 'unwatched'}`}
                               title={`Bölüm ${ep}${isWatched ? ' - İzlendi' : ' - İzlenmedi'}`}
                             >
                               {isWatched && (
-                                <div className="absolute inset-0 bg-[#029096]/20 rounded-lg animate-pulse"></div>
+                                <div className="detail-modal-episode-pulse absolute inset-0 rounded-lg" aria-hidden="true"></div>
                               )}
-                              <span className="relative z-10" style={{color: 'var(--primary-text, #fff)'}}>{ep}</span>
+                              <span className="detail-modal-episode-label relative z-10">{ep}</span>
                               {isWatched && (
-                                <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center" style={{background: 'var(--accent-color, #ff4500)'}}>
-                                    <svg className="w-2 h-2" style={{color: 'var(--primary-text, #fff)'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="detail-modal-episode-check absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center" aria-hidden="true">
+                                    <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                   </svg>
                                 </div>

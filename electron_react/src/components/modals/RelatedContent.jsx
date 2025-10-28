@@ -275,38 +275,51 @@ const RelatedContent = ({
   const flatRelations = React.useMemo(() => {
     // **KRİTİK FIX**: İçerik türüne göre uyumlu olanları filtrele
     const isCompatibleContent = (relatedItem, currentPageId) => {
-      const itemType = (relatedItem.type || relatedItem.media_type || '').toLowerCase();
-      
+      // Daha fazla olası alanı kontrol et (type, media_type, itemType...)
+      const rawType = relatedItem.type || relatedItem.media_type || relatedItem.itemType || relatedItem.item_type || relatedItem.mediaType || relatedItem.media_type || '';
+      const itemType = (typeof rawType === 'string' ? rawType : '').toLowerCase().trim();
+
       console.log('🔍 Checking compatibility:', {
         title: relatedItem.title,
         type: relatedItem.type,
         media_type: relatedItem.media_type,
         itemType,
         currentPageId,
-        provider: relatedItem.provider
+        provider: relatedItem.provider,
+        ids: { tmdb: relatedItem.tmdbId, anilist: relatedItem.anilistId, kitsu: relatedItem.kitsuId, jikan: relatedItem.jikanId, mal: relatedItem.malId }
       });
-      
-      // Anime sayfasındaysa, sadece anime göster
+
+      // Fallback: provider/id bilgisi anime olduğunu işaret ediyorsa anime olarak kabul et
+      const assumeAnimeProviders = ['anilist', 'kitsu', 'jikan', 'mal'];
+      const isProviderAnime = assumeAnimeProviders.includes((relatedItem.provider || '').toLowerCase());
+      const hasAnimeIds = !!(relatedItem.anilistId || relatedItem.kitsuId || relatedItem.jikanId || relatedItem.malId);
+
+      // Anime sayfasındaysa, geniş bir tip seti kabul et ve provider/id'ye bak
       if (currentPageId === PAGES.ANIME) {
-        const isAnime = itemType === 'anime' || itemType === 'tv' || itemType === 'ova' || itemType === 'movie' || itemType === 'special';
+        const animeTypes = new Set(['anime', 'tv', 'ova', 'movie', 'special', 'manga', 'ona', 'tv_series', 'tv_show', 'series']);
+        const isAnime = animeTypes.has(itemType) || isProviderAnime || hasAnimeIds;
         console.log(`  → Anime page: ${isAnime ? '✅' : '❌'}`);
         return isAnime;
       }
-      
-      // Dizi sayfasındaysa, sadece dizi/series göster
+
+      // Dizi sayfasındaysa, TV/Series tiplerini kabul et. Eğer ilk_air_date vb varsa da dizi say
       if (currentPageId === PAGES.DIZI) {
-        const isSeries = itemType === 'tv' || itemType === 'series' || itemType === 'tv_series';
+        const seriesTypes = new Set(['tv', 'series', 'tv_series', 'tv_show']);
+        const hasAirDate = !!(relatedItem.first_air_date || relatedItem.firstAired || relatedItem.seasons || relatedItem.number_of_seasons);
+        const isSeries = seriesTypes.has(itemType) || hasAirDate;
         console.log(`  → TV page: ${isSeries ? '✅' : '❌'}`);
         return isSeries;
       }
-      
-      // Film sayfasındaysa, sadece film göster
+
+      // Film sayfasındaysa, film tiplerini kabul et
       if (currentPageId === PAGES.FILM) {
-        const isMovie = itemType === 'movie' || itemType === 'film';
+        const movieTypes = new Set(['movie', 'film', 'feature']);
+        const hasReleaseDate = !!(relatedItem.release_date || relatedItem.releaseDate || relatedItem.runtime || relatedItem.duration);
+        const isMovie = movieTypes.has(itemType) || hasReleaseDate;
         console.log(`  → Movie page: ${isMovie ? '✅' : '❌'}`);
         return isMovie;
       }
-      
+
       // Varsayılan: tümünü göster
       console.log('  → Default: ✅');
       return true;

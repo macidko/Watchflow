@@ -33,25 +33,25 @@
 .dynamic-card--small {
   width: 120px;
   height: 160px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .dynamic-card--medium {
   width: 160px;
   height: 240px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .dynamic-card--large {
   width: 200px;
   height: 300px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }
 
 .dynamic-card--xlarge {
   width: 240px;
   height: 360px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 /* ========== CARD STYLES - BASE ========== */
@@ -172,7 +172,7 @@
   padding: 4px 8px;
   background: rgba(0,0,0,0.8);
   backdrop-filter: blur(4px);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -235,51 +235,51 @@
 }
 
 .dynamic-card--small .dynamic-card__title {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
 }
 
 .dynamic-card--small .dynamic-card__release-date,
 .dynamic-card--small .dynamic-card__genre {
-  font-size: 10px;
+  font-size: calc(var(--font-size-xs) - 2px);
 }
 
 .dynamic-card--medium .dynamic-card__text-overlay {
-  padding: 12px;
+  padding: var(--space-12);
 }
 
 .dynamic-card--medium .dynamic-card__title {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 .dynamic-card--medium .dynamic-card__release-date,
 .dynamic-card--medium .dynamic-card__genre {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
 }
 
 .dynamic-card--large .dynamic-card__text-overlay {
-  padding: 16px;
+  padding: var(--space-16);
 }
 
 .dynamic-card--large .dynamic-card__title {
-  font-size: 16px;
+  font-size: var(--font-size-md);
 }
 
 .dynamic-card--large .dynamic-card__release-date,
 .dynamic-card--large .dynamic-card__genre {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 }
 
 .dynamic-card--xlarge .dynamic-card__text-overlay {
-  padding: 20px;
+  padding: var(--space-20, 20px);
 }
 
 .dynamic-card--xlarge .dynamic-card__title {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
 }
 
 .dynamic-card--xlarge .dynamic-card__release-date,
 .dynamic-card--xlarge .dynamic-card__genre {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
 }
 
 /* ========== NO IMAGE PLACEHOLDER ========== */
@@ -598,7 +598,7 @@
   height: 28px;
   background: rgba(0,0,0,0.8);
   backdrop-filter: blur(4px);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -628,7 +628,7 @@
   top: 32px;
   left: 0;
   background: rgb(38, 38, 38);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   border: 1px solid rgb(64, 64, 64);
   padding: 4px 0;
@@ -665,7 +665,7 @@
 .dynamic-card__drag-indicator-text {
   color: white;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-weight: 500;
   font-size: 14px;
   background: rgb(249, 115, 22);

@@ -82,7 +82,7 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQ
 
   return (
     <div
-      className={`card ${isDragging ? 'card--dragging' : ''} group flex-none w-44 h-64 bg-neutral-900 rounded-xl border border-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]`}
+      className={`card card-hover-lift ${isDragging ? 'card--dragging' : ''} group flex-none w-44 h-64 bg-neutral-900 rounded-xl border border-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]`}
       onClick={() => onClick && onClick(item)}
       tabIndex={0}
       role="button"

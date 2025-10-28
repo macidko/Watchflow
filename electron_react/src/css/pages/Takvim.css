@@ -61,7 +61,7 @@
 }
 
 .fc-day-today {
-  background: rgba(255, 69, 0, 0.1) !important;
+  background: rgba(var(--accent-color-rgb), 0.1) !important;
 }
 
 .fc-button-primary {

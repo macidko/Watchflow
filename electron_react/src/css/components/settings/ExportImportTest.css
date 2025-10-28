@@ -36,7 +36,7 @@
   margin-left: 10px;
   padding: 8px 16px;
   background-color: #ff6b6b;
-  color: white;
+  color: var(--danger-text);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -44,7 +44,7 @@
 }
 
 .export-import-reset-btn:hover {
-  background-color: #ff5252;
+  background-color: var(--danger-color);
   transform: translateY(-1px);
 }
 

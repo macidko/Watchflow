@@ -48,7 +48,7 @@ const DynamicCard = ({
 
   // Get CSS class names based on props
   const getCardClasses = () => {
-    const classes = ['dynamic-card'];
+    const classes = ['dynamic-card', 'card-hover-lift'];
     
     // Add size class
     classes.push(`dynamic-card--${cardSize}`);

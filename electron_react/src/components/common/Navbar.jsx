@@ -258,7 +258,7 @@ const Navbar = () => {
           >
             <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
             {notifications.length > 0 && hasUnread && (
-              <span style={{ position: 'absolute', top: 2, right: 2, background: '#ff5252', color: 'white', borderRadius: '50%', width: 15, height: 15, fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{notifications.length}</span>
+              <span className="badge badge--danger badge--small" style={{ position: 'absolute', top: 2, right: 2 }} aria-hidden={false}>{notifications.length}</span>
             )}
           </button>
           {/* Bildirim paneli component */}
@@ -308,7 +308,8 @@ const Navbar = () => {
                   fontWeight: 500,
                   fontSize: 15,
                   color: isActive ? 'var(--accent-color)' : 'var(--secondary-text)',
-                  background: isActive ? 'rgba(255, 102, 0, 0.1)' : 'transparent',
+                  // Use theme-aware accent color (rgb variable) so active background follows theme
+                  background: isActive ? 'rgba(var(--accent-color-rgb), 0.12)' : 'transparent',
                   border: 'none',
                   outline: 'none',
                   cursor: 'pointer',
@@ -317,7 +318,8 @@ const Navbar = () => {
                 }}
                 onMouseEnter={e => { 
                   if (!isActive) {
-                    e.currentTarget.style.color = '#ffffff';
+                    // Use theme variable for hover text color so it matches light/dark themes
+                    e.currentTarget.style.color = 'var(--primary-text)';
                   }
                 }}
                 onMouseLeave={e => { 
@@ -349,7 +351,8 @@ const Navbar = () => {
               textDecoration: 'none'
             }}
             onMouseEnter={e => { 
-              e.currentTarget.style.color = '#ffffff';
+              // Use theme-aware text color on hover
+              e.currentTarget.style.color = 'var(--primary-text)';
               e.currentTarget.style.background = 'var(--hover-bg)';
             }}
             onMouseLeave={e => { 

@@ -558,38 +558,54 @@ const useContentStore = create()(
       // Episode/Season tracking
       markEpisodeWatched: (contentId, seasonNumber, episodeNumber) => set((state) => {
         const content = state.contents[contentId];
-        if (content && content.seasons) {
-          // **FIX: Cascade logic - mevcut watchedEpisodes'u koru, override etme!**
-          Object.values(content.seasons).forEach(season => {
-            if (season.seasonNumber < seasonNumber) {
-              // Bu sezonun tüm bölümlerini işaretle (mevcut array'e EKLE)
-              const allEpisodes = Array.from({ length: season.episodeCount }, (_, i) => i + 1);
-              // Set kullanarak duplicate'leri engelle
-              season.watchedEpisodes = [...new Set([...season.watchedEpisodes, ...allEpisodes])].sort((a, b) => a - b);
-            } else if (season.seasonNumber === seasonNumber) {
-              // Aynı sezondaki bu bölüme kadar olan tüm bölümleri işaretle
-              const watchedEpisodes = season.watchedEpisodes;
-              for (let ep = 1; ep <= episodeNumber; ep++) {
-                if (!watchedEpisodes.includes(ep)) {
-                  watchedEpisodes.push(ep);
-                }
-              }
-              watchedEpisodes.sort((a, b) => a - b);
+        if (!content) return;
+
+        // Eğer seasons yoksa (özellikle anime için) başlangıç sezon bilgisini oluştur
+        if (!content.seasons || Object.keys(content.seasons).length === 0) {
+          const epCount = content.apiData?.episodeCount || content.apiData?.episodes || 0;
+          // Eğer episode count yoksa, fallback olarak 1 bölüm oluşturma (koruyucu davranış)
+          const defaultCount = epCount > 0 ? epCount : 1;
+          content.seasons = {
+            1: {
+              seasonNumber: 1,
+              title: content.apiData?.title || 'Season 1',
+              episodeCount: defaultCount,
+              watchedEpisodes: Array.isArray(content.watchedEpisodes) ? [...content.watchedEpisodes] : []
             }
-          });
-          content.updatedAt = new Date().toISOString();
-          
-          console.log('✅ Episode marked watched with cascade:', {
-            contentId,
-            season: seasonNumber,
-            episode: episodeNumber,
-            updatedSeasons: Object.values(content.seasons).map(s => ({
-              season: s.seasonNumber,
-              watched: s.watchedEpisodes.length,
-              total: s.episodeCount
-            }))
-          });
+          };
         }
+
+        // **FIX: Cascade logic - mevcut watchedEpisodes'u koru, override etme!**
+        Object.values(content.seasons).forEach(season => {
+          if (season.seasonNumber < seasonNumber) {
+            // Bu sezonun tüm bölümlerini işaretle (mevcut array'e EKLE)
+            const allEpisodes = Array.from({ length: season.episodeCount }, (_, i) => i + 1);
+            // Set kullanarak duplicate'leri engelle
+            season.watchedEpisodes = [...new Set([...(season.watchedEpisodes || []), ...allEpisodes])].sort((a, b) => a - b);
+          } else if (season.seasonNumber === seasonNumber) {
+            // Aynı sezondaki bu bölüme kadar olan tüm bölümleri işaretle
+            if (!Array.isArray(season.watchedEpisodes)) season.watchedEpisodes = [];
+            const watchedEpisodes = season.watchedEpisodes;
+            for (let ep = 1; ep <= episodeNumber; ep++) {
+              if (!watchedEpisodes.includes(ep)) {
+                watchedEpisodes.push(ep);
+              }
+            }
+            watchedEpisodes.sort((a, b) => a - b);
+          }
+        });
+        content.updatedAt = new Date().toISOString();
+
+        console.log('✅ Episode marked watched with cascade:', {
+          contentId,
+          season: seasonNumber,
+          episode: episodeNumber,
+          updatedSeasons: Object.values(content.seasons).map(s => ({
+            season: s.seasonNumber,
+            watched: (s.watchedEpisodes || []).length,
+            total: s.episodeCount
+          }))
+        });
       }),
 
       markEpisodeUnwatched: (contentId, seasonNumber, episodeNumber) => set((state) => {

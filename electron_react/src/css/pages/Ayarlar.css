@@ -187,7 +187,7 @@
 .primary-button:hover {
   background: var(--accent-color-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(var(--accent-color-rgb), 0.3);
 }
 
 .secondary-button {
@@ -298,7 +298,7 @@
 }
 
 .accent-color[data-color="orange"] {
-  --accent-preview: #ff4500;
+  --accent-preview: var(--accent-color);
 }
 
 .accent-color[data-color="blue"] {

@@ -114,93 +114,25 @@ const ShowAllModal = ({ title, items = [], onClose, onCardClick }) => {
         }
       }}
       role="presentation"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0, 0, 0, 0.8)',
-        backdropFilter: 'blur(8px)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px'
-      }}
     >
       <div 
         ref={modalRef}
         className="show-all-modal"
-        style={{
-          background: 'var(--card-bg)',
-          borderRadius: '20px',
-          border: '1px solid var(--border-color)',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
-          width: '100%',
-          maxWidth: '1200px',
-          maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}
       >
         {/* Header */}
-        <div 
-          className="show-all-modal-header"
-          style={{
-            padding: '24px 32px',
-            borderBottom: '1px solid var(--border-color)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexShrink: 0
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <h2 style={{
-              fontSize: '24px',
-              fontWeight: '600',
-              color: 'var(--primary-text)',
-              margin: 0
-            }}>
+        <div className="show-all-modal-header">
+          <div className="show-all-modal-header-title-group">
+            <h2 className="show-all-modal-header-title">
               {title}
             </h2>
-            <div style={{
-              padding: '4px 12px',
-              borderRadius: '20px',
-              background: 'var(--accent-color)',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: 'var(--primary-text)'
-            }}>
+            <div className="show-all-modal-header-count">
               {processedItems.length} {t('common.content')}
             </div>
           </div>
 
           <button
             onClick={onClose}
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--secondary-bg)',
-              color: 'var(--secondary-text)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'var(--hover-bg)';
-              e.target.style.color = 'var(--primary-text)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'var(--secondary-bg)';
-              e.target.style.color = 'var(--secondary-text)';
-            }}
+            className="modal-close-btn"
             title={t('common.close')}
           >
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,53 +142,25 @@ const ShowAllModal = ({ title, items = [], onClose, onCardClick }) => {
         </div>
 
         {/* Controls */}
-        <div 
-          className="show-all-modal-controls"
-          style={{
-            padding: '20px 32px',
-            borderBottom: '1px solid var(--border-color)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            flexWrap: 'wrap',
-            flexShrink: 0
-          }}
-        >
+        <div className="show-all-modal-controls">
           {/* Search */}
-          <div style={{ flex: '1', minWidth: '200px' }}>
+          <div className="show-all-modal-search">
             <input
               type="text"
               placeholder={t('common.search')}
               value={filterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-                background: 'var(--secondary-bg)',
-                color: 'var(--primary-text)',
-                fontSize: '14px'
-              }}
             />
           </div>
 
           {/* Sort */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <label style={{ fontSize: '14px', color: 'var(--secondary-text)' }}>
+          <div className="show-all-modal-sort">
+            <label>
               {t('common.sortBy')}:
             </label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              style={{
-                padding: '6px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                background: 'var(--secondary-bg)',
-                color: 'var(--primary-text)',
-                fontSize: '14px'
-              }}
             >
               <option value="default">{t('common.default')}</option>
               <option value="title">{t('common.title')}</option>
@@ -266,18 +170,10 @@ const ShowAllModal = ({ title, items = [], onClose, onCardClick }) => {
           </div>
 
           {/* View Mode */}
-          <div style={{ display: 'flex', gap: '4px' }}>
+          <div className="show-all-modal-view-toggle">
             <button
               onClick={() => setViewMode('grid')}
-              style={{
-                padding: '8px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                background: viewMode === 'grid' ? 'var(--accent-color)' : 'var(--secondary-bg)',
-                color: viewMode === 'grid' ? 'var(--primary-text)' : 'var(--secondary-text)',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
+              className={viewMode === 'grid' ? 'active' : ''}
               title={t('common.gridView')}
             >
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,15 +182,7 @@ const ShowAllModal = ({ title, items = [], onClose, onCardClick }) => {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              style={{
-                padding: '8px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                background: viewMode === 'list' ? 'var(--accent-color)' : 'var(--secondary-bg)',
-                color: viewMode === 'list' ? 'var(--primary-text)' : 'var(--secondary-text)',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
+              className={viewMode === 'list' ? 'active' : ''}
               title={t('common.listView')}
             >
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -305,50 +193,18 @@ const ShowAllModal = ({ title, items = [], onClose, onCardClick }) => {
         </div>
 
         {/* Content */}
-        <div 
-          className="show-all-modal-content"
-          style={{
-            flex: 1,
-            overflow: 'auto',
-            padding: '24px 32px'
-          }}
-        >
+        <div className="show-all-modal-content">
           {processedItems.length === 0 ? (
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: '300px',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '50%',
-                background: 'var(--secondary-bg)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '16px'
-              }}>
+            <div className="show-all-modal-empty-state">
+              <div className="show-all-modal-empty-icon">
                 <svg width="32" height="32" fill="none" stroke="var(--secondary-text)" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <h3 style={{ 
-                fontSize: '18px', 
-                fontWeight: '600', 
-                color: 'var(--primary-text)', 
-                marginBottom: '8px' 
-              }}>
+              <h3 className="show-all-modal-empty-title">
                 {filterQuery ? t('common.noSearchResults') : t('common.noContent')}
               </h3>
-              <p style={{ 
-                color: 'var(--secondary-text)', 
-                fontSize: '14px',
-                maxWidth: '400px'
-              }}>
+              <p className="show-all-modal-empty-description">
                 {filterQuery 
                   ? t('common.tryDifferentSearch') 
                   : t('common.noContentDescription')
@@ -356,17 +212,7 @@ const ShowAllModal = ({ title, items = [], onClose, onCardClick }) => {
               </p>
             </div>
           ) : (
-            <div 
-              className={`show-all-modal-grid ${viewMode}`}
-              style={{
-                display: viewMode === 'grid' ? 'grid' : 'flex',
-                flexDirection: viewMode === 'list' ? 'column' : undefined,
-                gridTemplateColumns: viewMode === 'grid' 
-                  ? 'repeat(auto-fill, minmax(180px, 1fr))' 
-                  : undefined,
-                gap: viewMode === 'grid' ? '20px' : '12px'
-              }}
-            >
+            <div className={`show-all-modal-grid ${viewMode}`}>
               {processedItems.map((item, index) => (
                 <div key={item.id || index}>
                   <DynamicCard

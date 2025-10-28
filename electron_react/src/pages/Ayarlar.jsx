@@ -763,7 +763,7 @@ const Ayarlar = () => {
 
         .accent-color[data-color="orange"]:hover,
         .accent-color[data-color="orange"].active {
-          border-color: #ff4500;
+          border-color: var(--accent-color);
         }
 
         .accent-color[data-color="blue"]:hover,

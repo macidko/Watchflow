@@ -342,3 +342,89 @@
   background: var(--secondary-bg, #1e1e1e);
   color: var(--accent-color, #ff4500);
 }
+
+/* Episode button improvements: clearer default, hover and focus-visible states */
+
+.detail-modal-episode-btn {
+  width: 2rem; /* matches w-8 */
+  height: 2rem; /* matches h-8 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem; /* rounded-lg */
+  font-size: 0.75rem; /* text-xs */
+  font-weight: 700;
+  color: var(--secondary-text, #b3b3b3);
+  background: transparent;
+  border: 2px solid var(--border-color, #2a2a2a);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 2px 6px rgba(0,0,0,0.18);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, background-color 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Unwatched (default) - more neutral but readable */
+.detail-modal-episode-btn.unwatched {
+  background: color-mix(in srgb, var(--card-bg, #1e1e1e) 10%, transparent);
+  color: var(--secondary-text, #b3b3b3);
+}
+
+.detail-modal-episode-btn.unwatched:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-color, #ff4500);
+  background: color-mix(in srgb, var(--accent-color, #ff4500) 8%, transparent);
+  color: var(--primary-text, #fff);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+}
+
+.detail-modal-episode-btn.unwatched:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(255,69,0,0.08), 0 8px 18px rgba(0,0,0,0.28);
+  color: var(--primary-text, #fff);
+}
+
+/* Watched (checked) - stronger filled look with clear contrast */
+.detail-modal-episode-btn.watched {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color, #ff4500) 100%, transparent 0%), var(--accent-color, #ff4500));
+  color: var(--primary-text, #fff);
+  border-color: color-mix(in srgb, var(--accent-color, #ff4500) 85%, transparent);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+}
+
+.detail-modal-episode-btn.watched:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.48);
+}
+
+.detail-modal-episode-btn.watched:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(255,69,0,0.12), 0 12px 30px rgba(0,0,0,0.48);
+}
+
+.detail-modal-episode-pulse {
+  /* subtle animated overlay for watched episodes */
+  background: color-mix(in srgb, var(--accent-color, #ff4500) 10%, transparent);
+  animation: detail-episode-pulse 1.6s ease-in-out infinite;
+  opacity: 0.12;
+}
+
+@keyframes detail-episode-pulse {
+  0% { transform: scale(1); opacity: 0.12; }
+  50% { transform: scale(0.985); opacity: 0.06; }
+  100% { transform: scale(1); opacity: 0.12; }
+}
+
+.detail-modal-episode-check {
+  background: rgba(255,255,255,0.95);
+  color: var(--accent-color, #ff4500);
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+}
+
+.detail-modal-episode-label { color: inherit; }
+

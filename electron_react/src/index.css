@@ -279,3 +279,52 @@ html.no-scroll {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
 }
+
+/* Modal close button (centralized, accessible) */
+.modal-close-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--secondary-bg);
+  color: var(--secondary-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-standard);
+}
+.modal-close-btn:hover {
+  background: var(--hover-bg);
+  color: var(--primary-text);
+}
+.modal-close-btn:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent-color) 30%, transparent);
+  outline-offset: 2px;
+}
+
+/* Small badge utilities */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+.badge--danger {
+  background: var(--danger-color);
+  color: var(--danger-text);
+}
+.badge--success {
+  background: var(--success-color);
+  color: var(--success-text);
+}
+
+.badge--small {
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  padding: 0;
+}
