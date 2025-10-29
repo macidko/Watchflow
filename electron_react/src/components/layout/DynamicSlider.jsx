@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import DynamicCard from '../ui/DynamicCard';
-import CardSkeleton from '../ui/CardSkeleton';
+import { Card, CardSkeleton } from '../ui/Card';
 import { useDrag } from '../../contexts/DragContext';
 import { useLayoutDynamic } from '../../hooks/useLayoutDynamic';
 import { t } from '../../i18n';
@@ -154,7 +153,7 @@ const DynamicSlider = ({
       }}
     >
       {items.map((item, index) => (
-        <DynamicCard
+        <Card
           key={item.id || index}
           item={item}
           onClick={onCardClick}
@@ -163,8 +162,8 @@ const DynamicSlider = ({
           isDragging={draggedItem?.item?.id === item.id && !globalDrag}
           sliderId={sliderId}
           onQuickMove={onQuickMove}
-          cardSize={activeLayout.cardSize}
-          cardStyle={activeLayout.style}
+          size={activeLayout.cardSize}
+          variant={activeLayout.style}
         />
       ))}
     </div>
@@ -179,7 +178,7 @@ const DynamicSlider = ({
       }}
     >
       {items.map((item, index) => (
-        <DynamicCard
+        <Card
           key={item.id || index}
           item={item}
           onClick={onCardClick}
@@ -188,8 +187,8 @@ const DynamicSlider = ({
           isDragging={draggedItem?.item?.id === item.id && !globalDrag}
           sliderId={sliderId}
           onQuickMove={onQuickMove}
-          cardSize={activeLayout.cardSize}
-          cardStyle={activeLayout.style}
+          size={activeLayout.cardSize}
+          variant={activeLayout.style}
         />
       ))}
     </div>
@@ -198,7 +197,7 @@ const DynamicSlider = ({
   const renderListLayout = () => (
     <div className="space-y-2 p-4">
       {items.map((item, index) => (
-        <DynamicCard
+        <Card
           key={item.id || index}
           item={item}
           onClick={onCardClick}
@@ -207,8 +206,8 @@ const DynamicSlider = ({
           isDragging={draggedItem?.item?.id === item.id && !globalDrag}
           sliderId={sliderId}
           onQuickMove={onQuickMove}
-          cardSize={CARD_SIZES.COMPACT}
-          cardStyle={activeLayout.style}
+          size="compact"
+          variant={activeLayout.style}
           customCSS={{
             width: '100%',
             height: '80px'
@@ -301,59 +300,7 @@ const DynamicSlider = ({
           </div>
         </div>
 
-        {/* Content area */}
-        <div style={{
-          padding: '12px 16px',
-          height: 'calc(100% - 60px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          {isDragOver ? (
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                width: '24px',
-                height: '24px',
-                margin: '0 auto 6px',
-                borderRadius: '50%',
-                background: 'var(--accent-color)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <svg width="12" height="12" fill="none" stroke="white" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-              </div>
-              <span style={{
-                fontSize: '12px',
-                fontWeight: '600',
-                color: 'var(--accent-color)',
-                display: 'block'
-              }}>
-                Buraya Bırak
-              </span>
-            </div>
-          ) : (
-            <div style={{
-              display: 'flex',
-              gap: '4px',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: 0.6
-            }}>
-              {[1,2,3].map(i => (
-                <div key={i} style={{
-                  width: '16px',
-                  height: '20px',
-                  borderRadius: '3px',
-                  background: 'color-mix(in srgb, var(--secondary-text) 25%, transparent)',
-                  border: '1px solid color-mix(in srgb, var(--border-color) 40%, transparent)'
-                }} />
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Content area - REMOVED: Now handled by SliderCompactView */}
       </section>
     );
   }
@@ -528,20 +475,7 @@ const DynamicSlider = ({
           return renderLayoutContent();
         })()}
 
-        {/* Drop Zone Indicator */}
-        {isDragOver && (
-          <div className="absolute inset-4 rounded-xl flex items-center justify-center pointer-events-none" style={{ border: '1px solid var(--accent-color)', background: 'color-mix(in srgb, var(--accent-color) 6%, transparent)' }}>
-            <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-color)' }}>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--primary-text)' }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-              </div>
-              <p className="font-normal" style={{ color: 'var(--accent-color)' }}>Buraya Bırak</p>
-              <span className="text-sm mt-1" style={{ color: 'var(--hover-color)' }}>Kart "{title}" listesine taşınacak</span>
-            </div>
-          </div>
-        )}
+        {/* Drop Zone Indicator - REMOVED: Now handled by SliderCompactView */}
       </section>
     </div>
   );

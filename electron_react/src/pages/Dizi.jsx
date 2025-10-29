@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import DynamicSlider from '../components/layout/DynamicSlider';
+import Slider from '../components/ui/Slider';
 import SliderManager from '../components/layout/SliderManager';
 import SearchButton from '../components/common/SearchButton';
 import DetailModal from '../components/modals/DetailModal';
@@ -188,7 +188,7 @@ const Dizi = () => {
           ) : (
             <div className={'sliders ' + (isDragging ? 'compact' : viewMode)}>
               {sliders.map(slider => (
-                <DynamicSlider
+                <Slider
                   key={slider.id}
                   rootRef={el => (sliderRefs.current[slider.id] = el)}
                   title={slider.title}

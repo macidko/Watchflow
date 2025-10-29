@@ -18,12 +18,6 @@ export const SLIDER_DENSITIES = {
   RELAXED: 'relaxed'   // 32px gap - Fewer items, spacious
 };
 
-// Removed CARD_STYLES - not implemented in DynamicCard
-// Will be added back when properly implemented
-
-// Removed CARD_STYLES - not implemented in DynamicCard
-// Will be added back when properly implemented
-
 export const LAYOUT_PRESETS = {
   // Default: Netflix-style horizontal scrolling
   DEFAULT: {

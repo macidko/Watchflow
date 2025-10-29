@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import DynamicSlider from '../components/layout/DynamicSlider';
+import Slider from '../components/ui/Slider';
 import SliderManager from '../components/layout/SliderManager';
 import SearchButton from '../components/common/SearchButton';
 import DetailModal from '../components/modals/DetailModal';
@@ -176,7 +176,7 @@ const Home = () => {
               /* Sliders */
               <div className="page-sliders">
                 {sliderData.map((slider) => (
-                  <DynamicSlider 
+                  <Slider 
                     key={slider.id}
                     title={slider.title}
                     items={slider.items} 

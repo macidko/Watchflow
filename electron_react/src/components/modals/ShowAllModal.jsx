@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import DynamicCard from '../ui/DynamicCard';
+import { Card } from '../ui/Card';
 import { t } from '../../i18n';
 import { CARD_SIZES } from '../../config/layoutConfig';
 import '../../css/components/modals/ShowAllModal.css';
@@ -215,11 +215,11 @@ const ShowAllModal = ({ title, items = [], onClose, onCardClick }) => {
             <div className={`show-all-modal-grid ${viewMode}`}>
               {processedItems.map((item, index) => (
                 <div key={item.id || index}>
-                  <DynamicCard
+                  <Card
                     item={item}
                     onClick={handleCardClick}
-                    cardSize={viewMode === 'list' ? CARD_SIZES.SMALL : CARD_SIZES.MEDIUM}
-                    cardStyle={viewMode === 'list' ? 'compact' : 'modern'}
+                    size={viewMode === 'list' ? 'compact' : 'medium'}
+                    variant={viewMode === 'list' ? 'compact' : 'modern'}
                     customCSS={{
                       width: '100%',
                       height: viewMode === 'list' ? '120px' : 'auto'
