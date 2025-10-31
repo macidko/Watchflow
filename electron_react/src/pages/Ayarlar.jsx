@@ -1,17 +1,12 @@
 
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { t } from '../i18n';
 import { useSettings } from '../hooks/useSettings';
-import { DataManagementService } from '../services/dataManagementService';
-import { THEMES, ACCENT_COLORS, LANGUAGES, LANGUAGE_CONFIG } from '../config/themeConfig';
+import useSettingsController from '../hooks/useSettingsController';
 import { useLayoutDynamic } from '../hooks/useLayoutDynamic';
-import { 
-  LAYOUT_MODES, 
-  CARD_SIZES, 
-  SLIDER_DENSITIES,
-  LAYOUT_PRESETS 
-} from '../config/layoutConfig';
 import Toast from '../components/ui/Toast';
+import SettingsPanel from '../components/settings/SettingsPanel';
+import '../components/settings/Ayarlar.css';
 
 const Ayarlar = () => {
   const { 
@@ -30,102 +25,28 @@ const Ayarlar = () => {
     resetToDefault
   } = useLayoutDynamic();
   
-  const [showStorage, setShowStorage] = useState(false);
-  const [storageInfo, setStorageInfo] = useState({ items: [], totalSize: '0 B', itemCount: 0 });
-  const [expandedItems, setExpandedItems] = useState(new Set());
-  const [activeSection, setActiveSection] = useState('appearance');
-  const [showResetModal, setShowResetModal] = useState(false);
-  const [toast, setToast] = useState(null);
-  const fileInputRef = useRef(null);
+  const {
+    // state
+    showStorage,
+    storageInfo,
+    expandedItems,
+    activeSection,
+    showResetModal,
+    toast,
+    fileInputRef,
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  const handleShowStorage = () => {
-    if (!showStorage) {
-      const info = DataManagementService.getStorageInfo();
-      setStorageInfo(info);
-    }
-    setShowStorage(!showStorage);
-  };
-
-  const toggleExpanded = (key) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(key)) {
-      newExpanded.delete(key);
-    } else {
-      newExpanded.add(key);
-    }
-    setExpandedItems(newExpanded);
-  };
-
-  const formatJsonValue = (value) => {
-    try {
-      const parsed = JSON.parse(value);
-      return JSON.stringify(parsed, null, 2);
-    } catch {
-      return value;
-    }
-  };
-
-  const handleExportData = () => {
-    const result = DataManagementService.exportData();
-    if (result.success) {
-      showToast(t('toast.dataExported'));
-    } else {
-      showToast(result.message, 'error');
-    }
-  };
-
-  const handleImportData = async (file) => {
-    const result = await DataManagementService.importData(file);
-    if (result.success) {
-      showToast(t('toast.dataImported'));
-      if (result.requiresReload) {
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      }
-    } else {
-      showToast(result.message, 'error');
-    }
-  };
-
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      handleImportData(file);
-    }
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files[0];
-    if (file) {
-      handleImportData(file);
-    }
-  };
-
-  const handleResetData = () => {
-    const result = DataManagementService.resetAllData();
-    if (result.success) {
-      showToast(t('toast.dataReset'));
-      setShowResetModal(false);
-      if (result.requiresReload) {
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      }
-    } else {
-      showToast(result.message, 'error');
-    }
-  };
+    // handlers used by this component
+    handleShowStorage,
+    toggleExpanded,
+    handleExportData,
+    handleFileSelect,
+    handleDragOver,
+    handleDrop,
+    handleResetData,
+    setActiveSection,
+    setShowResetModal,
+    setToast
+  } = useSettingsController();
 
   const sections = [
     { id: 'appearance', title: t('pages.settings.sections.appearance'), icon: '🎨' },
@@ -134,351 +55,7 @@ const Ayarlar = () => {
     { id: 'language', title: t('pages.settings.sections.language'), icon: '🌍' },
     { id: 'about', title: t('pages.settings.sections.about'), icon: 'ℹ️' }
   ];
-
-  const renderAppearanceSection = () => (
-    <div className="settings-section">
-      <h3 className="section-title">{t('pages.settings.appearance.title')}</h3>
-      <p className="section-description">{t('pages.settings.appearance.description')}</p>
-      
-      {/* Theme Selection */}
-      <div className="setting-group">
-        <label className="setting-label">{t('pages.settings.appearance.theme')}</label>
-        <div className="theme-options">
-          {Object.values(THEMES).map(theme => (
-            <button
-              key={theme}
-              className={`theme-option ${settings.theme === theme ? 'active' : ''}`}
-              onClick={() => updateTheme(theme)}
-            >
-              <span className="theme-icon">
-                {theme === THEMES.DARK ? '🌙' : 
-                 theme === THEMES.LIGHT ? '☀️' : '🌓'}
-              </span>
-              <span>{t(`pages.settings.appearance.themeOptions.${theme}`)}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Accent Color Selection */}
-      <div className="setting-group">
-        <label className="setting-label">{t('pages.settings.appearance.accentColor')}</label>
-        <div className="accent-colors">
-          {Object.values(ACCENT_COLORS).map(color => (
-            <button
-              key={color}
-              className={`accent-color ${settings.accentColor === color ? 'active' : ''}`}
-              onClick={() => updateAccentColor(color)}
-              data-color={color}
-            >
-              <span>{t(`pages.settings.appearance.accentColors.${color}`)}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderLayoutSection = () => {
-    const layoutIcons = {
-      [LAYOUT_MODES.SLIDER]: (
-        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-        </svg>
-      ),
-      [LAYOUT_MODES.GRID]: (
-        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-        </svg>
-      ),
-      [LAYOUT_MODES.LIST]: (
-        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-        </svg>
-      ),
-      [LAYOUT_MODES.MASONRY]: (
-        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 11a1 1 0 011-1h4a1 1 0 011 1v8a1 1 0 01-1 1h-4a1 1 0 01-1-1v-8z" />
-        </svg>
-      ),
-      [LAYOUT_MODES.CAROUSEL]: (
-        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16l13-8L7 4z" />
-        </svg>
-      ),
-      [LAYOUT_MODES.TIMELINE]: (
-        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    };
-
-    const sizeLabels = {
-      [CARD_SIZES.COMPACT]: 'Compact',
-      [CARD_SIZES.SMALL]: 'Small', 
-      [CARD_SIZES.MEDIUM]: 'Medium',
-      [CARD_SIZES.LARGE]: 'Large',
-      [CARD_SIZES.EXTRA_LARGE]: 'Extra Large'
-    };
-
-    const densityLabels = {
-      [SLIDER_DENSITIES.TIGHT]: 'Tight',
-      [SLIDER_DENSITIES.NORMAL]: 'Normal',
-      [SLIDER_DENSITIES.RELAXED]: 'Relaxed'
-    };
-
-    return (
-      <div className="settings-section">
-        <h3 className="section-title">Layout Settings</h3>
-        <p className="section-description">Customize how content is displayed and organized in your app.</p>
-        
-        {/* Layout Mode */}
-        <div className="setting-group">
-          <label className="setting-label">Layout Mode</label>
-          <div className="layout-options">
-            {Object.values(LAYOUT_MODES).map(mode => (
-              <button
-                key={mode}
-                className={`layout-option ${currentLayout.mode === mode ? 'active' : ''}`}
-                onClick={() => updateMode(mode)}
-              >
-                <div className="layout-icon">
-                  {layoutIcons[mode]}
-                </div>
-                <span className="layout-name">{mode.charAt(0).toUpperCase() + mode.slice(1)}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Card Size */}
-        <div className="setting-group">
-          <label className="setting-label">Card Size</label>
-          <div className="size-options">
-            {Object.values(CARD_SIZES).map(size => (
-              <button
-                key={size}
-                className={`size-option ${currentLayout.cardSize === size ? 'active' : ''}`}
-                onClick={() => updateCardSize(size)}
-              >
-                <span className="size-label">{sizeLabels[size]}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Spacing */}
-        <div className="setting-group">
-          <label className="setting-label">Spacing</label>
-          <div className="density-options">
-            {Object.values(SLIDER_DENSITIES).map(density => (
-              <button
-                key={density}
-                className={`density-option ${currentLayout.density === density ? 'active' : ''}`}
-                onClick={() => updateDensity(density)}
-              >
-                <span className="density-label">{densityLabels[density]}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Presets */}
-        <div className="setting-group">
-          <label className="setting-label">Quick Presets</label>
-          <div className="preset-options">
-            {Object.keys(LAYOUT_PRESETS).map(presetName => (
-              <button
-                key={presetName}
-                className={`preset-option ${currentLayout.preset === presetName ? 'active' : ''}`}
-                onClick={() => applyPreset(presetName)}
-              >
-                <span className="preset-label">{presetName.replace('_', ' ')}</span>
-              </button>
-            ))}
-            <button
-              className="preset-option reset"
-              onClick={resetToDefault}
-            >
-              <span className="preset-label">Reset to Default</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderDataManagementSection = () => (
-    <div className="settings-section">
-      <h3 className="section-title">{t('pages.settings.dataManagement.title')}</h3>
-      <p className="section-description">{t('pages.settings.dataManagement.description')}</p>
-      
-      {/* Export Data */}
-      <div className="setting-group">
-        <div className="setting-item">
-          <div>
-            <h4>{t('pages.settings.dataManagement.export.title')}</h4>
-            <p>{t('pages.settings.dataManagement.export.description')}</p>
-            <small className="info-text">📁 JSON formatında indirilir</small>
-          </div>
-          <button className="primary-button export-button" onClick={handleExportData}>
-            <span className="button-icon">⬇️</span>
-            {t('pages.settings.dataManagement.export.button')}
-          </button>
-        </div>
-      </div>
-
-      {/* Import Data */}
-      <div className="setting-group">
-        <div className="setting-item">
-          <div>
-            <h4>{t('pages.settings.dataManagement.import.title')}</h4>
-            <p>{t('pages.settings.dataManagement.import.description')}</p>
-            <small className="info-text">📤 JSON dosyasını sürükle-bırak veya seç</small>
-          </div>
-          <div className="import-controls">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleFileSelect}
-              style={{ display: 'none' }}
-            />
-            <button 
-              className="secondary-button import-button" 
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <span className="button-icon">📂</span>
-              {t('pages.settings.dataManagement.import.selectFile')}
-            </button>
-          </div>
-        </div>
-        <div 
-          className="drop-zone"
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
-          <div className="drop-content">
-            <span className="drop-icon">📤</span>
-            <span>{t('pages.settings.dataManagement.import.dragDrop')}</span>
-            <small>Desteklenen format: .json</small>
-          </div>
-        </div>
-      </div>
-
-      {/* Storage Info */}
-      <div className="setting-group">
-        <div className="setting-item">
-          <div>
-            <h4>{t('pages.settings.dataManagement.storage.title')}</h4>
-            <p>{t('pages.settings.dataManagement.storage.description')}</p>
-          </div>
-          <button className="secondary-button" onClick={handleShowStorage}>
-            {showStorage ? t('pages.settings.dataManagement.storage.hide') : t('pages.settings.dataManagement.storage.show')}
-          </button>
-        </div>
-        {showStorage && (
-          <div className="storage-details">
-            <div className="storage-summary">
-              <span>Toplam: {storageInfo.totalSize}</span>
-              <span>Öğe Sayısı: {storageInfo.itemCount}</span>
-            </div>
-            <div className="storage-items">
-              {storageInfo.items.map(({ key, size, preview }) => {
-                const isExpanded = expandedItems.has(key);
-                const fullValue = localStorage.getItem(key) || '';
-                const isJson = fullValue.startsWith('{') || fullValue.startsWith('[');
-                
-                return (
-                  <div key={key} className="storage-item">
-                    <div className="storage-key">
-                      {key}
-                      {isJson && (
-                        <button 
-                          className="expand-button"
-                          onClick={() => toggleExpanded(key)}
-                          title={isExpanded ? 'Daralt' : 'Genişlet'}
-                        >
-                          {isExpanded ? '🔽' : '▶️'}
-                        </button>
-                      )}
-                    </div>
-                    <div className="storage-size">{size}</div>
-                    <div className="storage-preview">
-                      {isExpanded && isJson ? (
-                        <pre className="json-preview">{formatJsonValue(fullValue)}</pre>
-                      ) : (
-                        <span className="text-preview">{preview}</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Reset Data */}
-      <div className="setting-group">
-        <div className="setting-item">
-          <div>
-            <h4>{t('pages.settings.dataManagement.reset.title')}</h4>
-            <p>{t('pages.settings.dataManagement.reset.description')}</p>
-            <small className="warning-text">{t('pages.settings.dataManagement.reset.warning')}</small>
-          </div>
-          <button className="danger-button" onClick={() => setShowResetModal(true)}>
-            {t('pages.settings.dataManagement.reset.button')}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderLanguageSection = () => (
-    <div className="settings-section">
-      <h3 className="section-title">{t('pages.settings.language.title')}</h3>
-      <p className="section-description">{t('pages.settings.language.description')}</p>
-      
-      <div className="setting-group">
-        <label className="setting-label">{t('pages.settings.language.availableLanguages')}</label>
-        <div className="language-options">
-          {Object.values(LANGUAGES).map(lang => (
-            <button
-              key={lang}
-              className={`language-option ${settings.language === lang ? 'active' : ''}`}
-              onClick={() => updateLanguage(lang)}
-            >
-              <span className="language-flag">{LANGUAGE_CONFIG[lang].flag}</span>
-              <span>{LANGUAGE_CONFIG[lang].name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderAboutSection = () => (
-    <div className="settings-section">
-      <h3 className="section-title">{t('pages.settings.about.title')}</h3>
-      <p className="section-description">{t('pages.settings.about.description')}</p>
-      
-      <div className="about-info">
-        <div className="about-item">
-          <strong>{t('pages.settings.about.version')}:</strong> 1.0.0
-        </div>
-        <div className="about-item">
-          <strong>{t('pages.settings.about.author')}:</strong> Watchflow Team
-        </div>
-        <div className="about-item">
-          <strong>{t('pages.settings.about.github')}:</strong> 
-          <a href="https://github.com/macidko/watchflow" target="_blank" rel="noopener noreferrer">
-            github.com/macidko/watchflow
-          </a>
-        </div>
-      </div>
-    </div>
-  );
+  
 
   return (
     <div className="settings-page">
@@ -514,11 +91,30 @@ const Ayarlar = () => {
 
             {/* Main Content */}
             <div className="settings-main">
-              {activeSection === 'appearance' && renderAppearanceSection()}
-              {activeSection === 'layout' && renderLayoutSection()}
-              {activeSection === 'dataManagement' && renderDataManagementSection()}
-              {activeSection === 'language' && renderLanguageSection()}
-              {activeSection === 'about' && renderAboutSection()}
+              <SettingsPanel
+                section={activeSection}
+                settings={settings}
+                currentLayout={currentLayout}
+                updateTheme={updateTheme}
+                updateAccentColor={updateAccentColor}
+                updateMode={updateMode}
+                updateCardSize={updateCardSize}
+                updateDensity={updateDensity}
+                applyPreset={applyPreset}
+                onResetToDefault={resetToDefault}
+                handleShowStorage={handleShowStorage}
+                storageInfo={storageInfo}
+                expandedItems={expandedItems}
+                toggleExpanded={toggleExpanded}
+                handleExportData={handleExportData}
+                handleFileSelect={handleFileSelect}
+                handleDragOver={handleDragOver}
+                handleDrop={handleDrop}
+                setShowResetModal={setShowResetModal}
+                fileInputRef={fileInputRef}
+                updateLanguage={updateLanguage}
+                showStorage={showStorage}
+              />
             </div>
           </div>
         </div>
@@ -526,8 +122,15 @@ const Ayarlar = () => {
 
       {/* Reset Modal */}
       {showResetModal && (
-        <div className="modal-overlay" onClick={() => setShowResetModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          tabIndex={-1}
+          onClick={() => setShowResetModal(false)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setShowResetModal(false); }}
+        >
+          <div className="modal" onClick={e => e.stopPropagation()} role="document">
             <h3>{t('modals.confirmReset.title')}</h3>
             <p>{t('modals.confirmReset.message')}</p>
             <div className="modal-actions">
