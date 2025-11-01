@@ -1,113 +1,34 @@
-import React, { useEffect, useState, useRef } from 'react';
-import Slider from '../components/ui/Slider';
+import React from 'react';
 import SliderManager from '../components/layout/SliderManager';
 import SearchButton from '../components/common/SearchButton';
 import DetailModal from '../components/modals/DetailModal';
 import ShowAllModal from '../components/modals/ShowAllModal';
 import ViewSwitcher from '../components/layout/ViewSwitcher';
-import useContentStore from '../config/initialData';
-import { useDrag } from '../contexts/DragContext';
-import useViewMode from '../hooks/useViewMode';
 import '../css/pages/common.css';
 import { CATEGORIES, PAGES } from '../config/constants';
 import { t } from '../i18n';
+import SlidersContainer from '../components/layout/SlidersContainer';
+import useFilmController from '../hooks/useFilmController';
 
 const Film = () => {
-  // Ana içeriğe atla için ref
-  const mainContentRef = useRef(null);
-  const [showManager, setShowManager] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [showAllModal, setShowAllModal] = useState({ isOpen: false, title: '', items: [] });
-  
-  // Görünüm modu için custom hook (grid/list)
-  const { viewMode, toggleViewMode } = useViewMode(PAGES.FILM);
-  
-  // Zustand store'dan verileri al
-  const { 
-    getStatusesByPage, 
-    getContentsByPageAndStatus,
-    initializeStore,
-    moveContentBetweenStatuses
-  } = useContentStore();
-
-  // Initialize store on component mount
-  useEffect(() => {
-    initializeStore();
-  }, [initializeStore]);
-
-  // Film sayfası için slider verilerini hazırla
-  // Zustand store'dan slider listesini doğrudan oluştur
-  const filmStatuses = getStatusesByPage(PAGES.FILM);
-  const sliders = filmStatuses.map(status => {
-    const contents = getContentsByPageAndStatus(PAGES.FILM, status.id);
-    return {
-      id: `film-${status.id}`,
-      title: status.title,
-      items: contents.map(content => ({
-        id: content.id, // Önce unique content ID
-        ...content.apiData, // Sonra API verileri
-        apiData: content.apiData || {},
-        seasons: content.seasons || {},
-        pageId: content.pageId, // pageId'yi de ekle
-        statusId: content.statusId, // statusId'yi de ekle
-        title: content.apiData?.title || content.title,
-        poster: content.apiData?.poster || content.poster || content.imageUrl,
-        rating: content.apiData?.rating || content.rating || content.score,
-        releaseDate: content.apiData?.releaseDate || content.releaseDate || content.year
-      }))
-    };
-  });
-
-  // Card tıklama handler'ı
-  const handleCardClick = (item) => {
-    setSelectedItem(item);
-  };
-
-  // Tümünü göster handler'ı
-  const handleShowAll = (title, items) => {
-    setShowAllModal({
-      isOpen: true,
-      title: title,
-      items: items
-    });
-  };
-
-  const handleShowAllClose = () => {
-    setShowAllModal({ isOpen: false, title: '', items: [] });
-  };
-
-  const { isDragging } = useDrag();
-
-  // Quick move için slider listesi ve handler
-  const quickMoveConfig = {
-    availableSliders: sliders.map(slider => ({
-      id: slider.id,
-      title: slider.title
-    })),
-    handler: (item, fromSliderId, toSliderId) => {
-      if (fromSliderId !== toSliderId) {
-        handleCardMove(item, fromSliderId, toSliderId);
-      }
-    }
-  };
-
-  // Her slider için ref dizisi oluştur
-  const sliderRefs = useRef({});
-
-  // Card taşıma handler'ı - slider'lar arası
-  const handleCardMove = (cardItem, fromSliderId, toSliderId) => {
-    // Slider ID'lerini status ID'lerine çevir
-    const fromStatusId = fromSliderId.replace('film-', '');
-    const toStatusId = toSliderId.replace('film-', '');
-    const success = moveContentBetweenStatuses(cardItem, fromStatusId, toStatusId, PAGES.FILM);
-    if (success) {
-      // Kart taşındıktan sonra hedef slider'a scroll
-      setTimeout(() => {
-        const ref = sliderRefs.current[toSliderId];
-        ref?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
-      }, 200); // animasyon için küçük bir gecikme
-    }
-  };
+  const {
+    mainContentRef,
+    showManager,
+    setShowManager,
+    selectedItem,
+    setSelectedItem,
+    showAllModal,
+    handleCardClick,
+    handleShowAll,
+    handleShowAllClose,
+    sliders,
+    viewMode,
+    toggleViewMode,
+    isDragging,
+    sliderRefs,
+    handleCardMove,
+    quickMoveConfig
+  } = useFilmController();
 
 
   return (
@@ -185,19 +106,16 @@ const Film = () => {
             </div>
           ) : (
             <div className={'sliders ' + (isDragging ? 'compact' : viewMode)}>
-              {sliders.map(slider => (
-                <Slider
-                  key={slider.id}
-                  rootRef={el => (sliderRefs.current[slider.id] = el)}
-                  title={slider.title}
-                  items={slider.items}
-                  onCardClick={handleCardClick}
-                  onCardMove={handleCardMove}
-                  sliderId={slider.id}
-                  onQuickMove={quickMoveConfig}
-                  onShowAll={handleShowAll}
-                />
-              ))}
+              <SlidersContainer
+                sliders={sliders}
+                isDragging={isDragging}
+                viewMode={viewMode}
+                sliderRefs={sliderRefs}
+                onCardClick={handleCardClick}
+                onCardMove={handleCardMove}
+                onQuickMove={quickMoveConfig}
+                onShowAll={handleShowAll}
+              />
             </div>
           )}
         </div>

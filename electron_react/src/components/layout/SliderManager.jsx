@@ -1,46 +1,40 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import useContentStore from '../../config/initialData';
-import { useToast } from '../../contexts/ToastContext';
-import { t } from '../../i18n';
-import { validateTitle } from '../../utils/validation';
+import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
+import useSliderManagerController from '../../hooks/useSliderManagerController';
 import AdvancedViewSwitcher from './AdvancedViewSwitcher';
-
-// Custom hook for debouncing
-const useDebounce = (callback, delay) => {
-  const [debounceTimer, setDebounceTimer] = useState();
-  
-  const debouncedCallback = useCallback((...args) => {
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-    
-    const newTimer = setTimeout(() => {
-      callback(...args);
-    }, delay);
-    
-    setDebounceTimer(newTimer);
-  }, [callback, delay, debounceTimer]);
-  
-  return debouncedCallback;
-};
+import { t } from '../../i18n';
 
 const SliderManager = ({ page, onClose }) => {
-  const [draggedItem, setDraggedItem] = useState(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newSliderTitle, setNewSliderTitle] = useState('');
-  const [addError, setAddError] = useState('');
-  const [newSliderType, setNewSliderType] = useState('film');
-  const addInputRef = useRef(null);
-  const modalRef = useRef(null);
-  const { showToast } = useToast();
-  // Focus trap ve ESC ile kapama
+  const {
+    modalRef,
+    addInputRef,
+    sliders,
+    draggedItem,
+    showAddForm,
+    setShowAddForm,
+    newSliderTitle,
+    setNewSliderTitle,
+    addError,
+    setAddError,
+    newSliderType,
+    setNewSliderType,
+    debouncedTitleUpdate,
+    handleDragStart,
+    handleDragOver,
+    handleDrop,
+    handleAddSlider,
+    handleToggleVisibility,
+    handleDeleteSlider,
+    isAddValid
+  } = useSliderManagerController(page);
+
+  // Focus trap ve ESC ile kapama - component side to access onClose
   useEffect(() => {
     const focusableSelectors = [
       'button', 'a[href]', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
     ];
     const node = modalRef.current;
     if (!node) return;
-    // İlk odaklanabilir elemana odaklan
     const focusables = node.querySelectorAll(focusableSelectors.join(','));
     if (focusables.length) focusables[0].focus();
 
@@ -50,7 +44,6 @@ const SliderManager = ({ page, onClose }) => {
         onClose();
       }
       if (e.key === 'Tab') {
-        // Focus trap
         const focusable = Array.from(node.querySelectorAll(focusableSelectors.join(',')));
         if (!focusable.length) return;
         const first = focusable[0];
@@ -70,122 +63,12 @@ const SliderManager = ({ page, onClose }) => {
     };
     node.addEventListener('keydown', handleKeyDown);
     return () => node.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [onClose, modalRef]);
 
-  // Zustand store'dan fonksiyonları al
-  const { 
-    getAllStatusesByPage, 
-    addStatus,
-    updateStatus,
-    deleteStatus,
-    toggleStatusVisibility,
-    reorderStatuses,
-    getStatusContentCount
-  } = useContentStore();
-
-  // Slider verilerini Zustand'dan al (gizli olanlar dahil)
-  const sliders = getAllStatusesByPage(page) || [];
-
-  // Debounced title update
-  const debouncedTitleUpdate = useDebounce((statusId, newTitle) => {
-    if (newTitle.trim()) {
-      updateStatus(page, statusId, { title: newTitle });
-    }
-  }, 500);
-
-  const handleDragStart = (e, sliderId) => {
-    setDraggedItem(sliderId);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e, targetIndex) => {
-    e.preventDefault();
-    
-    if (!draggedItem) return;
-
-    const draggedIndex = sliders.findIndex(s => s.id === draggedItem);
-    if (draggedIndex === -1 || draggedIndex === targetIndex) {
-      setDraggedItem(null);
-      return;
-    }
-
-    // Yeni sıralama dizisi oluştur
-    const newOrder = [...sliders];
-    const [draggedSlider] = newOrder.splice(draggedIndex, 1);
-    newOrder.splice(targetIndex, 0, draggedSlider);
-
-    // Zustand store'da sıralamayı güncelle
-    const reorderedIds = newOrder.map(s => s.id);
-    reorderStatuses(page, reorderedIds);
-    
-    setDraggedItem(null);
-  };
-
-  const handleAddSlider = () => {
-    try {
-      const validatedTitle = validateTitle(newSliderTitle);
-      
-      setAddError('');
-      const success = addStatus(page, {
-        title: validatedTitle,
-        type: 'custom'
-      });
-      
-      if (success) {
-        setNewSliderTitle('');
-        setShowAddForm(false);
-        showToast(t('components.sliderManager.newListModal.successMessage'), 'success');
-      } else {
-        setAddError(t('components.sliderManager.newListModal.duplicateError'));
-        showToast(t('components.sliderManager.newListModal.duplicateToast'), 'warning');
-        if (addInputRef.current) addInputRef.current.focus();
-      }
-    } catch (error) {
-      setAddError(error.message);
-      showToast(error.message, 'warning');
-      if (addInputRef.current) addInputRef.current.focus();
-    }
-  };
-
-  const handleToggleVisibility = (sliderId) => {
-    toggleStatusVisibility(page, sliderId);
-  };
-
-  const handleDeleteSlider = (sliderId) => {
-    const contentCount = getStatusContentCount(page, sliderId);
-    
-    if (contentCount > 0) {
-      // Toast mesajı göster
-      showToast(
-        `Bu slider silinemez! İçinde ${contentCount} içerik var. Önce slider'ı boşaltın.`,
-        'warning',
-        4000
-      );
-      return;
-    }
-    
-    if (window.confirm(t('components.sliderManager.deleteConfirm'))) {
-      const success = deleteStatus(page, sliderId);
-      if (success) {
-        showToast(t('components.sliderManager.deleteSuccess'), 'success');
-      } else {
-        showToast(t('components.sliderManager.deleteFail'), 'error');
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (showAddForm && addInputRef.current) {
-      addInputRef.current.focus();
-    }
-  }, [showAddForm]);
-
-  const isAddValid = newSliderTitle.trim().length >= 3;
+SliderManager.propTypes = {
+  page: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired
+};
 
   return (
     <div 

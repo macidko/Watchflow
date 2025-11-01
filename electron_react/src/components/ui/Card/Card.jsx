@@ -72,8 +72,14 @@ const Card = ({
         }
       }}
       draggable
-      onDragStart={dragProps.handleDragStart}
-      onDragEnd={dragProps.handleDragEnd}
+      onDragStart={(e) => {
+        console.log('🎯 [Card.jsx] onDragStart event fired on DOM element');
+        dragProps.handleDragStart(e);
+      }}
+      onDragEnd={(e) => {
+        console.log('🎯 [Card.jsx] onDragEnd event fired on DOM element');
+        dragProps.handleDragEnd(e);
+      }}
       title="🔄 Kartı sürükleyerek başka slider'a taşıyabilirsiniz"
     >
       {/* Image Container - Full Height */}

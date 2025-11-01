@@ -1,93 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import Slider from '../components/ui/Slider';
+import React from 'react';
 import SliderManager from '../components/layout/SliderManager';
 import SearchButton from '../components/common/SearchButton';
 import DetailModal from '../components/modals/DetailModal';
 import ShowAllModal from '../components/modals/ShowAllModal';
-import useContentStore from '../config/initialData';
 import { CATEGORIES, PAGES } from '../config/constants';
 import { t } from '../i18n';
 import '../css/pages/common.css';
+import SlidersContainer from '../components/layout/SlidersContainer';
+import useHomeController from '../hooks/useHomeController';
 
 const Home = () => {
-  // Ana içeriğe atla için ref
-  const mainContentRef = React.useRef(null);
-  const [showManager, setShowManager] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [showAllModal, setShowAllModal] = useState({ isOpen: false, title: '', items: [] });
-  
-  // Zustand store'dan verileri al
-  const { 
-    getPages, 
-    getStatusesByPage,
-    getContentsByPageAndStatus,
-    initializeStore 
-  } = useContentStore();
-
-  // Initialize store on component mount
-  useEffect(() => {
-    initializeStore();
-  }, [initializeStore]);
-
-  // Tüm sayfalardaki içerikleri slider formatında hazırla
-  const getSliderData = () => {
-    const pages = getPages();
-    if (!pages) return [];
-    const sliders = [];
-
-    pages.forEach(page => {
-      const statuses = getStatusesByPage(page.id);
-      statuses.forEach(status => {
-        const contents = getContentsByPageAndStatus(page.id, status.id);
-        if (contents.length > 0) {
-          sliders.push({
-            id: `${page.id}-${status.id}`,
-            title: `${page.title} - ${status.title}`,
-            items: contents.map(content => ({
-              id: content.id, // Önce unique content ID
-              ...content.apiData, // Sonra API verileri
-              apiData: content.apiData || {},
-              seasons: content.seasons || {},
-              pageId: content.pageId, // pageId'yi de ekle
-              statusId: content.statusId, // statusId'yi de ekle
-              // Ensure all fields are accessible
-              title: content.apiData?.title || content.title,
-              poster: content.apiData?.poster || content.poster || content.imageUrl,
-              rating: content.apiData?.rating || content.rating || content.score,
-              releaseDate: content.apiData?.releaseDate || content.releaseDate || content.year
-            }))
-          });
-        }
-      });
-    });
-
-    return sliders;
-  };
-
-  // Card tıklama handler'ı
-  const handleCardClick = (item) => {
-    setSelectedItem(item);
-  };
-
-  const handleManagerClose = () => {
-    setShowManager(false);
-  };
-
-  // Tümünü göster handler'ı
-  const handleShowAll = (title, items) => {
-    setShowAllModal({
-      isOpen: true,
-      title: title,
-      items: items
-    });
-  };
-
-  const handleShowAllClose = () => {
-    setShowAllModal({ isOpen: false, title: '', items: [] });
-  };
-
-  // Loading kontrolü önce yapılmalı
-  const isLoading = !getPages() || getPages().length === 0;
+  const {
+    mainContentRef,
+    showManager,
+    setShowManager,
+    selectedItem,
+    setSelectedItem,
+    showAllModal,
+    handleCardClick,
+    handleManagerClose,
+    handleShowAll,
+    handleShowAllClose,
+    isLoading,
+    sliderData
+  } = useHomeController();
 
   if (isLoading) {
     return (
@@ -96,9 +32,6 @@ const Home = () => {
       </div>
     );
   }
-
-  // Slider verilerini al (loading kontrolünden sonra)
-  const sliderData = getSliderData();
 
   return (
     <>
@@ -175,16 +108,11 @@ const Home = () => {
             ) : (
               /* Sliders */
               <div className="page-sliders">
-                {sliderData.map((slider) => (
-                  <Slider 
-                    key={slider.id}
-                    title={slider.title}
-                    items={slider.items} 
-                    onCardClick={handleCardClick}
-                    sliderId={slider.id}
-                    onShowAll={handleShowAll}
-                  />
-                ))}
+                <SlidersContainer
+                  sliders={sliderData}
+                  onCardClick={handleCardClick}
+                  onShowAll={handleShowAll}
+                />
               </div>
             )}
           </div>

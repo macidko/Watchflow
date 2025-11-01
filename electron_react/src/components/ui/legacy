@@ -5,7 +5,7 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQ
   const [imgError, setImgError] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
-  const { startDrag } = useDrag();
+  const { startDrag, endDrag } = useDrag();
 
   // Dropdown dışına tıklandığında kapat
   useEffect(() => {
@@ -53,6 +53,7 @@ const Card = ({ item, onClick, onDragStart, onDragEnd, isDragging, sliderId, onQ
   };
 
   const handleDragEnd = () => {
+    endDrag();
     // Do not end global drag here — let drop handler on target finalize and clear state.
     if (onDragEnd) {
       onDragEnd();
