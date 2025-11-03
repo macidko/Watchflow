@@ -21,7 +21,7 @@ function findBestMatch(searchText, results) {
   
   const normalizedSearchText = searchText.toLowerCase().trim();
   
-  // Tam eşleşme kontrolü
+  // Check for exact match
   for (const result of results) {
     const title = (result.title || "").toLowerCase().trim();
     const originalTitle = (result.original_title || "").toLowerCase().trim();
@@ -30,7 +30,7 @@ function findBestMatch(searchText, results) {
       return result;
     }
     
-    // Synonyms içinde de kontrol et (if available)
+    // Check synonyms if available
     if (result.synonyms && Array.isArray(result.synonyms)) {
       for (const synonym of result.synonyms) {
         if (synonym.toLowerCase().trim() === normalizedSearchText) {
@@ -40,7 +40,7 @@ function findBestMatch(searchText, results) {
     }
   }
   
-  // En iyi eşleşmeyi bul (ilk sonuç en popüler olduğu için genelde en iyi eşleşmedir)
+  // Return first result as best match (typically most popular)
   return results[0];
 }
 
