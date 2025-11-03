@@ -1,4 +1,5 @@
 const config = require('../config/config');
+const { findBestMatch } = require('./apiUtils');
 
 /**
  * AniList API Service
@@ -369,39 +370,7 @@ async function batchSearchAnime(searchTexts) {
   }
 }
 
-/**
- * Bir başlık için en iyi eşleşmeyi bul
- * @param {string} searchText Aranan başlık
- * @param {Array} results Arama sonuçları
- * @returns {Object|null} En iyi eşleşen sonuç veya null
- */
-function findBestMatch(searchText, results) {
-  if (!results || results.length === 0) return null;
-  
-  const normalizedSearchText = searchText.toLowerCase().trim();
-  
-  // Tam eşleşme kontrolü
-  for (const result of results) {
-    const title = (result.title || "").toLowerCase().trim();
-    const originalTitle = (result.original_title || "").toLowerCase().trim();
-    
-    if (title === normalizedSearchText || originalTitle === normalizedSearchText) {
-      return result;
-    }
-    
-    // Synonyms içinde de kontrol et
-    if (result.synonyms && Array.isArray(result.synonyms)) {
-      for (const synonym of result.synonyms) {
-        if (synonym.toLowerCase().trim() === normalizedSearchText) {
-          return result;
-        }
-      }
-    }
-  }
-  
-  // En iyi eşleşmeyi bul (ilk sonuç en popüler olduğu için genelde en iyi eşleşmedir)
-  return results[0];
-}
+
 
 // AniList'ten anime ilişkilerini (sequel, prequel vb.) getir
 async function getAnimeRelations(animeId) {

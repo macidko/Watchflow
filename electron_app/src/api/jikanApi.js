@@ -3,11 +3,14 @@
  * API Dökümantasyon: https://docs.api.jikan.moe/
  */
 
+const axios = require('axios');
+const { sleep } = require('./apiUtils');
+
 // Jikan API URL'i
 const JIKAN_API_BASE_URL = 'https://api.jikan.moe/v4';
 
-// Rate limit için yardımcı fonksiyon
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+// Rate limit delay (1 second between requests)
+const API_DELAY = 1000;
 
 /**
  * Retry mekanizması ile API isteği yap
