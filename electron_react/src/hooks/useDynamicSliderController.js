@@ -30,8 +30,21 @@ export default function useDynamicSliderController({ items = [], sliderId, custo
     };
 
     updateScrollInfo();
-    window.addEventListener('resize', updateScrollInfo);
-    return () => window.removeEventListener('resize', updateScrollInfo);
+
+    // debounce resize handler to avoid excessive recalculations on rapid resize
+    let resizeTimer = null;
+    const onResize = () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        updateScrollInfo();
+      }, 120);
+    };
+
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      if (resizeTimer) clearTimeout(resizeTimer);
+    };
   }, [items, scrollPosition, activeLayout.mode]);
 
   const scroll = (direction) => {

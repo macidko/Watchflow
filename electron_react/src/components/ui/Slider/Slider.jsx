@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useDrag } from '../../../contexts/DragContext';
 import { useLayoutDynamic } from '../../../hooks/useLayoutDynamic';
-import { t } from '../../../i18n';
 import { LAYOUT_MODES } from '../../../config/layoutConfig';
 import { useSliderScroll } from './useSliderScroll';
 import { useSliderDrag } from './useSliderDrag';
