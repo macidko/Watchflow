@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import useSliderManagerController from '../../hooks/useSliderManagerController';
 import AdvancedViewSwitcher from './AdvancedViewSwitcher';
 import { t } from '../../i18n';
+import styles from './SliderManager.module.css';
 
 const SliderManager = ({ page, onClose }) => {
   const {
@@ -10,6 +11,7 @@ const SliderManager = ({ page, onClose }) => {
     addInputRef,
     sliders,
     draggedItem,
+    dropTargetIndex,
     showAddForm,
     setShowAddForm,
     newSliderTitle,
@@ -20,7 +22,8 @@ const SliderManager = ({ page, onClose }) => {
     setNewSliderType,
     debouncedTitleUpdate,
     handleDragStart,
-    handleDragOver,
+  handleDragOver,
+  handleDragEnd,
     handleDrop,
     handleAddSlider,
     handleToggleVisibility,
@@ -49,12 +52,12 @@ const SliderManager = ({ page, onClose }) => {
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
         if (e.shiftKey) {
-          if (document.activeElement === first) {
+          if (typeof document !== 'undefined' && document.activeElement === first) {
             e.preventDefault();
             last.focus();
           }
         } else {
-          if (document.activeElement === last) {
+          if (typeof document !== 'undefined' && document.activeElement === last) {
             e.preventDefault();
             first.focus();
           }
@@ -74,34 +77,27 @@ SliderManager.propTypes = {
     <dialog
       ref={modalRef}
       open
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm px-2 sm:px-0"
+      aria-modal="true"
+      tabIndex={-1}
+      className={`fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm px-2 sm:px-0 ${styles.sliderDialog}`}
       aria-labelledby="slider-manager-title"
-      style={{ background: 'var(--overlay-bg)', border: 'none', padding: 0 }}
       onClick={(e) => {
         if (e.target === modalRef.current) onClose();
       }}
     >
       <div
-        className="relative w-full max-w-lg rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col gap-5 sm:gap-6"
-        style={{ background: 'var(--primary-bg)', border: '1px solid var(--border-color)' }}
+        className={`relative w-full max-w-lg rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col gap-5 sm:gap-6 ${styles.modalCard}`}
         onClick={e => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between mb-1 sm:mb-2 gap-2">
+        <div className={`${styles.modalHeader} mb-1 sm:mb-2`}> 
           <h2 id="slider-manager-title" className="text-xl font-semibold drop-shadow-lg" style={{ color: 'var(--primary-text)' }}>
             {t('components.sliderManager.title')}
           </h2>
           <div className="flex items-center gap-3">
-            {/* Layout Switcher */}
-            <div className="hidden sm:block">
-              <AdvancedViewSwitcher onLayoutChange={(_layout) => {
-                // Layout değişikliği burada handle edilebilir
-              }} />
-            </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2"
-              style={{ background: 'var(--secondary-bg)', color: 'var(--secondary-text)', boxShadow: '0 0 0 2px var(--accent-color)' }}
+              className={`p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 ${styles.closeButton}`}
               title={t('common.close')}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,21 +115,25 @@ SliderManager.propTypes = {
         </div>
 
         {/* Slider List */}
-  <div className="space-y-3 sm:space-y-4" role="list" aria-label={t('components.sliderManager.ariaList')}>
+  <div className={`${styles.sliderList} space-y-3 sm:space-y-4`} role="list" aria-label={t('components.sliderManager.ariaList')}>
           {sliders.map((slider, idx) => (
-            <div
-              key={slider.id}
-              role="listitem"
-              aria-label={`${slider.title} - ${slider.visible ? 'Görünür' : 'Gizli'}`}
-              className={`flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 rounded-xl transition-all duration-300 ${draggedItem === slider.id ? 'ring-2' : ''}`}
-              style={draggedItem === slider.id ? { boxShadow: '0 0 0 2px var(--accent-color)', background: 'var(--secondary-bg)', border: '1px solid var(--accent-color)' } : { background: 'var(--secondary-bg)', border: '1px solid var(--border-color)' }}
-              draggable
-              onDragStart={e => handleDragStart(e, slider.id)}
-              onDragOver={handleDragOver}
-              onDrop={e => handleDrop(e, idx)}
-            >
+            <React.Fragment key={slider.id}>
+              {/* Drop indicator shown above an item while dragging */}
+              {draggedItem && dropTargetIndex === idx && (
+                <div className={styles.dropIndicator} aria-hidden />
+              )}
+              <div
+                role="listitem"
+                aria-label={`${slider.title} - ${slider.visible ? t('common.show') : t('common.hide')}`}
+                className={`${styles.sliderItem} ${draggedItem === slider.id ? styles.sliderItemDragging : ''} flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 rounded-xl transition-all duration-300`}
+                draggable
+                onDragStart={e => handleDragStart(e, slider.id)}
+                onDragOver={e => handleDragOver(e, idx)}
+                onDragEnd={handleDragEnd}
+                onDrop={e => handleDrop(e, idx)}
+              >
               {/* Drag Icon */}
-              <span className="mr-3 cursor-grab transition-all" style={{ color: 'var(--secondary-text)' }} title={t('components.slider.drag')}>
+              <span className={`${styles.dragIcon} mr-3 transition-all`} title={t('components.slider.drag')}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <circle cx="6" cy="7" r="1.5" />
                   <circle cx="6" cy="12" r="1.5" />
@@ -148,19 +148,17 @@ SliderManager.propTypes = {
                   type="text"
                   value={slider.title}
                   onChange={e => debouncedTitleUpdate(slider.id, e.target.value)}
-                  className="text-lg font-normal border-none outline-none px-1.5 py-1 rounded-md transition-all"
-                    style={{ color: 'var(--primary-text)', background: 'transparent' }}
+                  className={`text-lg font-normal border-none outline-none px-1.5 py-1 rounded-md transition-all ${styles.titleInput}`}
                 />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'var(--secondary-bg)', color: 'var(--secondary-text)' }}>
+                <span className={`text-xs px-2 py-1 rounded-full ${styles.tag}`}>
                   {slider.type}
                 </span>
                 <button
                   onClick={() => handleToggleVisibility(slider.id)}
-                  className={`p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2`}
-                  style={slider.visible ? { background: 'color-mix(in srgb, var(--success-color) 20%, transparent)', color: 'var(--success-color)' } : { background: 'var(--secondary-bg)', color: 'var(--secondary-text)' }}
-                  title={slider.visible ? 'Gizle' : 'Göster'}
+                  className={`p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 ${slider.visible ? styles.iconBtnVisible : styles.iconBtnHidden} ${styles.iconBtn}`}
+                  title={slider.visible ? t('common.hide') : t('common.show')}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {slider.visible ? (
@@ -172,9 +170,8 @@ SliderManager.propTypes = {
                 </button>
                 <button
                   onClick={() => handleDeleteSlider(slider.id)}
-                  className="p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2"
-                  style={{ background: 'color-mix(in srgb, var(--danger-color) 20%, transparent)', color: 'var(--danger-color)' }}
-                  title="Sil"
+                  className={`p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 ${styles.deleteBtn} ${styles.iconBtn}`}
+                  title={t('components.sliderManager.buttons.delete')}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -182,7 +179,19 @@ SliderManager.propTypes = {
                 </button>
               </div>
             </div>
+            </React.Fragment>
           ))}
+          {/* Drop area at the end of the list to allow dropping after the last item */}
+          <div
+            className={styles.endDropArea}
+            onDragOver={e => handleDragOver(e, sliders.length)}
+            onDrop={e => handleDrop(e, sliders.length)}
+            aria-hidden
+          >
+            {draggedItem && dropTargetIndex === sliders.length && (
+              <div className={styles.dropIndicator} />
+            )}
+          </div>
           {sliders.length === 0 && (
             <div className="text-center py-8" style={{ color: 'var(--secondary-text)' }}>
               {t('components.sliderManager.noLists')}
@@ -194,22 +203,20 @@ SliderManager.propTypes = {
           <div className="flex justify-end mt-5">
             <button
               onClick={() => setShowAddForm(true)}
-              className="px-5 py-2 font-medium rounded-xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2"
-              style={{ background: 'var(--accent-color)', color: 'var(--primary-text)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent)' }}
+              className={`px-5 py-2 font-medium rounded-xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 ${styles.primaryBtn}`}
             >
               {t('components.sliderManager.newList')}
             </button>
           </div>
           {showAddForm && (
-            <div 
-              className="fixed inset-0 z-60 flex items-center justify-center backdrop-blur-sm" 
-              role="dialog"
+            <dialog
+              open
               aria-modal="true"
               aria-labelledby="new-list-title"
-              style={{ background: 'var(--overlay-bg)' }}
+              className={`${styles.addFormBackdrop} fixed inset-0 z-60 flex items-center justify-center backdrop-blur-sm`}
             >
-              <div style={{ background: 'var(--primary-bg)', border: '1px solid var(--border-color)', borderRadius: '16px', boxShadow: 'var(--popup-shadow)', padding: '32px', width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <h3 id="new-list-title" style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>{t('components.sliderManager.newListModal.title')}</h3>
+              <div className={styles.addFormCard}>
+                <h3 id="new-list-title" className="mb-2" style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-text)' }}>{t('components.sliderManager.newListModal.title')}</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <input
                     ref={addInputRef}
@@ -220,17 +227,17 @@ SliderManager.propTypes = {
                       if (addError) setAddError('');
                     }}
                     placeholder={t('components.sliderManager.newListModal.placeholder')}
-                    style={{ background: 'var(--input-bg)', color: 'var(--primary-text)', padding: '12px 16px', borderRadius: '12px', border: addError ? `1px solid var(--danger-color)` : `1px solid var(--border-color)`, outline: 'none' }}
+                    className={styles.inputField}
                     aria-label={t('components.sliderManager.newListModal.placeholder')}
                     aria-invalid={!!addError}
                   />
                   {addError && (
-                    <span style={{ color: 'var(--danger-color)', fontSize: 12, marginTop: 4 }}>{addError}</span>
+                    <span className={styles.inputError}>{addError}</span>
                   )}
                   <select
                     value={newSliderType}
                     onChange={e => setNewSliderType(e.target.value)}
-                    style={{ background: 'var(--input-bg)', color: 'var(--primary-text)', padding: '12px 16px', borderRadius: '12px', border: `1px solid var(--border-color)`, outline: 'none' }}
+                    className={styles.inputField}
                   >
                     <option value="film">{t('common.movies')}</option>
                     <option value="dizi">{t('common.series')}</option>
@@ -240,7 +247,7 @@ SliderManager.propTypes = {
                 <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                   <button
                     onClick={() => isAddValid && handleAddSlider()}
-                    style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', background: isAddValid ? 'var(--accent-color)' : 'var(--secondary-bg)', color: isAddValid ? 'var(--primary-text)' : 'var(--secondary-text)', border: 'none', cursor: isAddValid ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}
+                    className={styles.primaryBtn}
                     aria-disabled={!isAddValid}
                     disabled={!isAddValid}
                   >
@@ -248,13 +255,13 @@ SliderManager.propTypes = {
                   </button>
                   <button
                     onClick={() => setShowAddForm(false)}
-                    style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', background: 'var(--secondary-bg)', color: 'var(--secondary-text)', border: `1px solid var(--border-color)` }}
+                    className={styles.secondaryBtn}
                   >
                     {t('components.sliderManager.buttons.cancel')}
                   </button>
                 </div>
               </div>
-            </div>
+            </dialog>
           )}
         </div>
       </div>

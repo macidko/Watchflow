@@ -1,0 +1,226 @@
+/* SliderManager component styles (minimal, moved from inline styles) */
+.sliderDialog {
+  background: var(--overlay-bg);
+  border: none;
+  padding: 0;
+}
+
+.modalCard {
+  background: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  padding: 1.5rem;
+  color: var(--primary-text);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.closeButton {
+  padding: 0.5rem;
+  border-radius: 9999px;
+  transition: all 0.15s;
+  background: var(--secondary-bg);
+  color: var(--secondary-text);
+}
+
+.sliderList {
+  display: block;
+}
+
+.sliderItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+}
+
+.sliderItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px color-mix(in srgb, black 6%, transparent);
+  border-color: color-mix(in srgb, var(--accent-color) 35%, var(--border-color));
+  background: color-mix(in srgb, var(--card-bg) 96%, var(--secondary-bg));
+}
+
+.sliderItemDragging {
+  box-shadow: 0 0 0 2px var(--accent-color);
+  background: var(--secondary-bg);
+  border: 1px solid var(--accent-color);
+}
+
+.dragIcon {
+  margin-right: 0.75rem;
+  cursor: grab;
+  color: var(--secondary-text);
+}
+
+.dragIcon:hover {
+  color: var(--primary-text);
+}
+
+.titleInput {
+  color: var(--primary-text);
+  background: transparent;
+  padding: 8px 12px;
+  border-radius: 8px;
+  outline: none;
+  border: none;
+}
+
+.tag {
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  background: var(--secondary-bg);
+  color: var(--secondary-text);
+  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+}
+
+.primaryBtn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: var(--accent-color);
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
+.primaryBtn:hover {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+
+.primaryBtn:active {
+  transform: translateY(0);
+}
+
+.secondaryBtn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--secondary-bg);
+  color: var(--secondary-text);
+  border: 1px solid var(--border-color);
+}
+
+.secondaryBtn:hover {
+  background: color-mix(in srgb, var(--accent-color) 6%, var(--secondary-bg));
+  color: var(--primary-text);
+  border-color: color-mix(in srgb, var(--accent-color) 20%, var(--border-color));
+}
+
+.addFormBackdrop {
+  background: var(--overlay-bg);
+}
+
+.addFormCard {
+  background: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--popup-shadow);
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.inputField {
+  background: var(--input-bg);
+  color: var(--primary-text);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.inputField:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color));
+}
+
+.closeButton:hover {
+  background: color-mix(in srgb, var(--accent-color) 12%, var(--secondary-bg));
+  color: var(--primary-text);
+  transform: translateY(-1px);
+}
+
+.closeButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 18%, transparent);
+}
+
+/* Icon buttons used for visibility toggle and delete */
+.iconBtn {
+  padding: 0.5rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  border: none;
+  background: transparent;
+  color: var(--secondary-text);
+}
+
+.iconBtn:hover {
+  transform: translateY(-2px);
+  color: var(--primary-text);
+  background: color-mix(in srgb, var(--accent-color) 6%, var(--secondary-bg));
+}
+
+.iconBtnVisible {
+  background: color-mix(in srgb, var(--success-color) 18%, transparent);
+  color: var(--success-color);
+}
+
+.iconBtnVisible:hover {
+  background: color-mix(in srgb, var(--success-color) 28%, transparent);
+  color: var(--primary-text);
+}
+
+.iconBtnHidden {
+  background: var(--secondary-bg);
+  color: var(--secondary-text);
+}
+
+.deleteBtn {
+  background: color-mix(in srgb, var(--danger-color) 18%, transparent);
+  color: var(--danger-color);
+}
+
+.deleteBtn:hover {
+  background: color-mix(in srgb, var(--danger-color) 28%, transparent);
+  color: white;
+}
+
+.inputError {
+  color: var(--danger-color);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Visual drop indicator shown while dragging to show where the item will be inserted */
+.dropIndicator {
+  height: 6px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent-color) 90%, transparent), color-mix(in srgb, var(--accent-color) 60%, transparent));
+  margin: 6px 0;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-color) 12%, transparent);
+  transition: transform 120ms ease, opacity 120ms ease;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* End drop area after last item to allow dropping at the end */
+.endDropArea {
+  min-height: 10px;
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+}

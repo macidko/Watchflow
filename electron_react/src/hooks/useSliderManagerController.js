@@ -19,6 +19,8 @@ const useDebounce = (callback, delay) => {
 
 export default function useSliderManagerController(page) {
   const [draggedItem, setDraggedItem] = useState(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState(null);
+  const lastOverRef = useRef(0);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newSliderTitle, setNewSliderTitle] = useState('');
   const [addError, setAddError] = useState('');
@@ -53,9 +55,26 @@ export default function useSliderManagerController(page) {
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e, targetIndex) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    // Throttle updates to avoid flicker when moving over child elements
+    const now = performance && typeof performance.now === 'function' ? performance.now() : Date.now();
+    if (now - lastOverRef.current < 40) return;
+    lastOverRef.current = now;
+    // Avoid state churn when hovering same index
+    setDropTargetIndex(prev => (prev === targetIndex ? prev : targetIndex));
+  };
+
+  const handleDragLeave = (_e) => {
+    // Clear visual drop target when leaving
+    setDropTargetIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    // Cleanup drag state when drag ends or is cancelled
+    setDraggedItem(null);
+    setDropTargetIndex(null);
   };
 
   const handleDrop = (e, targetIndex) => {
@@ -75,6 +94,7 @@ export default function useSliderManagerController(page) {
     const reorderedIds = newOrder.map(s => s.id);
     reorderStatuses(page, reorderedIds);
     setDraggedItem(null);
+    setDropTargetIndex(null);
   };
 
   const handleAddSlider = () => {
@@ -110,14 +130,19 @@ export default function useSliderManagerController(page) {
     const contentCount = getStatusContentCount(page, sliderId);
     if (contentCount > 0) {
       showToast(
-        `Bu slider silinemez! İçinde ${contentCount} içerik var. Önce slider'ı boşaltın.`,
+        t('components.sliderManager.deleteModal.cantDeleteWarning', { contentCount }),
         'warning',
         4000
       );
       return;
     }
 
-    if (globalThis.confirm(t('components.sliderManager.deleteConfirm'))) {
+    // Guard the confirm call for non-browser environments
+    const confirmFn = (typeof window !== 'undefined' && typeof window.confirm === 'function')
+      ? window.confirm
+      : () => true; // fallback: assume confirmation in non-browser env
+
+    if (confirmFn(t('components.sliderManager.deleteConfirm'))) {
       const success = deleteStatus(page, sliderId);
       if (success) {
         showToast(t('components.sliderManager.deleteSuccess'), 'success');
@@ -141,6 +166,7 @@ export default function useSliderManagerController(page) {
     addInputRef,
     sliders,
     draggedItem,
+    dropTargetIndex,
     showAddForm,
     setShowAddForm,
     newSliderTitle,
@@ -151,7 +177,9 @@ export default function useSliderManagerController(page) {
     setNewSliderType,
     debouncedTitleUpdate,
     handleDragStart,
-    handleDragOver,
+  handleDragOver,
+  handleDragLeave,
+  handleDragEnd,
     handleDrop,
     handleAddSlider,
     handleToggleVisibility,

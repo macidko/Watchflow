@@ -263,6 +263,7 @@
       "deleteFail": "Slider silinemedi. Lütfen tekrar deneyin.",
       "buttons": {
         "add": "Ekle",
+        "delete": "Sil",
         "titleTooShort": "Başlık kısa",
         "cancel": "İptal"
       }

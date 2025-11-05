@@ -121,6 +121,7 @@
       "deleteFail": "List could not be deleted. Please try again.",
       "buttons": {
         "add": "Add",
+        "delete": "Delete",
         "titleTooShort": "Title too short",
         "cancel": "Cancel"
       }
