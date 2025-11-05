@@ -206,6 +206,13 @@
         "title": "Liste Boş",
         "description": "Henüz bu kategoride içerik yok. Arama yaparak içerik ekleyebilir veya başka listelerden sürükleyebilirsiniz.",
         "dragDrop": "Sürükle & Bırak"
+      },
+      "dropZone": {
+        "title": "Buraya Bırak",
+        "subtitle": "Kart \"{title}\" listesine taşınacak"
+      },
+      "compact": {
+        "dragging": "Sürükleniyor"
       }
     },
     "search": {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '../../../i18n';
 import styles from './Slider.module.css';
 
 const SliderDropZone = ({ isDragOver, title }) => {
@@ -12,8 +13,8 @@ const SliderDropZone = ({ isDragOver, title }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
-        <p className={styles.sliderDropZoneTitle}>Buraya Bırak</p>
-        <span className={styles.sliderDropZoneSubtitle}>Kart "{title}" listesine taşınacak</span>
+  <p className={styles.sliderDropZoneTitle}>{t('components.slider.dropZone.title')}</p>
+  <span className={styles.sliderDropZoneSubtitle}>{t('components.slider.dropZone.subtitle', { title })}</span>
       </div>
     </div>
   );

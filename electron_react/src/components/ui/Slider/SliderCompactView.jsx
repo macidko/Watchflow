@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '../../../i18n';
 import styles from './Slider.module.css';
 
 const SliderCompactView = ({
@@ -53,7 +54,7 @@ const SliderCompactView = ({
               </svg>
             </div>
             <span className={styles.sliderCompactViewDropText}>
-              Buraya Bırak
+              {t('components.slider.dropZone.title')}
             </span>
           </div>
         ) : isSourceSlider ? (
@@ -64,7 +65,7 @@ const SliderCompactView = ({
               </svg>
             </div>
             <span className={styles.sliderCompactViewSourceText}>
-              Sürükleniyor
+              {t('components.slider.compact.dragging')}
             </span>
           </div>
         ) : (

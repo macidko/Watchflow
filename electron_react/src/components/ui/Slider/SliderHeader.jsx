@@ -19,9 +19,9 @@ const SliderHeader = ({
         <div className="flex items-center gap-2 sm:gap-3">
           <h2 className={styles.sliderTitle}>
             {title}
-            <div className="absolute left-0 -bottom-1 h-0.5 w-8 rounded" style={{ background: 'color-mix(in srgb, var(--accent-color) 60%, transparent)' }} />
+            <div className={styles.sliderTitleUnderline} />
           </h2>
-          <div className="px-3 py-1 rounded-full border bg-accent text-primary-text text-sm font-normal transition-all" style={{ borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)', background: 'var(--accent-color)' }}>
+          <div className={styles.sliderCountBadge}>
             <span>{itemsCount}</span>
           </div>
           
@@ -41,14 +41,7 @@ const SliderHeader = ({
           
           {/* Layout Mode Indicator */}
           {activeLayout && (
-            <div style={{ 
-              padding: '2px 8px', 
-              borderRadius: 12, 
-              background: 'var(--secondary-bg)', 
-              border: '1px solid var(--border-color)',
-              fontSize: 11,
-              color: 'var(--text-muted)'
-            }}>
+            <div className={styles.sliderLayoutBadge}>
               {activeLayout.mode?.toUpperCase()}
             </div>
           )}

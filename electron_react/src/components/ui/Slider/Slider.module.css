@@ -46,6 +46,36 @@
   margin-bottom: 1rem;
 }
 
+/* Header small visual helpers moved from inline styles */
+.sliderTitleUnderline {
+  position: absolute;
+  left: 0;
+  bottom: -0.25rem;
+  height: 0.125rem;
+  width: 2rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--accent-color) 60%, transparent);
+}
+
+.sliderCountBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 30%, transparent);
+  background: var(--accent-color);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sliderLayoutBadge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
 .sliderTitle {
   font-size: 20px;
   font-weight: 600;
@@ -487,6 +517,26 @@
   justify-content: center;
   padding: 3rem 1rem;
   text-align: center;
+}
+
+/* Empty state helpers */
+.sliderEmptyIconContainer {
+  background: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sliderEmptyDragBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 20%, transparent);
+  color: var(--accent-color);
 }
 
 .sliderEmptyIcon {

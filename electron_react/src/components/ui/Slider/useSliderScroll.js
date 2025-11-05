@@ -18,10 +18,23 @@ export const useSliderScroll = (items) => {
       }
     };
 
-    updateScrollInfo();
-    window.addEventListener('resize', updateScrollInfo);
+    // Debounced resize handler to avoid frequent reflows
+    let resizeTimer = null;
+    const debouncedResize = () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        updateScrollInfo();
+        resizeTimer = null;
+      }, 150);
+    };
 
-    return () => window.removeEventListener('resize', updateScrollInfo);
+    updateScrollInfo();
+    window.addEventListener('resize', debouncedResize);
+
+    return () => {
+      window.removeEventListener('resize', debouncedResize);
+      if (resizeTimer) clearTimeout(resizeTimer);
+    };
   }, [items, scrollPosition]);
 
   const scroll = useCallback((direction) => {

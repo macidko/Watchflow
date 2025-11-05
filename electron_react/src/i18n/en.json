@@ -64,6 +64,13 @@
         "title": "List Empty",
         "description": "No content in this category yet. You can search for content or drag items from other lists.",
         "dragDrop": "Drag & Drop"
+      },
+      "dropZone": {
+        "title": "Drop here",
+        "subtitle": "Card \"{title}\" will be moved to this list"
+      },
+      "compact": {
+        "dragging": "Dragging"
       }
     },
     "search": {

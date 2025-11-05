@@ -15,12 +15,12 @@ const useCardImage = (poster, title) => {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
+        for (const entry of entries) {
           if (entry.isIntersecting) {
             setIsInView(true);
             observerRef.current?.disconnect();
           }
-        });
+        }
       },
       { threshold: 0.1, rootMargin: '50px' }
     );

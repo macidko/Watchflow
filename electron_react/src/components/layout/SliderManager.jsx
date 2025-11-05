@@ -71,17 +71,17 @@ SliderManager.propTypes = {
 };
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm px-2 sm:px-0" 
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={modalRef}
+      open
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm px-2 sm:px-0"
       aria-labelledby="slider-manager-title"
-      onClick={onClose} 
-      onKeyDown={(e) => e.key === 'Enter' && onClose()}
-      style={{ background: 'var(--overlay-bg)' }}
+      style={{ background: 'var(--overlay-bg)', border: 'none', padding: 0 }}
+      onClick={(e) => {
+        if (e.target === modalRef.current) onClose();
+      }}
     >
       <div
-        ref={modalRef}
         className="relative w-full max-w-lg rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col gap-5 sm:gap-6"
         style={{ background: 'var(--primary-bg)', border: '1px solid var(--border-color)' }}
         onClick={e => e.stopPropagation()}
@@ -258,8 +258,9 @@ SliderManager.propTypes = {
           )}
         </div>
       </div>
-    </div>
+    </dialog>
   );
 };
 
 export default SliderManager;
+
