@@ -3,6 +3,16 @@
   background: var(--overlay-bg);
   border: none;
   padding: 0;
+  /* Ensure the dialog covers the full viewport and centers its content reliably across engines */
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .modalCard {
@@ -12,6 +22,10 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   padding: 1.5rem;
   color: var(--primary-text);
+  /* Keep modal vertically contained and scrollable on small viewports */
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  margin: 0 16px;
 }
 
 .modalHeader {
@@ -118,6 +132,17 @@
 
 .addFormBackdrop {
   background: var(--overlay-bg);
+  /* Ensure the add-form backdrop covers viewport and centers the card */
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  z-index: 9999;
 }
 
 .addFormCard {
@@ -128,6 +153,10 @@
   padding: 32px;
   width: 100%;
   max-width: 420px;
+  /* Keep the card from escaping the viewport, allow internal scroll */
+  max-height: calc(100vh - 64px);
+  overflow: auto;
+  margin: 0 16px;
 }
 
 .inputField {
