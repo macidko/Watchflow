@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import useContentStore from '../config/initialData';
+import { t } from '../i18n';
 import useViewMode from './useViewMode';
 import { PAGES } from '../config/constants';
 import { useDrag } from '../contexts/DragContext';
@@ -22,7 +23,7 @@ export default function useFilmController() {
     const contents = getContentsByPageAndStatus(PAGES.FILM, status.id);
     return {
       id: `film-${status.id}`,
-      title: status.title,
+      title: (t(`statuses.${PAGES.FILM}.${status.id}`) === `statuses.${PAGES.FILM}.${status.id}`) ? status.title : t(`statuses.${PAGES.FILM}.${status.id}`),
       items: contents.map(content => ({
         id: content.id,
         ...content.apiData,

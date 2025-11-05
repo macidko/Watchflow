@@ -11,7 +11,7 @@ import { searchAnime } from './index.js';
  * @returns {Promise<Array>} Anime sonuçları
  */
 export async function searchAnimeWithFallback(searchText) {
-  console.warn('searchAnimeWithFallback is deprecated. Use searchAnime from ./index.js instead');
+  
   return searchAnime(searchText);
 }
 
@@ -22,3 +22,4 @@ export {
   getAnimeDetails,
   getAnimeSeasons
 } from './index.js';
+

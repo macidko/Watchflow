@@ -22,12 +22,10 @@ const useCardDrag = (item, sliderId, onDragStart, onDragEnd) => {
   }, [item, sliderId, onDragStart, startDrag]);
 
   const handleDragEnd = useCallback(() => {
-    console.log('🏁 [useCardDrag] handleDragEnd called', { timestamp: Date.now() });
     endDrag();
     if (onDragEnd) {
       onDragEnd();
     }
-    console.log('✅ [useCardDrag] handleDragEnd completed');
   }, [endDrag, onDragEnd]);
 
   return {

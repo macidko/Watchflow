@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import useContentStore from '../../config/initialData';
 import { PAGES } from '../../config/constants';
+import { t } from '../../i18n';
 import '../../css/components/modals/RelatedContent.css';
 
 const RelatedContent = ({ 
@@ -20,31 +21,31 @@ const RelatedContent = ({
     switch(pageId) {
       case PAGES.FILM:
         return {
-          title: 'Benzer Filmler',
-          emptyMessage: 'Benzer film bulunamadı',
-          emptyDescription: 'Bu filmle ilişkili başka filmler mevcut değil.',
-          addButtonText: 'Listeye Ekle'
+          title: t('components.relatedContent.similarMovies'),
+          emptyMessage: t('components.relatedContent.noSimilarMovies'),
+          emptyDescription: t('components.relatedContent.noSimilarMoviesDesc'),
+          addButtonText: t('components.relatedContent.addToList')
         };
       case PAGES.DIZI:
         return {
-          title: 'İlgili Diziler',
-          emptyMessage: 'İlgili dizi bulunamadı',
-          emptyDescription: 'Bu diziyle ilişkili başka diziler mevcut değil.',
-          addButtonText: 'Listeye Ekle'
+          title: t('components.relatedContent.relatedSeries'),
+          emptyMessage: t('components.relatedContent.noRelatedSeries'),
+          emptyDescription: t('components.relatedContent.noRelatedSeriesDesc'),
+          addButtonText: t('components.relatedContent.addToList')
         };
       case PAGES.ANIME:
         return {
-          title: 'İlişkili Animeler',
-          emptyMessage: 'İlişkili anime bulunamadı',
-          emptyDescription: 'Prequel, sequel veya ilgili anime bulunamadı.',
-          addButtonText: 'Listeye Ekle'
+          title: t('components.relatedContent.relatedAnime'),
+          emptyMessage: t('components.relatedContent.noRelatedAnime'),
+          emptyDescription: t('components.relatedContent.noRelatedAnimeDesc'),
+          addButtonText: t('components.relatedContent.addToList')
         };
       default:
         return {
-          title: 'İlişkili İçerikler',
-          emptyMessage: 'İlişkili içerik bulunamadı',
-          emptyDescription: 'Bu içerikle ilgili başka içerikler mevcut değil.',
-          addButtonText: 'Ekle'
+          title: t('components.relatedContent.relatedContent'),
+          emptyMessage: t('components.relatedContent.noRelatedContent'),
+          emptyDescription: t('components.relatedContent.noRelatedContentDesc'),
+          addButtonText: t('components.relatedContent.add')
         };
     }
   };
@@ -85,13 +86,6 @@ const RelatedContent = ({
       } else {
         contentType = 'movie';
       }
-      
-      console.log('➕ Adding related content to list:', {
-        contentTitle: relatedItem.title,
-        targetPage: targetPageId,
-        contentType: contentType,
-        relationType: relatedItem.relType
-      });
       
       // Temel API data - normalizeRelations'tan gelen TÜM bilgileri koru
       let detailedApiData = {
@@ -143,7 +137,6 @@ const RelatedContent = ({
           const provider = relatedItem.provider;
           
           if (providerId && provider) {
-            console.log(`Fetching additional details for related content: ${relatedItem.title} (${provider}:${providerId})`);
             
             if (provider === 'tmdb') {
               const { TmdbApi } = await import('../../api/providers/TmdbApi.js');
@@ -197,26 +190,11 @@ const RelatedContent = ({
                 detailedApiData.relations = details.relations;
               }
             }
-            
-            console.log(`Additional details fetched for related content:`, {
-              title: relatedItem.title,
-              hadOverview: !!relatedItem.overview,
-              hasOverviewNow: !!detailedApiData.overview,
-              hadGenres: !!relatedItem.genres?.length,
-              hasGenresNow: !!detailedApiData.genres?.length
-            });
           }
         } catch (detailError) {
           console.warn(`Failed to fetch additional details for related content, using available info:`, detailError);
           // Detay çekimi başarısız olursa normalize edilmiş bilgilerle devam
         }
-      } else {
-        console.log(`Related content already has sufficient details from normalization:`, {
-          title: relatedItem.title,
-          hasOverview: !!detailedApiData.overview,
-          hasGenres: !!detailedApiData.genres?.length,
-          hasRating: !!detailedApiData.rating
-        });
       }
       
       // İçeriği ekle - DETAYLI LOG
@@ -227,26 +205,6 @@ const RelatedContent = ({
         statusId: getDefaultStatusForPage(targetPageId),
         addedAt: new Date().toISOString()
       };
-
-      console.log('📦 Adding related content to store:', {
-        title: detailedApiData.title,
-        type: detailedApiData.type,
-        provider: detailedApiData.provider,
-        dataCompleteness: {
-          hasOverview: !!detailedApiData.overview,
-          hasGenres: !!detailedApiData.genres?.length,
-          hasRating: !!detailedApiData.rating,
-          hasEpisodes: !!detailedApiData.episodeCount,
-          hasRuntime: !!detailedApiData.runtime,
-          hasCast: !!detailedApiData.cast,
-          hasDirector: !!detailedApiData.director,
-          hasRelations: !!detailedApiData.relations,
-          hasBackdrop: !!detailedApiData.backdrop,
-          hasOriginalTitle: !!detailedApiData.originalTitle,
-        },
-        apiData: detailedApiData
-      });
-
       await addContent(contentToAdd);
       
       // Başarı durumunda "Eklendi" state'ini ayarla
@@ -279,16 +237,6 @@ const RelatedContent = ({
       const rawType = relatedItem.type || relatedItem.media_type || relatedItem.itemType || relatedItem.item_type || relatedItem.mediaType || relatedItem.media_type || '';
       const itemType = (typeof rawType === 'string' ? rawType : '').toLowerCase().trim();
 
-      console.log('🔍 Checking compatibility:', {
-        title: relatedItem.title,
-        type: relatedItem.type,
-        media_type: relatedItem.media_type,
-        itemType,
-        currentPageId,
-        provider: relatedItem.provider,
-        ids: { tmdb: relatedItem.tmdbId, anilist: relatedItem.anilistId, kitsu: relatedItem.kitsuId, jikan: relatedItem.jikanId, mal: relatedItem.malId }
-      });
-
       // Fallback: provider/id bilgisi anime olduğunu işaret ediyorsa anime olarak kabul et
       const assumeAnimeProviders = ['anilist', 'kitsu', 'jikan', 'mal'];
       const isProviderAnime = assumeAnimeProviders.includes((relatedItem.provider || '').toLowerCase());
@@ -298,7 +246,6 @@ const RelatedContent = ({
       if (currentPageId === PAGES.ANIME) {
         const animeTypes = new Set(['anime', 'tv', 'ova', 'movie', 'special', 'manga', 'ona', 'tv_series', 'tv_show', 'series']);
         const isAnime = animeTypes.has(itemType) || isProviderAnime || hasAnimeIds;
-        console.log(`  → Anime page: ${isAnime ? '✅' : '❌'}`);
         return isAnime;
       }
 
@@ -307,7 +254,6 @@ const RelatedContent = ({
         const seriesTypes = new Set(['tv', 'series', 'tv_series', 'tv_show']);
         const hasAirDate = !!(relatedItem.first_air_date || relatedItem.firstAired || relatedItem.seasons || relatedItem.number_of_seasons);
         const isSeries = seriesTypes.has(itemType) || hasAirDate;
-        console.log(`  → TV page: ${isSeries ? '✅' : '❌'}`);
         return isSeries;
       }
 
@@ -316,12 +262,10 @@ const RelatedContent = ({
         const movieTypes = new Set(['movie', 'film', 'feature']);
         const hasReleaseDate = !!(relatedItem.release_date || relatedItem.releaseDate || relatedItem.runtime || relatedItem.duration);
         const isMovie = movieTypes.has(itemType) || hasReleaseDate;
-        console.log(`  → Movie page: ${isMovie ? '✅' : '❌'}`);
         return isMovie;
       }
 
       // Varsayılan: tümünü göster
-      console.log('  → Default: ✅');
       return true;
     };
     
@@ -341,14 +285,7 @@ const RelatedContent = ({
         });
       }
     });
-    
-    console.log('📊 Filtered relations:', {
-      pageId: item.pageId,
-      totalBefore: Object.values(relations).flat().length,
-      filteredCount: flattened.length,
-      filtered: flattened.map(r => ({ title: r.title, type: r.type || r.media_type }))
-    });
-    
+
     return flattened;
   }, [relations, item.pageId]);
 
@@ -368,7 +305,7 @@ const RelatedContent = ({
           onClick={onUpdateRelations}
           disabled={relationsLoading}
           className="related-content-refresh-btn"
-          title="İlişkileri güncelle"
+          title={t('components.relatedContent.updateRelations')}
         >
           {relationsLoading ? (
             <div className="loading-spinner"></div>

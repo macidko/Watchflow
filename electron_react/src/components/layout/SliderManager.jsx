@@ -89,7 +89,7 @@ SliderManager.propTypes = {
         {/* Modal Header */}
         <div className="flex items-center justify-between mb-1 sm:mb-2 gap-2">
           <h2 id="slider-manager-title" className="text-xl font-semibold drop-shadow-lg" style={{ color: 'var(--primary-text)' }}>
-            Listeleri Yönet
+            {t('components.sliderManager.title')}
           </h2>
           <div className="flex items-center gap-3">
             {/* Layout Switcher */}
@@ -102,7 +102,7 @@ SliderManager.propTypes = {
               onClick={onClose}
               className="p-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2"
               style={{ background: 'var(--secondary-bg)', color: 'var(--secondary-text)', boxShadow: '0 0 0 2px var(--accent-color)' }}
-              title="Kapat"
+              title={t('common.close')}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -119,7 +119,7 @@ SliderManager.propTypes = {
         </div>
 
         {/* Slider List */}
-  <div className="space-y-3 sm:space-y-4" role="list" aria-label="Slider listesi">
+  <div className="space-y-3 sm:space-y-4" role="list" aria-label={t('components.sliderManager.ariaList')}>
           {sliders.map((slider, idx) => (
             <div
               key={slider.id}
@@ -133,7 +133,7 @@ SliderManager.propTypes = {
               onDrop={e => handleDrop(e, idx)}
             >
               {/* Drag Icon */}
-              <span className="mr-3 cursor-grab transition-all" style={{ color: 'var(--secondary-text)' }} title="Sürükle">
+              <span className="mr-3 cursor-grab transition-all" style={{ color: 'var(--secondary-text)' }} title={t('components.slider.drag')}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <circle cx="6" cy="7" r="1.5" />
                   <circle cx="6" cy="12" r="1.5" />
@@ -185,7 +185,7 @@ SliderManager.propTypes = {
           ))}
           {sliders.length === 0 && (
             <div className="text-center py-8" style={{ color: 'var(--secondary-text)' }}>
-              Bu sayfada henüz liste bulunmuyor.
+              {t('components.sliderManager.noLists')}
             </div>
           )}
         </div>
@@ -197,7 +197,7 @@ SliderManager.propTypes = {
               className="px-5 py-2 font-medium rounded-xl transition-all duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2"
               style={{ background: 'var(--accent-color)', color: 'var(--primary-text)', boxShadow: '0 4px 24px 0 color-mix(in srgb, var(--accent-color) 25%, transparent)' }}
             >
-              + Yeni Liste
+              {t('components.sliderManager.newList')}
             </button>
           </div>
           {showAddForm && (
@@ -209,7 +209,7 @@ SliderManager.propTypes = {
               style={{ background: 'var(--overlay-bg)' }}
             >
               <div style={{ background: 'var(--primary-bg)', border: '1px solid var(--border-color)', borderRadius: '16px', boxShadow: 'var(--popup-shadow)', padding: '32px', width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <h3 id="new-list-title" style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>Yeni Liste Oluştur</h3>
+                <h3 id="new-list-title" style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--primary-text)', marginBottom: 8 }}>{t('components.sliderManager.newListModal.title')}</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <input
                     ref={addInputRef}
@@ -219,9 +219,9 @@ SliderManager.propTypes = {
                       setNewSliderTitle(e.target.value);
                       if (addError) setAddError('');
                     }}
-                    placeholder="Liste adı... (en az 3 karakter)"
+                    placeholder={t('components.sliderManager.newListModal.placeholder')}
                     style={{ background: 'var(--input-bg)', color: 'var(--primary-text)', padding: '12px 16px', borderRadius: '12px', border: addError ? `1px solid var(--danger-color)` : `1px solid var(--border-color)`, outline: 'none' }}
-                    aria-label="Yeni liste adı"
+                    aria-label={t('components.sliderManager.newListModal.placeholder')}
                     aria-invalid={!!addError}
                   />
                   {addError && (
@@ -250,7 +250,7 @@ SliderManager.propTypes = {
                     onClick={() => setShowAddForm(false)}
                     style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', background: 'var(--secondary-bg)', color: 'var(--secondary-text)', border: `1px solid var(--border-color)` }}
                   >
-                    İptal
+                    {t('components.sliderManager.buttons.cancel')}
                   </button>
                 </div>
               </div>

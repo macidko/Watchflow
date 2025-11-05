@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '../../i18n';
 
 /**
  * Bildirim paneli: Bildirim listesini açılır kutu olarak gösterir
@@ -12,13 +13,13 @@ const NotificationPanel = ({ open, onClose, notifications }) => {
   return (
     <div style={{ position: 'absolute', top: 44, right: 80, minWidth: 280, background: 'var(--primary-bg)', border: '1px solid var(--border-color)', borderRadius: 10, boxShadow: '0 4px 16px 0 rgba(0,0,0,0.18)', zIndex: 100, padding: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <span style={{ fontWeight: 700, color: 'var(--primary-text)', fontSize: 16 }}>Bildirimler</span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--secondary-text)', fontSize: 18, cursor: 'pointer', padding: 2, borderRadius: 4 }} aria-label="Kapat">
+        <span style={{ fontWeight: 700, color: 'var(--primary-text)', fontSize: 16 }}>{t('components.notificationPanel.title')}</span>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--secondary-text)', fontSize: 18, cursor: 'pointer', padding: 2, borderRadius: 4 }} aria-label={t('common.close')}>
           <svg width={18} height={18} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       </div>
       {notifications.length === 0 ? (
-        <div style={{ color: 'var(--secondary-text)', fontSize: 14 }}>Yeni bildirim yok</div>
+        <div style={{ color: 'var(--secondary-text)', fontSize: 14 }}>{t('components.notificationPanel.noNotifications')}</div>
       ) : (
         notifications.map((n, i) => (
           <div

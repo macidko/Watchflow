@@ -69,3 +69,4 @@ export const DUMMY = {
 	EVENT_ID: 'dummy-1',
 	EVENT_DATE: '2025-08-25'
 };
+

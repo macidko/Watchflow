@@ -22,7 +22,6 @@ export const DragProvider = ({ children }) => {
 
   // Drag başladığında scroll pozisyonunu kilitle
   const startDrag = (item, sliderId) => {
-    console.log('🚀 [DragContext] startDrag called', { item, sliderId, timestamp: Date.now() });
     // Önce scroll pozisyonunu kaydet
     scrollPositionRef.current = {
       x: window.scrollX || window.pageXOffset,
@@ -43,11 +42,9 @@ export const DragProvider = ({ children }) => {
     setIsDragging(true);
     setDraggedItem(item);
     setSourceSliderId(sliderId);
-    console.log('✅ [DragContext] startDrag completed, isDragging set to TRUE');
   };
 
   const endDrag = () => {
-    console.log('🛑 [DragContext] endDrag called', { timestamp: Date.now() });
     // Drag durumunu sıfırla
     setIsDragging(false);
     setDraggedItem(null);
@@ -61,7 +58,6 @@ export const DragProvider = ({ children }) => {
       // Scroll pozisyonunu geri yükle
       window.scrollTo(scrollPositionRef.current.x, scrollPositionRef.current.y);
     }
-    console.log('✅ [DragContext] endDrag completed, isDragging set to FALSE');
   };
 
   const value = useMemo(() => ({
@@ -76,10 +72,8 @@ export const DragProvider = ({ children }) => {
   // window üzerinde genel bir dinleyici ekleyerek durumu güvenli şekilde sıfırlıyoruz.
   useEffect(() => {
     const handleDragEnd = () => {
-      console.log('⚠️ [DragContext] window.dragend listener triggered', { timestamp: Date.now() });
       // küçük bir gecikme bırak; drop handler'larının tamamlanması için
       setTimeout(() => {
-        console.log('🔄 [DragContext] window.dragend timeout executing (80ms later)', { timestamp: Date.now() });
         // State'i direkt set ederek closure problemini çözüyoruz
         setIsDragging(false);
         setDraggedItem(null);
@@ -91,15 +85,12 @@ export const DragProvider = ({ children }) => {
           html.classList.remove('no-scroll');
           html.style.scrollBehavior = '';
         }
-        console.log('✅ [DragContext] window.dragend cleanup completed');
       }, 80);
     };
 
     const handleMouseUp = () => {
-      console.log('🖱️ [DragContext] document.mouseup detected during drag', { isDragging, timestamp: Date.now() });
       // Eğer drag aktifse ve mouseup geliyorsa, drag sonlandırılmalı
       if (isDragging) {
-        console.log('⚡ [DragContext] Force ending drag via mouseup');
         setTimeout(() => {
           setIsDragging(false);
           setDraggedItem(null);
@@ -110,16 +101,13 @@ export const DragProvider = ({ children }) => {
             html.classList.remove('no-scroll');
             html.style.scrollBehavior = '';
           }
-          console.log('✅ [DragContext] mouseup cleanup completed');
         }, 50);
       }
     };
 
     const handleClick = () => {
-      console.log('🖱️ [DragContext] document.click detected during drag', { isDragging, timestamp: Date.now() });
       // Click eventi de drag'i sonlandırabilir
       if (isDragging) {
-        console.log('⚡ [DragContext] Force ending drag via click');
         setTimeout(() => {
           setIsDragging(false);
           setDraggedItem(null);
@@ -130,16 +118,13 @@ export const DragProvider = ({ children }) => {
             html.classList.remove('no-scroll');
             html.style.scrollBehavior = '';
           }
-          console.log('✅ [DragContext] click cleanup completed');
         }, 50);
       }
     };
 
     const handleDrop = (e) => {
       // Document-level drop eventi - eğer hiçbir slider yakalamazsa
-      console.log('📦 [DragContext] document.drop detected', { isDragging, timestamp: Date.now() });
       if (isDragging) {
-        console.log('⚡ [DragContext] Force ending drag via document drop');
         e.preventDefault();
         setTimeout(() => {
           setIsDragging(false);
@@ -151,13 +136,12 @@ export const DragProvider = ({ children }) => {
             html.classList.remove('no-scroll');
             html.style.scrollBehavior = '';
           }
-          console.log('✅ [DragContext] document drop cleanup completed');
         }, 50);
       }
     };
 
     window.addEventListener('dragend', handleDragEnd);
-    window.addEventListener('dragend', () => console.log('🌍 [DragContext] RAW window dragend listener fired'), true); // capture phase
+    window.addEventListener('dragend', () => true); // capture phase
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('click', handleClick, true); // capture phase
     document.addEventListener('drop', handleDrop);

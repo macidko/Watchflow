@@ -16,7 +16,7 @@ function useViewMode(pageType = 'default') {
         setViewMode(savedViewMode);
       }
     } catch (error) {
-      console.error('localStorage access error in useViewMode:', error);
+      
       // Hata durumunda varsayılan değeri kullan
     }
   }, [storageKey]);
@@ -28,7 +28,7 @@ function useViewMode(pageType = 'default') {
     try {
       localStorage.setItem(storageKey, newMode);
     } catch (error) {
-      console.error('localStorage write error in useViewMode:', error);
+      
       // Hata durumunda sadece state'i güncelle
     }
   };
@@ -37,3 +37,4 @@ function useViewMode(pageType = 'default') {
 }
 
 export default useViewMode;
+

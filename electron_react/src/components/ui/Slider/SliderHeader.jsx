@@ -59,9 +59,9 @@ const SliderHeader = ({
               onClick={onScrollLeft}
               disabled={!canScrollLeft}
               className={styles.sliderNavButton}
-              aria-label="Sola kaydır"
+              aria-label={t('components.slider.scrollLeft')}
             >
-              <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Sola kaydır" focusable="false">
+              <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label={t('components.slider.scrollLeft')} focusable="false">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -69,9 +69,9 @@ const SliderHeader = ({
               onClick={onScrollRight}
               disabled={!canScrollRight}
               className={styles.sliderNavButton}
-              aria-label="Sağa kaydır"
+              aria-label={t('components.slider.scrollRight')}
             >
-              <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Sağa kaydır" focusable="false">
+              <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label={t('components.slider.scrollRight')} focusable="false">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>

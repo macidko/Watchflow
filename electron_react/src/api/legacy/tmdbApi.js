@@ -70,3 +70,4 @@ export async function getTvShowSeasons(tvId, apiKey = TMDB_API_KEY) {
     seasons
   };
 }
+

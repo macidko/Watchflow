@@ -122,7 +122,7 @@ const Navbar = () => {
           if (airDate > now) {
             calendarEvents.push({
               id: `scheduled-ep-${content.id}-${ep.episode}`,
-              title: `🗓️ ${apiData.title} - ${ep.episode}. Bölüm (Tahmini)` ,
+              title: `🗓️ ${apiData.title} - ${t('components.episodeTracking.episodeWithNumber', { number: ep.episode })} (${t('calendar.events.scheduleDescription')})`,
               start: ep.airDate,
               allDay: false
             });
@@ -148,7 +148,7 @@ const Navbar = () => {
         const formattedDate = airDate.includes('T') ? airDate : `${airDate}T20:00:00`;
         calendarEvents.push({
           id: `next-episode-${content.id}`,
-          title: `🎬 ${apiData.title} - ${apiData.relations.nextEpisode.episodeNumber}. Bölüm`,
+          title: `🎬 ${apiData.title} - ${t('components.episodeTracking.episodeWithNumber', { number: apiData.relations.nextEpisode.episodeNumber })}`,
           start: formattedDate,
           allDay: false
         });

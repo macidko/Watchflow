@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { t } from '../../../i18n';
 import CardImage from './CardImage';
 import CardRating from './CardRating';
 import CardQuickMove from './CardQuickMove';
@@ -73,14 +74,12 @@ const Card = ({
       }}
       draggable
       onDragStart={(e) => {
-        console.log('🎯 [Card.jsx] onDragStart event fired on DOM element');
         dragProps.handleDragStart(e);
       }}
       onDragEnd={(e) => {
-        console.log('🎯 [Card.jsx] onDragEnd event fired on DOM element');
         dragProps.handleDragEnd(e);
       }}
-      title="🔄 Kartı sürükleyerek başka slider'a taşıyabilirsiniz"
+      title={t('components.card.dragHint')}
     >
       {/* Image Container - Full Height */}
       <div className="relative w-full h-full overflow-hidden">

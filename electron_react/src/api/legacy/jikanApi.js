@@ -27,7 +27,7 @@ export async function searchJikanAnime(searchText, maxRetries = 2) {
         episodes: item.episodes
       }));
     } catch (error) {
-      console.error('Jikan API error:', error);
+      
       retries++;
       if (retries > maxRetries) return [];
       await sleep(2000 * retries);
@@ -35,3 +35,4 @@ export async function searchJikanAnime(searchText, maxRetries = 2) {
   }
   return [];
 }
+

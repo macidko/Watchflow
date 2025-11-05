@@ -1,22 +1,5 @@
 // src/config/tmdbGenres.js
-export const TMDB_GENRE_MAP = {
-  28: "Aksiyon",
-  12: "Macera",
-  16: "Animasyon",
-  35: "Komedi",
-  80: "Suç",
-  99: "Belgesel",
-  18: "Drama",
-  10751: "Aile",
-  14: "Fantastik",
-  36: "Tarih",
-  27: "Korku",
-  10402: "Müzik",
-  9648: "Gizem",
-  10749: "Romantik",
-  878: "Bilim Kurgu",
-  10770: "TV Filmi",
-  53: "Thriller",
-  10752: "Savaş",
-  37: "Western"
-};
+// Keep listed TMDB genre IDs for reference; actual display names are resolved via i18n keys (e.g. t('genres.28'))
+export const TMDB_GENRE_IDS = [
+  28,12,16,35,80,99,18,10751,14,36,27,10402,9648,10749,878,10770,53,10752,37
+];

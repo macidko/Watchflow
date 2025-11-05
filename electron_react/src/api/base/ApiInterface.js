@@ -54,7 +54,7 @@ export class ApiInterface {
           await new Promise(resolve => setTimeout(resolve, 300));
         }
       } catch (error) {
-        console.warn(`Batch search failed for query "${query}":`, error.message);
+        
         results[query] = [];
       }
     }
@@ -113,7 +113,7 @@ export class ApiInterface {
 
       return await response.json();
     } catch (error) {
-      console.error(`API Request failed for ${url}:`, error.message);
+      
       throw error;
     }
   }
@@ -126,3 +126,4 @@ export class ApiInterface {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
+

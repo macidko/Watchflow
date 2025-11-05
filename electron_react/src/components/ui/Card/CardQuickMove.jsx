@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '../../../i18n';
 import styles from './Card.module.css';
 
 // Pure component - sadece props alıp render eder
@@ -10,7 +11,7 @@ const CardQuickMove = ({ showDropdown, availableSliders, toggleDropdown, handleQ
       <button
         onClick={toggleDropdown}
         className={styles.quickMoveBtn}
-        title="Hızlı taşı"
+        title={t('components.card.quickMove')}
       >
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />

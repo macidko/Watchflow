@@ -392,3 +392,4 @@ AdvancedViewSwitcher.defaultProps = {
 };
 
 export default AdvancedViewSwitcher;
+

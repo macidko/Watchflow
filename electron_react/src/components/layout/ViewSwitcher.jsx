@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '../../i18n';
 
 /**
  * Modern layout görünüm seçicisi component (List/Grid toggle)
@@ -108,8 +109,8 @@ const ViewSwitcher = ({ viewMode, toggleViewMode }) => {
         <button
           onClick={() => viewMode !== 'normal' && toggleViewMode()}
           className={`view-button ${viewMode === 'normal' ? 'active' : ''}`}
-          aria-label="Liste görünümü"
-          title="Liste görünümü"
+          aria-label={t('components.viewSwitcher.listView')}
+          title={t('components.viewSwitcher.listView')}
           disabled={viewMode === 'normal'}
         >
           <svg 
@@ -133,8 +134,8 @@ const ViewSwitcher = ({ viewMode, toggleViewMode }) => {
         <button
           onClick={() => viewMode !== 'grid' && toggleViewMode()}
           className={`view-button ${viewMode === 'grid' ? 'active' : ''}`}
-          aria-label="Grid görünümü"
-          title="Grid görünümü"
+          aria-label={t('components.viewSwitcher.gridView')}
+          title={t('components.viewSwitcher.gridView')}
           disabled={viewMode === 'grid'}
         >
           <svg 

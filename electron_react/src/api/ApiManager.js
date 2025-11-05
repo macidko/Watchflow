@@ -33,7 +33,6 @@ export class ApiManager {
       this.providers.set(ApiProviders.JIKAN, new JikanApi());
       this.providers.set(ApiProviders.TMDB, new TmdbApi());
       
-      console.log('API providers initialized successfully');
     } catch (error) {
       console.error('Failed to initialize API providers:', error);
     }
@@ -110,7 +109,6 @@ export class ApiManager {
     }
 
     try {
-      console.log(`Searching with ${providerName} for "${query}"`);
       const startTime = Date.now();
       
       const results = await this.withTimeout(
@@ -119,7 +117,6 @@ export class ApiManager {
       );
 
       const duration = Date.now() - startTime;
-      console.log(`${providerName} search completed in ${duration}ms, found ${results?.length || 0} results`);
 
       return {
         results: results || [],
@@ -129,7 +126,7 @@ export class ApiManager {
         query
       };
     } catch (error) {
-      console.error(`${providerName} search failed:`, error.message);
+      
       return {
         results: [],
         provider: providerName,
@@ -161,13 +158,13 @@ export class ApiManager {
         lastError = result.error;
       } catch (error) {
         lastError = error.message;
-        console.warn(`Provider ${providerName} failed, trying next...`);
+        
         continue;
       }
     }
 
     // Tüm provider'lar başarısız
-    console.warn('All providers failed for search');
+    
     return {
       results: [],
       provider: 'none',
@@ -211,7 +208,7 @@ export class ApiManager {
         query
       };
     } catch (error) {
-      console.error('Parallel search failed:', error);
+      
       return {
         results: [],
         provider: 'parallel',
@@ -245,7 +242,6 @@ export class ApiManager {
     
     if (useOptimizedBatch && primaryProvider.batchSearch) {
       try {
-        console.log(`Using optimized batch search with ${providers[0]}`);
         const results = await primaryProvider.batchSearch(queries, options);
         
         // Boş sonuçları fallback ile doldur
@@ -254,7 +250,6 @@ export class ApiManager {
         );
 
         if (emptyQueries.length > 0) {
-          console.log(`Filling ${emptyQueries.length} empty results with fallback`);
           for (const query of emptyQueries) {
             const fallbackResult = await this.search(query, mediaType, options);
             results[query] = fallbackResult.results || [];
@@ -300,7 +295,7 @@ export class ApiManager {
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       } catch (error) {
-        console.error('Chunk processing failed:', error);
+        console.warn(`Chunk search failed:`, error.message);
         // Continue with next chunk
       }
     }
@@ -321,7 +316,6 @@ export class ApiManager {
         const provider = this.providers.get(currentProvider);
         if (!provider) continue;
 
-        console.log(`Getting details with ${currentProvider} for ID: ${id}`);
         return await provider.getDetails(id, mediaType);
       } catch (error) {
         console.warn(`${currentProvider} getDetails failed:`, error.message);
@@ -345,7 +339,6 @@ export class ApiManager {
         const provider = this.providers.get(currentProvider);
         if (!provider) continue;
 
-        console.log(`Getting seasons with ${currentProvider} for ID: ${id}`);
         return await provider.getSeasons(id);
       } catch (error) {
         console.warn(`${currentProvider} getSeasons failed:`, error.message);

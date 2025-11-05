@@ -37,3 +37,4 @@ export const MediaStatus = {
   NOT_YET_RELEASED: 'not_yet_released',
   CANCELLED: 'cancelled'
 };
+

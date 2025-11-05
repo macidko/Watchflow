@@ -140,7 +140,8 @@
           "description": "Koleksiyonunu JSON dosyasından geri yükle",
           "button": "Koleksiyonu İçe Aktar",
           "selectFile": "Dosya Seç",
-          "dragDrop": "Veya JSON dosyanızı buraya sürükleyip bırakın"
+          "dragDrop": "Veya JSON dosyanızı buraya sürükleyip bırakın",
+          "supportedFormat": "Desteklenen format: .json"
         },
         "reset": {
           "title": "Uygulamayı Sıfırla",
@@ -171,6 +172,23 @@
       }
     }
   },
+  "statuses": {
+    "film": {
+      "to-watch": "İzlenecekler",
+      "watching": "İzleniyor",
+      "watched": "İzlendi"
+    },
+    "dizi": {
+      "to-watch": "İzlenecekler",
+      "watching": "İzleniyor",
+      "watched": "İzlendi"
+    },
+    "anime": {
+      "to-watch": "İzlenecekler",
+      "watching": "İzleniyor",
+      "watched": "İzlendi"
+    }
+  },
   "components": {
     "navbar": {
       "lists": "Listeler"
@@ -183,6 +201,7 @@
       "scrollLeft": "Sola kaydır",
       "scrollRight": "Sağa kaydır", 
       "empty": "Boş",
+      "drag": "Sürükle",
       "emptyState": {
         "title": "Liste Boş",
         "description": "Henüz bu kategoride içerik yok. Arama yaparak içerik ekleyebilir veya başka listelerden sürükleyebilirsiniz.",
@@ -200,8 +219,17 @@
         "title": "Aramaya başlayın",
         "subtitle": "Favori film, dizi ve animelerinizi bulun"
       },
-      "searchButton": "Ara",
+      "searchButton": {
+        "placeholder": "Filmler, diziler, anime ara...",
+        "bulkPlaceholder": "Birden fazla başlık ara (her satıra bir tane)\nBreaking Bad\nThe Dark Knight\nAttack on Titan",
+        "addToList": "Listeye Ekle",
+        "addAllToList": "Tüm İçerikleri Ekle"
+      },
       "noResults": "Sonuç bulunamadı"
+      ,
+      "alternative": {
+        "select": "Bu alternatifi seç"
+      }
     },
     "sliderManager": {
       "title": "Listeleri Yönet",
@@ -210,7 +238,7 @@
         "title": "Yeni Liste Oluştur",
         "placeholder": "Liste adı... (en az 3 karakter)",
         "minLengthError": "Lütfen en az 3 karakterlik bir başlık girin.",
-        "successMessage": "Yeni slider başarıyla eklendi.",
+        "successMessage": "Yeni liste başarıyla eklendi.",
         "duplicateError": "Bu isimde bir slider zaten var. Farklı bir isim seçin.",
         "duplicateToast": "Bu isimde bir slider zaten mevcut."
       },
@@ -220,14 +248,16 @@
         "successMessage": "Slider başarıyla silindi.",
         "errorMessage": "Slider silinemedi. Lütfen tekrar deneyin."
       },
-      "noLists": "Bu sayfada henüz liste bulunmuyor.",
+  "noLists": "Bu sayfada henüz liste bulunmuyor.",
+  "ariaList": "Slider listesi",
       "deleteConfirm": "Bu slider'ı silmek istediğinizden emin misiniz?",
       "cannotDelete": "Bu slider silinemez! İçinde {count} içerik var. Önce slider'ı boşaltın.",
       "deleteSuccess": "Slider başarıyla silindi.",
       "deleteFail": "Slider silinemedi. Lütfen tekrar deneyin.",
       "buttons": {
         "add": "Ekle",
-        "titleTooShort": "Başlık kısa"
+        "titleTooShort": "Başlık kısa",
+        "cancel": "İptal"
       }
     },
     "detailModal": {
@@ -235,13 +265,59 @@
       "updateSeasons": "Sezonları Güncelle",
       "updateSeasonsTitle": "Sezon bilgilerini güncelle",
       "duration": "Süre",
-      "budget": "Bütçe"
+      "budget": "Bütçe",
+      "revenue": "Hasılat",
+      "rating": "Puan",
+      "cast": "Başrol Oyuncuları",
+      "director": "Yönetmen",
+      "moreActors": "+{count} daha",
+      "episodes": "bölüm",
+      "episodesLabel": "Bölümler",
+      "episodeTracking": {
+        "watched": "İzlendi",
+        "notWatched": "İzlenmedi",
+        "clickToMark": "Bölümlere tıklayarak işaretleyin",
+        "episodeTooltip": "Bölüm {episode} - {status}"
+      }
     },
     "statusBadge": {
       "finished": "Tamamlandı",
       "airing": "Devam Ediyor",
       "completed": "Tamamlandı",
       "ended": "Bitti"
+    },
+    "episodeTracking": {
+      "watched": "İzlendi",
+      "notWatched": "İzlenmedi",
+      "clickToMark": "Bölümlere tıklayarak işaretleyin",
+      "episodeTooltip": "Bölüm {episode} - {status}",
+      "episodeWithNumber": "{number}. Bölüm",
+      "episodesWatched": "{watched}/{total} bölüm izlendi"
+    },
+    "notificationPanel": {
+      "noNotifications": "Yeni bildirim yok"
+    },
+    "relatedContent": {
+      "similarMovies": "Benzer Filmler",
+      "relatedSeries": "İlgili Diziler",
+      "relatedAnime": "İlişkili Animeler",
+      "relatedContent": "İlişkili İçerikler",
+      "noSimilarMovies": "Benzer film bulunamadı",
+      "noRelatedSeries": "İlgili dizi bulunamadı",
+      "noRelatedAnime": "İlişkili anime bulunamadı",
+      "noRelatedContent": "İlişkili içerik bulunamadı",
+      "noSimilarMoviesDesc": "Bu filmle ilişkili başka filmler mevcut değil.",
+      "noRelatedSeriesDesc": "Bu diziyle ilişkili başka diziler mevcut değil.",
+      "noRelatedAnimeDesc": "Prequel, sequel veya ilgili anime bulunamadı.",
+      "noRelatedContentDesc": "Bu içerikle ilgili başka içerikler mevcut değil.",
+      "addToList": "Listeye Ekle",
+      "add": "Ekle",
+      "updateRelations": "İlişkileri güncelle"
+    }
+    ,
+    "card": {
+      "quickMove": "Hızlı taşı",
+      "dragHint": "Kartı sürükleyerek başka listeye taşıyabilirsiniz"
     }
   },
   "calendar": {
@@ -359,11 +435,27 @@
     "all": "all",
     "film": "film",
     "dizi": "dizi"
-  },
-  "pageIds": {
-    "home": "anasayfa",
-    "film": "film",
-    "dizi": "dizi", 
-    "anime": "anime"
+  }
+  ,
+  "genres": {
+    "28": "Aksiyon",
+    "12": "Macera",
+    "16": "Animasyon",
+    "35": "Komedi",
+    "80": "Suç",
+    "99": "Belgesel",
+    "18": "Drama",
+    "10751": "Aile",
+    "14": "Fantastik",
+    "36": "Tarih",
+    "27": "Korku",
+    "10402": "Müzik",
+    "9648": "Gizem",
+    "10749": "Romantik",
+    "878": "Bilim Kurgu",
+    "10770": "TV Filmi",
+    "53": "Thriller",
+    "10752": "Savaş",
+    "37": "Western"
   }
 }

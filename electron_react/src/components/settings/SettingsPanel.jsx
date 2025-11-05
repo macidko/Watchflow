@@ -233,7 +233,7 @@ export default function SettingsPanel({
           <div className="drop-content">
             <span className="drop-icon">📤</span>
             <span>{t('pages.settings.dataManagement.import.dragDrop')}</span>
-            <small>Desteklenen format: .json</small>
+            <small>{t('pages.settings.dataManagement.import.supportedFormat')}</small>
           </div>
         </div>
       </div>

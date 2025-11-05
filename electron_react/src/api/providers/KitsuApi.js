@@ -43,7 +43,7 @@ export class KitsuApi extends ApiInterface {
         }, MediaTypes.ANIME);
       });
     } catch (error) {
-      console.error('Kitsu search error:', error);
+      
       throw error;
     }
   }
@@ -83,7 +83,7 @@ export class KitsuApi extends ApiInterface {
         relations: normalizeRelations(item, 'kitsu')
       };
     } catch (error) {
-      console.error('Kitsu getDetails error:', error);
+      
       throw error;
     }
   }
@@ -120,7 +120,7 @@ export class KitsuApi extends ApiInterface {
 
       return seasons;
     } catch (error) {
-      console.warn('Kitsu getSeasons error:', error.message);
+      
       return [];
     }
   }
@@ -154,7 +154,7 @@ export class KitsuApi extends ApiInterface {
           await this.delay(500);
         }
       } catch (error) {
-        console.warn(`Kitsu batch search failed for query "${query}":`, error.message);
+        
         results[query] = [];
       }
     }
@@ -162,3 +162,4 @@ export class KitsuApi extends ApiInterface {
     return results;
   }
 }
+

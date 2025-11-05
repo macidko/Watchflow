@@ -6,7 +6,7 @@ const SliderEmptyState = () => {
     <div className="flex items-center justify-center h-80 text-center">
       <div className="max-w-sm">
         <div className="w-16 h-16 mx-auto mb-4 rounded-2xl" style={{ background: 'var(--card-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Boş" focusable="false" style={{ color: 'var(--secondary-text)' }}>
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('components.slider.empty')} focusable="false" style={{ color: 'var(--secondary-text)' }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
         </div>

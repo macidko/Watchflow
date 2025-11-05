@@ -152,7 +152,7 @@ export function safeJsonParse(jsonString, fallback = null) {
     
     return JSON.parse(trimmed);
   } catch (error) {
-    console.warn('JSON parse failed:', error);
+    
     return fallback;
   }
 }
@@ -279,7 +279,8 @@ export function safeClone(obj) {
     checkObject(parsed);
     return parsed;
   } catch (error) {
-    console.warn('Safe clone failed:', error);
+    
     return {};
   }
 }
+

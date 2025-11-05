@@ -412,7 +412,7 @@ const useContentStore = create()(
           for (const provider of providers) {
             const providerKey = provider + 'Id';
             if (apiData[providerKey] && c.apiData[providerKey] === apiData[providerKey]) {
-              console.log(`Duplicate found: same ${provider}Id`, apiData[providerKey]);
+              
               return true;
             }
           }
@@ -423,7 +423,7 @@ const useContentStore = create()(
           if (existingTitle && newTitle && existingTitle === newTitle) {
             // Aynı sayfa ve status'ta mı kontrol et (farklı sayfada aynı isimli içerik olabilir)
             if (c.pageId === contentData.pageId) {
-              console.log('Duplicate found: same title in same page', newTitle);
+              
               return true;
             }
           }
@@ -433,7 +433,7 @@ const useContentStore = create()(
           const newOriginal = (apiData.originalTitle || '').toLowerCase().trim();
           if (existingOriginal && newOriginal && existingOriginal === newOriginal) {
             if (c.pageId === contentData.pageId) {
-              console.log('Duplicate found: same originalTitle in same page', newOriginal);
+              
               return true;
             }
           }
@@ -442,7 +442,7 @@ const useContentStore = create()(
         });
         
         if (isDuplicate) {
-          console.warn('Content already exists, skipping add:', apiData.title);
+          
           return;
         }
         
@@ -490,7 +490,8 @@ const useContentStore = create()(
                 };
               }
             } catch (err) {
-                  console.error('Sezon güncelleme butonundan gelen hata:', err);
+            console.error('Sezon güncelleme butonundan gelen hata:', err);
+
                   state.contents[id] = {
                 id,
                 pageId: contentData.pageId,
@@ -595,17 +596,6 @@ const useContentStore = create()(
           }
         });
         content.updatedAt = new Date().toISOString();
-
-        console.log('✅ Episode marked watched with cascade:', {
-          contentId,
-          season: seasonNumber,
-          episode: episodeNumber,
-          updatedSeasons: Object.values(content.seasons).map(s => ({
-            season: s.seasonNumber,
-            watched: (s.watchedEpisodes || []).length,
-            total: s.episodeCount
-          }))
-        });
       }),
 
       markEpisodeUnwatched: (contentId, seasonNumber, episodeNumber) => set((state) => {
@@ -712,7 +702,7 @@ const useContentStore = create()(
           } else if (content.pageId === 'anime') {
             mediaType = 'anime';
           } else {
-            console.warn('Unknown pageId for relations fetch:', content.pageId);
+            
             return;
           }
 
@@ -738,7 +728,7 @@ const useContentStore = create()(
           }
 
           if (providerChain.length === 0) {
-            console.warn('No valid ID found for relations fetch:', content.apiData);
+            
             return;
           }
 
@@ -747,19 +737,14 @@ const useContentStore = create()(
           let successfulProvider = null;
           for (const providerInfo of providerChain) {
             try {
-              console.log(`Trying to fetch details from ${providerInfo.provider} for content:`, contentId);
+              
               
               // **KRİTİK FIX**: getDetails TÜM detaylı bilgileri döndürüyor
               // Sadece relations değil, tüm bilgileri güncellememiz gerekiyor
               updatedApiData = await apiManager.getDetails(providerInfo.id, mediaType);
               
               if (updatedApiData) {
-                console.log(`Successfully fetched details from ${providerInfo.provider}:`, {
-                  hasRelations: !!updatedApiData.relations,
-                  hasRuntime: !!updatedApiData.duration,
-                  hasEpisodeCount: !!updatedApiData.episodeCount,
-                  hasCast: !!updatedApiData.cast
-                });
+                
                 
                 // Başarılı, döngüden çık
                 successfulProvider = providerInfo.provider;
@@ -767,18 +752,18 @@ const useContentStore = create()(
               }
             } catch (error) {
               lastError = error;
-              console.warn(`Failed to fetch from ${providerInfo.provider}:`, error.message);
+              
               // Bir sonraki provider'a geç
               continue;
             }
           }
 
           if (!updatedApiData) {
-            console.error('All providers failed for relations fetch:', lastError);
+            
             return;
           }
 
-          console.log(`Using data from provider: ${successfulProvider}`);
+          
 
           // **KRİTİK FIX**: TÜM detaylı bilgileri güncelle, sadece relations değil
           set((state) => {
@@ -822,14 +807,11 @@ const useContentStore = create()(
               
               state.contents[contentId].updatedAt = new Date().toISOString();
               
-              console.log('Content details updated comprehensively:', contentId, {
-                relationsAdded: !!updatedApiData.relations,
-                detailsEnriched: true
-              });
+              
             }
           });
         } catch (error) {
-          console.error('Relations fetch hatası:', error);
+          
         }
       },
 
@@ -852,20 +834,20 @@ const useContentStore = create()(
       },
 
       fetchAndCacheSeasonData: async (contentId, force = false) => {
-        console.log('fetchAndCacheSeasonData çağrıldı:', contentId, 'force=', force);
+        
         const { contents } = get();
         const content = contents[contentId];
         
         if (!content) {
-          console.log('Content bulunamadı:', contentId);
+          
           return null;
         }
         
-        console.log('Content bulundu:', content);
+        
         
         // Zaten sezon verisi varsa ve force belirtilmemişse API çağrısı yapma
         if (!force && content.seasons && Object.keys(content.seasons).length > 0) {
-          console.log('Sezon verisi zaten var, cache kullanılıyor:', content.seasons);
+          
           return content.seasons;
         }
 
@@ -873,21 +855,21 @@ const useContentStore = create()(
           const { apiData } = content;
           let seasonData = {};
           
-          console.log('API Data:', apiData);
-          console.log('Content pageId:', content.pageId);
+          
+          
 
           // **KRİTİK FIX**: FALLBACK CHAIN kullan - önce TMDB, sonra diğer provider'lar
           let fetchSuccess = false;
 
           // 1. ÖNCE TMDB dene (dizi/anime için)
           if (apiData.tmdbId && (content.pageId === 'dizi' || content.pageId === 'anime') && !fetchSuccess) {
-            console.log('TMDB API çağrısı yapılıyor...');
+            
             
             try {
               // Electron ortamında mı kontrol et
               if (window.electronAPI?.getTvShowSeasons) {
                 const tmdbSeasons = await window.electronAPI.getTvShowSeasons(apiData.tmdbId);
-                console.log('TMDB yanıtı:', tmdbSeasons);
+                
                 if (tmdbSeasons && tmdbSeasons.seasons) {
                   tmdbSeasons.seasons.forEach(season => {
                     seasonData[season.seasonNumber] = {
@@ -901,11 +883,9 @@ const useContentStore = create()(
                 }
               } else {
                 // Web ortamında doğrudan TMDB API'sini kullan
-                console.log('Web ortamında TMDB API çağrısı yapılıyor...');
                 const { TmdbApi } = await import('../api/providers/TmdbApi.js');
                 const tmdbApi = new TmdbApi();
                 const tmdbSeasons = await tmdbApi.getSeasons(apiData.tmdbId);
-                console.log('TMDB yanıtı (web):', tmdbSeasons);
                 
                 if (tmdbSeasons && Array.isArray(tmdbSeasons) && tmdbSeasons.length > 0) {
                   tmdbSeasons.forEach(season => {
@@ -928,7 +908,6 @@ const useContentStore = create()(
           if (content.pageId === 'anime' && !fetchSuccess) {
             // 2a. Kitsu API dene
             if (apiData.kitsuId && !fetchSuccess) {
-              console.log('Kitsu API episode çağrısı yapılıyor...');
               try {
                 const episodeUrl = `https://kitsu.io/api/edge/anime/${apiData.kitsuId}/episodes`;
                 const episodeResponse = await fetch(episodeUrl, {
@@ -940,7 +919,7 @@ const useContentStore = create()(
                 
                 if (episodeResponse.ok) {
                   const episodeData = await episodeResponse.json();
-                  console.log('Kitsu episode yanıtı:', episodeData);
+                  
                   
                   const episodes = episodeData.data || [];
                   const totalEpisodes = episodeData.meta?.count || episodes.length;
@@ -985,7 +964,7 @@ const useContentStore = create()(
             
             // 2b. AniList API dene
             if ((apiData.anilistId || apiData.id) && !fetchSuccess) {
-              console.log('AniList API episode çağrısı yapılıyor...');
+              
               try {
                 const anilistId = apiData.anilistId || apiData.id;
                 
@@ -1016,12 +995,12 @@ const useContentStore = create()(
               
               if (response.ok) {
                 const anilistData = await response.json();
-                console.log('AniList GraphQL yanıtı:', anilistData);
+                
                 
                 const episodes = anilistData?.data?.Media?.episodes;
                 
                 if (episodes && episodes > 0) {
-                  console.log('AniList episodes bulundu:', episodes);
+                  
                   seasonData[1] = {
                     seasonNumber: 1,
                     episodeCount: episodes,
@@ -1038,7 +1017,7 @@ const useContentStore = create()(
             
             // 2c. Jikan API dene
             if ((apiData.jikanId || apiData.mal_id) && !fetchSuccess) {
-              console.log('Jikan API episode çağrısı yapılıyor...');
+              
               try {
                 const jikanId = apiData.jikanId || apiData.mal_id;
                 const episodeUrl = `https://api.jikan.moe/v4/anime/${jikanId}/episodes`;
@@ -1046,7 +1025,7 @@ const useContentStore = create()(
                 
                 if (episodeResponse.ok) {
                   const episodeData = await episodeResponse.json();
-                  console.log('Jikan episode yanıtı:', episodeData);
+                  
                   
                   const episodes = episodeData.data || [];
                   const totalEpisodes = episodes.length;
@@ -1069,7 +1048,7 @@ const useContentStore = create()(
           
           // 3. SON FALLBACK: Hiçbir API başarısız olduysa ve episodeCount varsa kullan
           if (!fetchSuccess && apiData.episodeCount && apiData.episodeCount > 0) {
-            console.log('Son fallback: episodeCount kullanılıyor:', apiData.episodeCount);
+            
             seasonData[1] = {
               seasonNumber: 1,
               episodeCount: apiData.episodeCount,
@@ -1078,7 +1057,7 @@ const useContentStore = create()(
             };
             fetchSuccess = true;
           } else if (!fetchSuccess && apiData.episodes && apiData.episodes > 0) {
-            console.log('Son fallback: episodes kullanılıyor:', apiData.episodes);
+            
             seasonData[1] = {
               seasonNumber: 1,
               episodeCount: apiData.episodes,
@@ -1088,7 +1067,7 @@ const useContentStore = create()(
             fetchSuccess = true;
           }
 
-          console.log('Oluşturulan sezon verisi:', seasonData, 'fetchSuccess:', fetchSuccess);
+          
 
           // Store'da güncelle (mevcut watchedEpisodes korunacak şekilde birleştir)
           set((state) => {
@@ -1120,7 +1099,7 @@ const useContentStore = create()(
 
           return seasonData;
         } catch (error) {
-          console.error('Sezon verisi alınırken hata:', error);
+          
           return {};
         }
       },
@@ -1223,3 +1202,4 @@ export const useStatusContents = (statusId) => useContentStore((state) => {
 });
 
 export default useContentStore;
+

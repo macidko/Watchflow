@@ -59,6 +59,7 @@
       "scrollLeft": "Scroll left",
       "scrollRight": "Scroll right", 
       "empty": "Empty",
+      "drag": "Drag",
       "emptyState": {
         "title": "List Empty",
         "description": "No content in this category yet. You can search for content or drag items from other lists.",
@@ -76,8 +77,17 @@
         "title": "Start searching",
         "subtitle": "Find your favorite movies, series and anime"
       },
-      "searchButton": "Search",
+      "searchButton": {
+        "placeholder": "Search movies, TV shows, anime...",
+        "bulkPlaceholder": "Search multiple titles (one per line)\nBreaking Bad\nThe Dark Knight\nAttack on Titan",
+        "addToList": "Add to List",
+        "addAllToList": "Add All Content"
+      },
       "noResults": "No results found"
+      ,
+      "alternative": {
+        "select": "Select this alternative"
+      }
     },
     "sliderManager": {
       "title": "Manage Lists",
@@ -97,13 +107,15 @@
         "errorMessage": "List could not be deleted. Please try again."
       },
       "noLists": "No lists found on this page yet.",
+  "ariaList": "Slider list",
       "deleteConfirm": "Are you sure you want to delete this list?",
       "cannotDelete": "This list cannot be deleted! It contains {count} items. Please empty the list first.",
       "deleteSuccess": "List deleted successfully.",
       "deleteFail": "List could not be deleted. Please try again.",
       "buttons": {
         "add": "Add",
-        "titleTooShort": "Title too short"
+        "titleTooShort": "Title too short",
+        "cancel": "Cancel"
       }
     },
     "detailModal": {
@@ -111,13 +123,60 @@
       "updateSeasons": "Update Seasons",
       "updateSeasonsTitle": "Update season information",
       "duration": "Duration",
-      "budget": "Budget"
+      "budget": "Budget",
+      "revenue": "Revenue",
+      "rating": "Rating",
+      "cast": "Cast",
+      "director": "Director",
+      "moreActors": "+{count} more",
+      "episodes": "episodes",
+      "episodesLabel": "Episodes",
+      "episodeTracking": {
+        "watched": "Watched",
+        "notWatched": "Not Watched",
+        "clickToMark": "Click episodes to mark them",
+        "episodeTooltip": "Episode {episode} - {status}"
+      }
     },
     "statusBadge": {
       "finished": "Finished",
       "airing": "Airing",
       "completed": "Completed",
       "ended": "Ended"
+    },
+    "episodeTracking": {
+      "watched": "Watched",
+      "notWatched": "Not Watched",
+      "clickToMark": "Click episodes to mark them",
+      "episodeTooltip": "Episode {episode} - {status}",
+      "episodeWithNumber": "Episode {number}",
+      "episodesWatched": "{watched}/{total} episodes watched"
+    },
+    "notificationPanel": {
+      "title": "Notifications",
+      "noNotifications": "No new notifications"
+    },
+    "relatedContent": {
+      "similarMovies": "Similar Movies",
+      "relatedSeries": "Related Series",
+      "relatedAnime": "Related Anime",
+      "relatedContent": "Related Content",
+      "noSimilarMovies": "No similar movies found",
+      "noRelatedSeries": "No related series found",
+      "noRelatedAnime": "No related anime found",
+      "noRelatedContent": "No related content found",
+      "noSimilarMoviesDesc": "No other movies are related to this film.",
+      "noRelatedSeriesDesc": "No other series are related to this show.",
+      "noRelatedAnimeDesc": "No prequel, sequel or related anime found.",
+      "noRelatedContentDesc": "No other content is related to this item.",
+      "addToList": "Add to List",
+      "add": "Add",
+      "updateRelations": "Update relations"
+    }
+    ,
+    "card": {
+      "quickMove": "Quick move",
+      "dragHint": "Drag this card to move it to another slider"
     }
   },
   "pages": {
@@ -213,7 +272,8 @@
           "description": "Restore your collection from a JSON file",
           "button": "Import Collection",
           "selectFile": "Select File",
-          "dragDrop": "Or drag and drop your JSON file here"
+          "dragDrop": "Or drag and drop your JSON file here",
+          "supportedFormat": "Supported format: .json"
         },
         "reset": {
           "title": "Reset Application",
@@ -242,6 +302,23 @@
         "github": "GitHub Repository",
         "license": "License"
       }
+    }
+  },
+  "statuses": {
+    "film": {
+      "to-watch": "To watch",
+      "watching": "Watching",
+      "watched": "Watched"
+    },
+    "dizi": {
+      "to-watch": "To watch",
+      "watching": "Watching",
+      "watched": "Watched"
+    },
+    "anime": {
+      "to-watch": "To watch",
+      "watching": "Watching",
+      "watched": "Watched"
     }
   },
   "calendar": {
@@ -359,6 +436,27 @@
     "all": "all",
     "film": "film",
     "dizi": "dizi"
+  },
+  "genres": {
+    "28": "Action",
+    "12": "Adventure",
+    "16": "Animation",
+    "35": "Comedy",
+    "80": "Crime",
+    "99": "Documentary",
+    "18": "Drama",
+    "10751": "Family",
+    "14": "Fantasy",
+    "36": "History",
+    "27": "Horror",
+    "10402": "Music",
+    "9648": "Mystery",
+    "10749": "Romance",
+    "878": "Science Fiction",
+    "10770": "TV Movie",
+    "53": "Thriller",
+    "10752": "War",
+    "37": "Western"
   },
   "pageIds": {
     "home": "home",

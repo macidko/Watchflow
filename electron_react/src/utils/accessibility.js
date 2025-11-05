@@ -99,7 +99,7 @@ export class KeyboardShortcuts {
       try {
         shortcutData.callback(event);
       } catch (error) {
-        console.error('Keyboard shortcut error:', error);
+        
       }
     }
   }
@@ -377,3 +377,4 @@ export function cleanupAccessibility() {
   focusManager = null;
   screenReaderAnnouncer = null;
 }
+

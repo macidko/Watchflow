@@ -81,3 +81,4 @@ export async function getAnilistAnimeDetails(anilistId) {
     source: 'anilist'
   };
 }
+

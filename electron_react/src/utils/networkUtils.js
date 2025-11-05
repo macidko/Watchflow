@@ -247,7 +247,7 @@ export class ProgressTracker {
       try {
         callback(percentage, this.current, this.total);
       } catch (error) {
-        console.warn('Progress callback error:', error);
+        
       }
     });
   }
@@ -302,3 +302,4 @@ export function createDebouncedFetch(delay = 300) {
     });
   };
 }
+

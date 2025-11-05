@@ -90,6 +90,21 @@ const SearchButton = () => {
     initializeStore();
   }, [initializeStore]);
 
+  // Translation helpers (fallback to store values when translation missing)
+  const translatePageTitleById = (pageId, fallback) => {
+    const key = `pages.${pageId}.title`;
+    const translated = t(key);
+    return translated === key ? (fallback || pageId) : translated;
+  };
+
+  const translateStatusTitle = (pageId, status) => {
+    const key = `statuses.${pageId}.${status.id}`;
+    const translated = t(key);
+    return translated === key ? (status.title || status.id) : translated;
+  };
+
+  const translateStatusDisplayName = (status) => `${translatePageTitleById(status.pageId, status.pageName)} - ${translateStatusTitle(status.pageId, status)}`;
+
   useEffect(() => {
     if (showModal && inputRef.current) {
       setTimeout(() => inputRef.current.focus(), 100);
@@ -139,7 +154,6 @@ const SearchButton = () => {
           return;
         }
 
-        console.log(`Bulk search for ${queries.length} queries`);
         const bulkResults = [];
         const allResults = {}; // Store all results for alternatives
 
@@ -370,15 +384,13 @@ const SearchButton = () => {
         pageStatuses.forEach(status => {
           availableStatuses.push({
             ...status,
-            pageName: page.title,
-            displayName: `${page.title} - ${status.title}`
+            pageName: translatePageTitleById(page.id, page.title),
+            displayName: `${translatePageTitleById(page.id, page.title)} - ${translateStatusTitle(page.id, status)}`
           });
         });
       }
     });
-    
-    console.log('Available statuses for item:', item.title, availableStatuses);
-    
+        
     setDropdownStatuses(availableStatuses);
     setShowDropdownFor(item.id);
   }, [activeTab, getPages, getStatusesByPage]);
@@ -398,9 +410,7 @@ const SearchButton = () => {
         } else {
           return null; // Anime için TMDB detayı yok
         }
-        
-        console.log(`Fetching detailed ${mediaType} data for:`, item.title);
-        const detailedData = await tmdbApi.getDetails(item.id, mediaType);
+                const detailedData = await tmdbApi.getDetails(item.id, mediaType);
         
         return {
           runtime: detailedData.duration,
@@ -419,8 +429,6 @@ const SearchButton = () => {
         // Anime provider'lar için ApiManager kullan
         const { ApiManager } = await import('../../api/ApiManager.js');
         const apiManager = new ApiManager();
-        
-        console.log(`Fetching detailed anime data for:`, item.title);
         const detailedData = await apiManager.getDetails(item.id, MediaTypes.ANIME);
         
         return {
@@ -463,7 +471,8 @@ const SearchButton = () => {
       return false;
     });
     if (existing) {
-      setToastMessage(`"${item.title}" zaten "${status.pageName} - ${status.title}" listesinde! ⚠️`);
+      const displayName = translateStatusDisplayName(status);
+      setToastMessage(`"${item.title}" zaten "${displayName}" listesinde! ⚠️`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       setShowDropdownFor(null);
@@ -498,13 +507,6 @@ const SearchButton = () => {
           ...detailedApiData,
           ...detailedData
         };
-        console.log('Detailed data fetched:', {
-          title: item.title,
-          hasRuntime: !!detailedData.runtime,
-          hasCast: !!detailedData.cast,
-          hasRelations: !!detailedData.relations,
-          hasEpisodeCount: !!detailedData.episodeCount
-        });
       }
 
       // Prepare content data for the new store structure
@@ -516,18 +518,12 @@ const SearchButton = () => {
         seasons: (item.type === MediaTypes.TV || item.type === MediaTypes.ANIME) ? {} : undefined
       };
 
-      console.log('Adding content to store:', { 
-        pageId: status.pageId, 
-        statusId: status.id, 
-        title: item.title,
-        hasDetailedData: !!detailedData
-      });
-      
-      addContent(contentData);
-      setToastMessage(`"${item.title}" added to "${status.pageName} - ${status.title}"! ✅`);
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-      setShowDropdownFor(null);
+  addContent(contentData);
+  const displayName = translateStatusDisplayName(status);
+  setToastMessage(`"${item.title}" added to "${displayName}"! ✅`);
+  setShowToast(true);
+  setTimeout(() => setShowToast(false), 3000);
+  setShowDropdownFor(null);
     } catch (error) {
       console.error('Error adding content:', error);
       setToastMessage('Failed to add content! ❌');
@@ -552,7 +548,7 @@ const SearchButton = () => {
         availableStatuses.push({
           ...status,
           pageId: page.id,
-          pageName: page.title
+          pageName: translatePageTitleById(page.id, page.title)
         });
       });
     });
@@ -755,7 +751,7 @@ const SearchButton = () => {
                   {isBulkMode ? (
                     <textarea
                       ref={inputRef}
-                      placeholder="Search multiple titles (one per line)&#10;Breaking Bad&#10;The Dark Knight&#10;Attack on Titan"
+                      placeholder={t('components.search.searchButton.bulkPlaceholder')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={handleKeyDown}
@@ -767,7 +763,7 @@ const SearchButton = () => {
                     <input
                       ref={inputRef}
                       type="text"
-                      placeholder="Search movies, TV shows, anime..."
+                      placeholder={t('components.search.searchButton.placeholder')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={handleKeyDown}
@@ -811,7 +807,7 @@ const SearchButton = () => {
                   className="p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2"
                   style={{ color: 'var(--secondary-text)' }}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Kapat" focusable="false">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.close')} focusable="false">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -904,7 +900,7 @@ const SearchButton = () => {
                               {showAddAllDropdown && (
                                 <div className="absolute top-full right-0 mt-1 w-64 rounded-lg z-50 overflow-hidden" style={{ background: 'var(--secondary-bg)', boxShadow: 'var(--dropdown-shadow)', border: '1px solid var(--border-color)' }}>
                                   <div className="p-2.5" style={{ background: 'var(--secondary-bg)', borderBottom: '1px solid var(--border-color)' }}>
-                                    <h4 style={{ color: 'var(--primary-text)', fontWeight: 600, fontSize: '0.75rem' }}>Tüm İçerikleri Ekle</h4>
+                                    <h4 style={{ color: 'var(--primary-text)', fontWeight: 600, fontSize: '0.75rem' }}>{t('components.search.searchButton.addAllToList')}</h4>
                                     <p style={{ color: 'var(--secondary-text)', fontSize: '0.75rem', marginTop: '0.125rem' }}>{filteredResults.length} içerik için liste seçin</p>
                                   </div>
                                   
@@ -920,7 +916,7 @@ const SearchButton = () => {
                                             <div className="flex items-center justify-between">
                                               <div className="flex-1 min-w-0">
                                                 <h5 className="font-medium text-sm truncate" style={{ color: 'var(--primary-text)' }}>
-                                                  {status.title}
+                                                  { (t(`statuses.${status.pageId}.${status.id}`) === `statuses.${status.pageId}.${status.id}`) ? status.title : t(`statuses.${status.pageId}.${status.id}`) }
                                                 </h5>
                                                 <p className="text-xs mt-0.5" style={{ color: 'var(--secondary-text)' }}>
                                                   {status.pageName}
@@ -1048,9 +1044,9 @@ const SearchButton = () => {
                       className="p-2 rounded-lg transition-colors focus-visible:outline-none"
                       style={{ color: 'var(--accent-color)' }}
                       onClick={(e) => handleShowDropdown(item, e)}
-                      title="Listeye ekle"
+                      title={t('components.search.searchButton.addToList')}
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Listeye ekle" focusable="false">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('components.search.searchButton.addToList')} focusable="false">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </button>
@@ -1059,7 +1055,7 @@ const SearchButton = () => {
                     {showDropdownFor === item.id && (
                       <div className="absolute top-full right-0 mt-2 w-72 rounded-xl z-50 overflow-hidden" style={{ background: 'var(--secondary-bg)', boxShadow: 'var(--dropdown-shadow)', border: '1px solid var(--border-color)' }}>
                         <div className="p-3" style={{ background: 'var(--secondary-bg)', borderBottom: '1px solid var(--border-color)' }}>
-                          <h4 className="font-semibold text-sm" style={{ color: 'var(--primary-text)' }}>Listeye Ekle</h4>
+                          <h4 className="font-semibold text-sm" style={{ color: 'var(--primary-text)' }}>{t('components.search.searchButton.addToList')}</h4>
                           <p className="text-xs mt-0.5" style={{ color: 'var(--secondary-text)' }}>&quot;{item.title}&quot; için bir durum seçin</p>
                         </div>
                         
@@ -1075,7 +1071,7 @@ const SearchButton = () => {
                                   <div className="flex items-center justify-between">
                                     <div className="flex-1 min-w-0">
                                       <h5 className="font-medium text-sm truncate" style={{ color: 'var(--primary-text)' }}>
-                                        {status.title}
+                                        { (t(`statuses.${status.pageId}.${status.id}`) === `statuses.${status.pageId}.${status.id}`) ? status.title : t(`statuses.${status.pageId}.${status.id}`) }
                                       </h5>
                                       <p className="text-xs mt-0.5" style={{ color: 'var(--secondary-text)' }}>
                                         {status.pageName}
@@ -1100,7 +1096,7 @@ const SearchButton = () => {
                           ) : (
                             <div className="p-6 text-center">
                               <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: 'var(--card-bg)' }}>
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Uyarı" focusable="false" style={{ color: 'var(--secondary-text)' }}>
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.warning')} focusable="false" style={{ color: 'var(--secondary-text)' }}>
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                 </svg>
                               </div>
@@ -1129,7 +1125,7 @@ const SearchButton = () => {
                                   {showDropdownFor === item.id && (
                                     <div className="absolute top-full right-0 mt-1 w-64 rounded-lg z-50 overflow-hidden" style={{ background: 'var(--secondary-bg)', boxShadow: 'var(--dropdown-shadow)', border: '1px solid var(--border-color)' }}>
                                       <div className="p-2.5" style={{ background: 'var(--secondary-bg)', borderBottom: '1px solid var(--border-color)' }}>
-                                        <h4 className="font-semibold text-xs" style={{ color: 'var(--primary-text)' }}>Listeye Ekle</h4>
+                                        <h4 className="font-semibold text-xs" style={{ color: 'var(--primary-text)' }}>{t('components.search.searchButton.addToList')}</h4>
                                         <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--secondary-text)' }}>&quot;{item.title}&quot; için bir durum seçin</p>
                                       </div>
                                       
@@ -1145,7 +1141,7 @@ const SearchButton = () => {
                                                 <div className="flex items-center justify-between">
                                                   <div className="flex-1 min-w-0">
                                                     <h5 className="font-medium text-sm truncate" style={{ color: 'var(--primary-text)' }}>
-                                                      {status.title}
+                                                      { (t(`statuses.${status.pageId}.${status.id}`) === `statuses.${status.pageId}.${status.id}`) ? status.title : t(`statuses.${status.pageId}.${status.id}`) }
                                                     </h5>
                                                     <p className="text-xs mt-0.5" style={{ color: 'var(--secondary-text)' }}>
                                                       {status.pageName}
@@ -1170,7 +1166,7 @@ const SearchButton = () => {
                                         ) : (
                                           <div className="p-6 text-center">
                                             <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: 'var(--card-bg)' }}>
-                                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Uyarı" focusable="false" style={{ color: 'var(--secondary-text)' }}>
+                                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.warning')} focusable="false" style={{ color: 'var(--secondary-text)' }}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                               </svg>
                                             </div>
@@ -1278,7 +1274,7 @@ const SearchButton = () => {
                   onClick={() => setShowAlternatives(false)}
                   className="p-2 rounded-lg transition-colors focus-visible:outline-none"
                   style={{ color: 'var(--secondary-text)' }}
-                  aria-label="Kapat"
+                  aria-label={t('common.close')}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Kapat" focusable="false">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1392,9 +1388,9 @@ const SearchButton = () => {
                               }
                               setShowAlternatives(false);
                             }}
-                            title="Bu alternatifi seç"
+                            title={t('components.search.alternative.select')}
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Bu alternatifi seç" focusable="false">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('components.search.alternative.select')} focusable="false">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                           </button>
@@ -1426,9 +1422,9 @@ const SearchButton = () => {
                   onClick={() => setShowAlternatives(false)}
                   className="px-4 py-2 rounded-lg text-sm font-semibold focus-visible:outline-none"
                   style={{ background: 'var(--accent-color)', color: 'var(--primary-text)' }}
-                  aria-label="Kapat"
+                  aria-label={t('common.close')}
                 >
-                  Kapat
+                  {t('common.close')}
                 </button>
               </div>
             </div>
@@ -1456,7 +1452,7 @@ const SearchButton = () => {
                 className="p-1 rounded-md transition-colors flex-shrink-0 focus-visible:outline-none"
                 style={{ color: 'var(--secondary-text)' }}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label="Kapat" focusable="false" style={{ color: 'var(--secondary-text)' }}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" role="img" aria-label={t('common.close')} focusable="false" style={{ color: 'var(--secondary-text)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>

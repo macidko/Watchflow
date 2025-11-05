@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import useContentStore from '../config/initialData';
+import { t } from '../i18n';
 
 export default function useHomeController() {
   const mainContentRef = useRef(null);
@@ -22,10 +23,14 @@ export default function useHomeController() {
       const statuses = getStatusesByPage(page.id);
       statuses.forEach(status => {
         const contents = getContentsByPageAndStatus(page.id, status.id);
-        if (contents.length > 0) {
+          if (contents.length > 0) {
+          const pageKey = 'pages.' + page.id + '.title';
+          const statusKey = 'statuses.' + page.id + '.' + status.id;
+          const pageTitle = t(pageKey) === pageKey ? page.title : t(pageKey);
+          const statusTitle = t(statusKey) === statusKey ? status.title : t(statusKey);
           sliders.push({
             id: `${page.id}-${status.id}`,
-            title: `${page.title} - ${status.title}`,
+            title: `${pageTitle} - ${statusTitle}`,
             items: contents.map(content => ({
               id: content.id,
               ...content.apiData,

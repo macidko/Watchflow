@@ -121,3 +121,4 @@ export const useSettings = () => {
     availableLanguages: Object.values(LANGUAGES)
   };
 };
+

@@ -52,7 +52,7 @@ export class JikanApi extends ApiInterface {
         const relationsResponse = await this.makeRequest(relationsUrl);
         relations = relationsResponse.data || {};
       } catch (error) {
-        console.warn('Jikan relations fetch failed:', error.message);
+        
       }
       
       return {
@@ -106,7 +106,7 @@ export class JikanApi extends ApiInterface {
 
         return seasons;
       } catch (error) {
-        console.warn('Jikan getSeasons error:', error.message);
+        
         return [];
       }
     });
@@ -126,7 +126,7 @@ export class JikanApi extends ApiInterface {
         if (error.message.includes('429') && retries < maxRetries) {
           // Rate limited, wait with exponential backoff
           const delay = this.rateLimitDelay * Math.pow(2, retries);
-          console.warn(`Jikan rate limited, waiting ${delay}ms before retry ${retries + 1}`);
+          
           await this.delay(delay);
           retries++;
           continue;
@@ -159,7 +159,7 @@ export class JikanApi extends ApiInterface {
           await this.delay(this.rateLimitDelay);
         }
       } catch (error) {
-        console.warn(`Jikan batch search failed for query "${query}":`, error.message);
+        
         results[query] = [];
       }
     }
@@ -214,8 +214,9 @@ export class JikanApi extends ApiInterface {
 
       return await response.json();
     } catch (error) {
-      console.error(`Jikan API Request failed for ${url}:`, error.message);
+      
       throw error;
     }
   }
 }
+

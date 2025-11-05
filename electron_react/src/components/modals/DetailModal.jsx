@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import useContentStore from '../../config/initialData';
 import RelatedContent from './RelatedContent';
+import { t } from '../../i18n';
 import '../../css/components/modals/DetailModal.css';
 
 const DetailModal = ({ item, onClose }) => {
@@ -289,7 +290,7 @@ if (
                   className="detail-modal-close"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <title>Kapat</title>
+                    <title>{t('common.close')}</title>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -327,7 +328,7 @@ if (
                   className="text-xs mt-1 hover:underline"
                   style={{color: 'var(--accent-color, #ff4500)'}}
                 >
-                  {descExpanded ? 'Daha az' : 'Daha fazla'}
+                  {descExpanded ? t('showLess') : t('showMore')}
                 </button>
               )}
             </div>
@@ -343,7 +344,7 @@ if (
           {totalCount > 0 && (
             <div className="mb-4">
               <div className="flex items-center justify-between text-xs" style={{color: 'var(--secondary-text, #b3b3b3)'}}>
-                <span>{watchedCount}/{totalCount} bölüm</span>
+                <span>{watchedCount}/{totalCount} {t('components.detailModal.episodes')}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>%{progress}</span>
                   <button
@@ -361,7 +362,7 @@ if (
                     }}
                     disabled={seasonsLoading}
                     className="text-xs px-2 py-1 rounded bg-[#374151] hover:bg-[#4b5563] text-white"
-                    title="Sezon bilgilerini güncelle"
+                    title={t('components.detailModal.updateSeasonsTitle')}
                   >
                     {seasonsLoading ? 'Güncelleniyor...' : 'Sezonları Güncelle'}
                   </button>
@@ -400,7 +401,7 @@ if (
                         <svg className="w-4 h-4 text-[#029096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span className="text-xs font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>Süre</span>
+                        <span className="text-xs font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>{t('components.detailModal.duration')}</span>
                       </div>
                       <span className="text-sm font-bold" style={{color: 'var(--primary-text, #fff)'}}>{apiData.runtime} dk</span>
                     </div>
@@ -413,7 +414,7 @@ if (
                         <svg className="w-4 h-4 text-[#029096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                         </svg>
-                        <span className="text-xs font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>Bütçe</span>
+                        <span className="text-xs font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>{t('components.detailModal.budget')}</span>
                       </div>
                       <span className="text-sm font-bold" style={{color: 'var(--primary-text, #fff)'}}>
                         ${(apiData.budget / 1000000).toFixed(1)}M
@@ -428,7 +429,7 @@ if (
                         <svg className="w-4 h-4 text-[#029096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
-                        <span className="text-xs font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>Hasılat</span>
+                        <span className="text-xs font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>{t('components.detailModal.revenue')}</span>
                       </div>
                       <span className="text-sm font-bold" style={{color: 'var(--primary-text, #fff)'}}>
                         ${(apiData.revenue / 1000000).toFixed(1)}M
@@ -443,7 +444,7 @@ if (
                         <svg className="w-4 h-4 text-[#029096]" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                         </svg>
-                        <span className="text-xs font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>Puan</span>
+                        <span className="text-xs font-medium" style={{color: 'var(--accent-color, #ff4500)'}}>{t('components.detailModal.rating')}</span>
                       </div>
                       <span className="text-sm font-bold" style={{color: 'var(--accent-color, #ff4500)'}}>
                         {(apiData.vote_average || apiData.rating)}/10
@@ -455,7 +456,7 @@ if (
                 {/* Oyuncular */}
                 {apiData?.cast && apiData.cast.length > 0 && (
                   <div className="mt-3">
-                    <h4 className="text-xs font-medium text-[#029096] mb-2">Başrol Oyuncuları</h4>
+                    <h4 className="text-xs font-medium text-[#029096] mb-2">{t('components.detailModal.cast')}</h4>
                     <div className="flex flex-wrap gap-1">
                       {apiData.cast.slice(0, 4).map((actor) => (
                         <span key={actor.id || actor.name || actor} className="px-2 py-1 rounded-full text-xs opacity-70" style={{background: 'var(--secondary-bg, #1e1e1e)', color: 'var(--primary-text, #fff)'}}>
@@ -464,7 +465,7 @@ if (
                       ))}
                       {apiData.cast.length > 4 && (
                         <span className="px-2 py-1 rounded-full text-xs" style={{background: 'var(--secondary-bg, #1e1e1e)', color: 'var(--accent-color, #ff4500)'}}>
-                          +{apiData.cast.length - 4} daha
+                          {t('components.detailModal.moreActors', { count: apiData.cast.length - 4 })}
                         </span>
                       )}
                     </div>
@@ -474,7 +475,7 @@ if (
                 {/* Yönetmen */}
                 {apiData?.director && (
                   <div className="mt-3">
-                    <h4 className="text-xs font-medium text-[#029096] mb-1">Yönetmen</h4>
+                    <h4 className="text-xs font-medium text-[#029096] mb-1">{t('components.detailModal.director')}</h4>
                     <span className="px-2 py-1 rounded-full text-xs opacity-70" style={{background: 'var(--secondary-bg, #1e1e1e)', color: 'var(--primary-text, #fff)'}}>
                       {apiData.director}
                     </span>
@@ -506,14 +507,14 @@ if (
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
                             <span className="px-2.5 py-1 rounded-full text-xs font-bold shadow-sm" style={{ background: 'var(--accent-color, #ff4500)', color: 'var(--primary-text, #fff)' }}>
-                              {content?.pageId === 'anime' ? 'Bölümler' : `S${season.seasonNumber}`}
+                              {content?.pageId === 'anime' ? t('components.detailModal.episodesLabel') : `S${season.seasonNumber}`}
                             </span>
                             <span className="text-sm font-semibold" style={{color: 'var(--primary-text, #fff)'}}>
                               {season.title || (content?.pageId === 'anime' ? 'Anime' : `Season ${season.seasonNumber}`)}
                             </span>
                           </div>
                           <span className="text-xs px-2 py-0.5 rounded-full" style={{color: 'var(--secondary-text, #b3b3b3)', background: 'var(--secondary-bg, #1e1e1e)'}}>
-                            {totalEpisodes} bölüm
+                            {totalEpisodes} {t('components.detailModal.episodes')}
                           </span>
                         </div>
                         <button
@@ -556,7 +557,7 @@ if (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-[#A3A8B8] font-medium">
-                            {watchedEpisodes}/{totalEpisodes} bölüm izlendi
+                            {t('components.episodeTracking.episodesWatched', { watched: watchedEpisodes, total: totalEpisodes })}
                           </span>
                           <span className="font-bold" style={{color: seasonProgress === 100 ? 'var(--accent-color, #ff4500)' : 'var(--primary-text, #fff)'}}>
                             %{seasonProgress}
@@ -581,7 +582,7 @@ if (
                               onClick={() => handleEpisodeToggle(season.seasonNumber, ep)}
                               aria-pressed={!!isWatched}
                               className={`detail-modal-episode-btn group relative transition-all duration-200 ${isWatched ? 'watched' : 'unwatched'}`}
-                              title={`Bölüm ${ep}${isWatched ? ' - İzlendi' : ' - İzlenmedi'}`}
+                              title={t('components.detailModal.episodeTracking.episodeTooltip', { episode: ep, status: isWatched ? t('components.detailModal.episodeTracking.watched') : t('components.detailModal.episodeTracking.notWatched') })}
                             >
                               {isWatched && (
                                 <div className="detail-modal-episode-pulse absolute inset-0 rounded-lg" aria-hidden="true"></div>
@@ -600,15 +601,15 @@ if (
                       </div>
                       {/* Episode Stats */}
                       <div className="mt-4 flex items-center justify-between text-xs opacity-60" style={{color: 'var(--primary-text, #fff)'}}>
-                        <span>Bölümlere tıklayarak işaretleyin</span>
+                        <span>{t('components.detailModal.episodeTracking.clickToMark')}</span>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 rounded-full" style={{background: 'var(--accent-color, #ff4500)'}}></div>
-                            <span style={{color: 'var(--accent-color, #ff4500)'}}>İzlendi</span>
+                            <span style={{color: 'var(--accent-color, #ff4500)'}}>{t('components.detailModal.episodeTracking.watched')}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2" style={{background: 'var(--secondary-bg, #1e1e1e)', border: '1px solid var(--card-bg, #1e1e1e)'}}></div>
-                            <span className="opacity-60" style={{color: 'var(--primary-text, #fff)'}}>İzlenmedi</span>
+                            <span className="opacity-60" style={{color: 'var(--primary-text, #fff)'}}>{t('components.detailModal.episodeTracking.notWatched')}</span>
                           </div>
                         </div>
                       </div>

@@ -36,7 +36,7 @@ export const useSliderDrag = (sliderId, onCardMove, endDrag) => {
         onCardMove(data.item, data.sourceSlider, sliderId);
       }
     } catch (error) {
-      console.error('Drop parsing error:', error);
+      
     }
 
     setDraggedItem(null);

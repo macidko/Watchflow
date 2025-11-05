@@ -45,7 +45,7 @@ export class DataManagementService {
       
       return { success: true, message: 'Data exported successfully' };
     } catch (error) {
-      console.error('Export failed:', error);
+      
       return { success: false, message: 'Export failed: ' + error.message };
     }
   }
@@ -102,7 +102,7 @@ export class DataManagementService {
       }
       
     } catch (error) {
-      console.error('Import failed:', error);
+      
       return { success: false, message: 'Import failed: ' + error.message };
     }
   }
@@ -131,7 +131,7 @@ export class DataManagementService {
         requiresReload: true
       };
     } catch (error) {
-      console.error('Reset failed:', error);
+      
       return { success: false, message: 'Reset failed: ' + error.message };
     }
   }
@@ -165,7 +165,7 @@ export class DataManagementService {
         itemCount: info.length
       };
     } catch (error) {
-      console.error('Failed to get storage info:', error);
+      
       return { items: [], totalSize: '0 B', itemCount: 0 };
     }
   }
@@ -210,3 +210,4 @@ export class DataManagementService {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 }
+

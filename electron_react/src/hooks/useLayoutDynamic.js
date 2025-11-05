@@ -16,7 +16,7 @@ export const useLayoutDynamic = () => {
       try {
         return JSON.parse(saved);
       } catch (error) {
-        console.warn('Failed to parse saved layout, using default:', error);
+        
       }
     }
     return DEFAULT_LAYOUT;
@@ -27,7 +27,7 @@ export const useLayoutDynamic = () => {
     try {
       localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(currentLayout));
     } catch (error) {
-      console.warn('Failed to save layout to localStorage:', error);
+      
     }
   }, [currentLayout]);
 
@@ -39,7 +39,7 @@ export const useLayoutDynamic = () => {
         ...LAYOUT_PRESETS[presetName]
       });
     } else {
-      console.warn(`Preset ${presetName} not found`);
+      
     }
   };
 
@@ -196,3 +196,4 @@ export const useLayoutDynamic = () => {
     availableDensities: Object.values(SLIDER_DENSITIES)
   };
 };
+

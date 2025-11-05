@@ -64,7 +64,7 @@ export class AniListApi extends ApiInterface {
         duration: item.duration
       }, MediaTypes.ANIME));
     } catch (error) {
-      console.error('AniList search error:', error);
+      
       throw error;
     }
   }
@@ -130,7 +130,7 @@ export class AniListApi extends ApiInterface {
         relations: normalizeRelations(media, 'anilist')
       };
     } catch (error) {
-      console.error('AniList getDetails error:', error);
+      
       throw error;
     }
   }
@@ -214,9 +214,10 @@ export class AniListApi extends ApiInterface {
 
       return results;
     } catch (error) {
-      console.error('AniList batch search error:', error);
+      
       // Fallback to sequential search
       return super.batchSearch(queries, options);
     }
   }
 }
+

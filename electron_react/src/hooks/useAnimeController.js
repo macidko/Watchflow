@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import useContentStore from '../config/initialData';
+import { t } from '../i18n';
 import useViewMode from './useViewMode';
 import { PAGES } from '../config/constants';
 import { useDrag } from '../contexts/DragContext';
@@ -22,7 +23,7 @@ export default function useAnimeController() {
     const contents = getContentsByPageAndStatus(PAGES.ANIME, status.id);
     return {
       id: `anime-${status.id}`,
-      title: status.title,
+      title: (t(`statuses.${PAGES.ANIME}.${status.id}`) === `statuses.${PAGES.ANIME}.${status.id}`) ? status.title : t(`statuses.${PAGES.ANIME}.${status.id}`),
       items: contents.map(content => ({
         id: content.id,
         ...content.apiData,

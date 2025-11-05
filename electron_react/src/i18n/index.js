@@ -34,7 +34,7 @@ export function useTranslation() {
     const translation = get(translations[currentLang], key);
     
     if (!translation) {
-      console.warn(`Translation missing for key: ${key}`);
+      
       return key; // Anahtar bulunamazsa, anahtarın kendisini döndür
     }
 
@@ -56,7 +56,7 @@ export const t = (key, params = {}) => {
   const translation = get(translations[currentLang], key);
   
   if (!translation) {
-    console.warn(`Translation missing for key: ${key}`);
+    
     return key;
   }
 
@@ -82,3 +82,4 @@ export const getCurrentLanguage = () => currentLang;
 
 // Mevcut dilleri al  
 export const getAvailableLanguages = () => Object.keys(translations);
+

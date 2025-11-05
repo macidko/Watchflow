@@ -114,3 +114,4 @@ export const DEFAULT_SETTINGS = {
   accentColor: ACCENT_COLORS.ORANGE,
   language: LANGUAGES.TR
 };
+

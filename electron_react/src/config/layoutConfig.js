@@ -110,3 +110,4 @@ export const DEFAULT_LAYOUT = {
 
 // Storage key for user preferences
 export const LAYOUT_STORAGE_KEY = 'watchflow_layout_preferences';
+

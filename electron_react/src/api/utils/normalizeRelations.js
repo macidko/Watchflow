@@ -281,3 +281,4 @@ function mapJikanStatus(status) {
   if (status === 'Not yet aired') return 'upcoming';
   return 'unknown';
 }
+

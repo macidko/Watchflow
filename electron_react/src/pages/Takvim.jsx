@@ -46,7 +46,7 @@ const Takvim = () => {
               else if (pageId === PAGES.ANIME) bgColor = COLORS.ANIME;
               calendarEvents.push({
                 id: `scheduled-ep-${content.id}-${ep.episode}`,
-                title: `🗓️ ${apiData.title} - ${ep.episode}. Bölüm (${t('calendar.events.scheduleDescription')})` ,
+                title: `🗓️ ${apiData.title} - ${t('components.episodeTracking.episodeWithNumber', { number: ep.episode })} (${t('calendar.events.scheduleDescription')})`,
                 start: ep.airDate,
                 allDay: false,
                 backgroundColor: bgColor,
@@ -90,15 +90,15 @@ const Takvim = () => {
           if (pageId === PAGES.FILM) bgColor = COLORS.FILM;
           else if (pageId === PAGES.DIZI) bgColor = COLORS.DIZI;
           else if (pageId === PAGES.ANIME) bgColor = COLORS.ANIME;
-          calendarEvents.push({
-            id: `next-episode-${content.id}`,
-            title: `🎬 ${apiData.title} - ${apiData.relations.nextEpisode.episodeNumber}. Bölüm`,
-            start: formattedDate,
-            allDay: false,
-            backgroundColor: bgColor,
-            borderColor: 'transparent',
-            textColor: 'white'
-          });
+      calendarEvents.push({
+        id: `next-episode-${content.id}`,
+        title: `🎬 ${apiData.title} - ${t('components.episodeTracking.episodeWithNumber', { number: apiData.relations.nextEpisode.episodeNumber })}`,
+        start: formattedDate,
+        allDay: false,
+        backgroundColor: bgColor,
+        borderColor: 'transparent',
+        textColor: 'white'
+      });
       }
 
       // Sezon sonraki tarihini ekle (eğer varsa)
