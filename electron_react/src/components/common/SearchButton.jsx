@@ -139,8 +139,6 @@ const SearchButton = () => {
   // Arama fonksiyonu - gerçek API çağrıları
   const performSearch = useCallback(async (query, category = 'all') => {
     try {
-      const validatedQuery = validateSearchQuery(query);
-      
       setIsLoading(true);
       setSearchError('');
 
@@ -148,10 +146,41 @@ const SearchButton = () => {
 
       if (isBulkMode) {
         // Toplu arama modu - Smart Result Limiting
-        const queries = validatedQuery.split('\n').filter(q => q.trim());
-        if (queries.length === 0) {
+        // Batch modunda her satırı ayrı ayrı validate et
+        const rawQueries = query.split('\n').filter(q => q.trim());
+        if (rawQueries.length === 0) {
           setSearchResults([]);
+          setIsLoading(false);
           return;
+        }
+        
+        // Her query'yi ayrı ayrı validate et
+        const queries = [];
+        const invalidQueries = [];
+        
+        for (const singleQuery of rawQueries) {
+          try {
+            const validated = validateSearchQuery(singleQuery);
+            queries.push(validated);
+          } catch (err) {
+            invalidQueries.push({ query: singleQuery, error: err.message });
+          }
+        }
+        
+        // Eğer hiç geçerli query yoksa hata göster
+        if (queries.length === 0) {
+          const errorMsg = invalidQueries.length > 0 
+            ? `Geçersiz sorgu: ${invalidQueries[0].query.substring(0, 30)}... (${invalidQueries[0].error})`
+            : 'Geçerli sorgu bulunamadı';
+          setSearchError(errorMsg);
+          setSearchResults([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Eğer bazı query'ler geçersizse uyarı göster ama devam et
+        if (invalidQueries.length > 0) {
+          console.warn(`${invalidQueries.length} geçersiz sorgu atlandı:`, invalidQueries);
         }
 
         const bulkResults = [];
@@ -255,12 +284,14 @@ const SearchButton = () => {
         setAllSearchResults(allResults);
         results = bulkResults;
       } else {
-        // Normal arama modu
+        // Normal arama modu - tek sorguyu validate et
+        const validatedQuery = validateSearchQuery(query);
+        
         const searchPromises = [];
 
         if (category === 'all' || category === 'anime') {
           searchPromises.push(
-            searchAnime(query, { limit: 10 }).catch(error => {
+            searchAnime(validatedQuery, { limit: 10 }).catch(error => {
               console.warn('Anime search failed:', error);
               return [];
             })
@@ -269,7 +300,7 @@ const SearchButton = () => {
 
         if (category === 'all' || category === 'movies') {
           searchPromises.push(
-            searchMovies(query, { limit: 10 }).catch(error => {
+            searchMovies(validatedQuery, { limit: 10 }).catch(error => {
               console.warn('Movie search failed:', error);
               return [];
             })
@@ -278,7 +309,7 @@ const SearchButton = () => {
 
         if (category === 'all' || category === 'series') {
           searchPromises.push(
-            searchTvShows(query, { limit: 10 }).catch(error => {
+            searchTvShows(validatedQuery, { limit: 10 }).catch(error => {
               console.warn('TV search failed:', error);
               return [];
             })

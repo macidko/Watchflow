@@ -1,5 +1,5 @@
 import './App.css';
-import Navbar from './components/common/Navbar';
+import Navbar from './components/common/Navbar/Navbar';
 import SearchButton from './components/common/SearchButton';
 import ThemeLoader from './components/common/ThemeLoader';
 import LayoutController from './components/layout/LayoutController';
