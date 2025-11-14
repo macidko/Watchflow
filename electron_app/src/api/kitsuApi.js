@@ -1,4 +1,5 @@
 const config = require('../config/config');
+const { sleep, findBestMatch } = require('./apiUtils');
 
 /**
  * Kitsu API Service
@@ -16,9 +17,6 @@ const API_CONFIG = {
     'Content-Type': 'application/vnd.api+json'
   }
 };
-
-// Gecikme için yardımcı fonksiyon
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Anime ara
@@ -148,30 +146,7 @@ async function batchSearchAnime(searchTexts) {
   }
 }
 
-/**
- * Bir başlık için en iyi eşleşmeyi bul
- * @param {string} searchText Aranan başlık
- * @param {Array} results Arama sonuçları
- * @returns {Object|null} En iyi eşleşen sonuç veya null
- */
-function findBestMatch(searchText, results) {
-  if (!results || results.length === 0) return null;
-  
-  const normalizedSearchText = searchText.toLowerCase().trim();
-  
-  // Tam eşleşme kontrolü
-  for (const result of results) {
-    const title = (result.title || "").toLowerCase().trim();
-    const originalTitle = (result.original_title || "").toLowerCase().trim();
-    
-    if (title === normalizedSearchText || originalTitle === normalizedSearchText) {
-      return result;
-    }
-  }
-  
-  // En iyi eşleşmeyi bul (ilk sonuç en popüler olduğu için genelde en iyi eşleşmedir)
-  return results[0];
-}
+
 
 /**
  * Anime detaylarını al
